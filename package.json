@@ -1,0 +1,27 @@
+{
+  "name": "dev-oh",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n server,web -c magenta,cyan \"npm run dev -w @devoh/server\" \"npm run dev -w @devoh/web\"",
+    "build": "npm run build -w @devoh/web",
+    "start:server": "npm run start -w @devoh/server",
+    "test": "npm test -w @devoh/game",
+    "typecheck": "tsc -p packages/game && tsc -p apps/server && tsc -p apps/web",
+    "crop-art": "tsx scripts/crop-art.ts"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "sharp": "^0.34.1",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
