@@ -169,7 +169,7 @@ const list: CardDef[] = [
       'Não tá fácil… (1x por turno): não é destruído em batalha; você não recebe dano de batalha com ele. ' +
       'MESMO… (Revanche): sobreviveu a um ataque, ganha +500 ATK permanente. Destruiu um Profissional em batalha, oponente +2 de Estresse. ' +
       'Resiliência: Estresse 6+ no início do seu turno, −1.',
-    flavor: 'Aguenta a pancada resmungando… e devolve.',
+    flavor: 'Resiliente a qualquer ataque… mas sempre alfineta.',
   },
   {
     id: 'kelly',
