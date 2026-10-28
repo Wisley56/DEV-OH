@@ -5,7 +5,7 @@ import type { Screen } from '../App';
 import { CardFull } from '../components/Card';
 import { allDecks, currentDeck, getBotLevel, getName, getSession, setBotLevel, setDeckId, setName } from '../storage';
 
-const HERO = ['douglas_ataque', 'thy_revisor', 'patricia'];
+const HERO = ['douglas_ataque', 'thy_revisor', 'wisley'];
 
 const LEVELS: { id: BotLevel; icon: string; title: string; tag: string; desc: string }[] = [
   { id: 'normal', icon: '🤖', title: 'Com IA', tag: 'Normal', desc: 'O bot aceita a primeira sugestão do autocomplete.' },

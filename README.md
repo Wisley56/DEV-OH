@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/hero.webp" alt="DEV-OH! A Era dos Devs que Agem — Douglas (Modo de Ataque), Thy Gonzaguinha e Patrícia" width="760" />
+<img src="docs/hero.webp" alt="DEV-OH! A Era dos Devs que Agem — Douglas (Modo de Ataque), Thy Gonzaguinha e Wisley" width="760" />
 
 **O duelo de cards em que a sua squad é o deck.**<br/>
 Invoque os devs, ative Tasks, arme Bugs e entregue a Sprint antes que o servidor caia.
