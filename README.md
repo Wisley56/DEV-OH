@@ -36,16 +36,17 @@ npm run crop-art   # regera as artes a partir de assets/source
 
 ## Deploy
 
-### Servidor — Railway
-1. New Project → Deploy from GitHub repo (raiz do repositório).
-2. O `railway.json` já define `npm run start:server` e o healthcheck `/health`. O Railway injeta `PORT`.
-3. Variável opcional: `CORS_ORIGIN=https://seu-jogo.vercel.app` (padrão libera qualquer origem).
-4. Em Settings → Networking, gere um domínio público.
+Tudo no Railway, em dois serviços do mesmo repositório (o Railway cria `@devoh/server` e `@devoh/web` sozinho ao detectar os workspaces). Cada serviço usa o seu arquivo de configuração.
 
-### Front — Vercel
-1. Import do mesmo repositório, **Root Directory = raiz** (o `vercel.json` já aponta build e saída `apps/web/dist`).
-2. Variável de ambiente: `VITE_SERVER_URL=https://<seu-servidor>.up.railway.app`.
-3. Deploy. O link de convite fica `https://seu-jogo.vercel.app/?sala=CODIGO`.
+### Serviço `@devoh/server`
+1. Settings → Config-as-code → Railway Config File: `railway.server.json` (start `npm run start:server`, healthcheck `/health`; o Railway injeta `PORT`).
+2. Settings → Networking → Generate Domain. Teste em `https://<url-do-server>/health`.
+3. Opcional: variável `CORS_ORIGIN=https://<url-do-web>` (o padrão libera qualquer origem).
+
+### Serviço `@devoh/web`
+1. Settings → Config-as-code → Railway Config File: `railway.web.json` (build `npm run build`, serve `apps/web/dist` como site estático).
+2. Variables: `VITE_SERVER_URL=https://<url-do-server>` (sem barra no final). É lida no build: mudou a variável, faça redeploy.
+3. Settings → Networking → Generate Domain — essa é a URL do jogo. Convite: `https://<url-do-web>/?sala=CODIGO`.
 
 ## Regras (v1)
 
