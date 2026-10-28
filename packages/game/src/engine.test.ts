@@ -260,6 +260,27 @@ describe('efeitos especiais', () => {
   });
 });
 
+describe('bot difícil (Sem IA)', () => {
+  it('só faz jogadas legais e vence o bot normal na maioria', () => {
+    let hardWins = 0;
+    const N = 30;
+    for (let seed = 1; seed <= N; seed++) {
+      const hardSeat: Seat = seed % 2 === 0 ? 0 : 1;
+      const decks = [STARTER_DECKS[seed % 3], STARTER_DECKS[(seed + 1) % 3]];
+      let s = createGame({ players: [{ name: 'A', deck: decks[0].cards }, { name: 'B', deck: decks[1].cards }], seed });
+      for (let steps = 0; s.winner === null && steps < 3000; steps++) {
+        const a = botAction(s, s.active, s.active === hardSeat ? 'hard' : 'normal');
+        const r = applyAction(s, s.active, a);
+        if (!r.ok) throw new Error(`seed ${seed}: ação ilegal ${JSON.stringify(a)}: ${r.error}`);
+        s = r.state;
+      }
+      expect(s.winner, `seed ${seed} não terminou`).not.toBeNull();
+      if (s.winner === hardSeat) hardWins++;
+    }
+    expect(hardWins / N).toBeGreaterThan(0.55);
+  }, 60_000);
+});
+
 describe('bot vs bot', () => {
   it('partidas terminam sem erro com todos os decks', () => {
     let finished = 0;

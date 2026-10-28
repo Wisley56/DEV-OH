@@ -33,12 +33,14 @@ export interface BoardProps {
   onRematch?: () => void;
   rematchLabel?: string;
   banner?: ReactNode;
+  /** Selo exibido na linha do meio, ao lado da fase (ex.: dificuldade do bot). */
+  badge?: ReactNode;
 }
 
 /** Tasks/efeitos em que o alvo é obrigatório (espelha o engine). */
 const REQUIRED = new Set(['refatoracao', 'hotfix', 'thy_revisor', 'copilot']);
 
-export function Board({ view, send, onExit, onRematch, rematchLabel, banner }: BoardProps) {
+export function Board({ view, send, onExit, onRematch, rematchLabel, banner, badge }: BoardProps) {
   const me = view.players[view.you];
   const opp = view.players[view.you === 0 ? 1 : 0];
   const myTurn = view.active === view.you && view.winner === null;
@@ -229,6 +231,7 @@ export function Board({ view, send, onExit, onRematch, rematchLabel, banner }: B
         </div>
 
         <div className="midline">
+          {badge}
           <div className="phase">
             <span className={`turn-dot ${myTurn ? 'mine' : ''}`} />
             {view.winner !== null ? 'Fim de duelo' : myTurn ? 'Seu turno' : `Turno de ${opp.name}`} · T{view.turn} ·{' '}

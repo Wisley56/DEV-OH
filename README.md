@@ -32,7 +32,7 @@ Sem instalar nada, sem cadastro: abre o link, escolhe um apelido e duela.
 ## ✨ Destaques
 
 - ⚔️ **PvP online em tempo real**: crie uma sala e mande o link `?sala=CODIGO` pro colega.
-- 🤖 **Treino contra o bot**: aprenda as regras sem pressão (o bot não cobra status).
+- 🤖 **Treino contra o bot** em duas dificuldades: **Com IA** (normal, aceita a primeira sugestão do autocomplete) e **Sem IA** (difícil, pensa cada jogada na raça).
 - 😤 **Mecânica de Estresse**: quanto mais caos, mais ATK… até alguém pedir demissão.
 - 🛠️ **Deck builder**: monte o seu time ou use um dos 3 decks prontos.
 - 📖 **Coleção completa** com todos os cards e efeitos.

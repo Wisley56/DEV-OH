@@ -1,6 +1,6 @@
-import { STARTER_DECKS, type DeckList } from '@devoh/game';
+import { STARTER_DECKS, type BotLevel, type DeckList } from '@devoh/game';
 
-const K = { name: 'devoh.name', deck: 'devoh.deck', custom: 'devoh.customDecks', session: 'devoh.session' };
+const K = { name: 'devoh.name', deck: 'devoh.deck', custom: 'devoh.customDecks', session: 'devoh.session', level: 'devoh.botLevel' };
 
 function read<T>(key: string, fallback: T, store: () => Storage = () => localStorage): T {
   try {
@@ -21,7 +21,10 @@ function write(key: string, value: unknown, store: () => Storage = () => localSt
 export const getName = () => read<string>(K.name, '');
 export const setName = (n: string) => write(K.name, n);
 
-export const getCustomDecks = () => read<DeckList[]>(K.custom, []);
+export const getBotLevel = () => read<BotLevel>(K.level, 'normal');
+export const setBotLevel = (l: BotLevel) => write(K.level, l);
+
+export const getCustomDecks =() => read<DeckList[]>(K.custom, []);
 export const saveCustomDecks = (d: DeckList[]) => write(K.custom, d);
 export const allDecks = (): DeckList[] => [...STARTER_DECKS, ...getCustomDecks()];
 

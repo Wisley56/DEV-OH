@@ -5,4 +5,5 @@ export { createGame, applyAction, START_HAND } from './engine';
 export { getView } from './view';
 export type { GameView, PlayerView, ProView, SpellView, HandCardView } from './view';
 export { botAction } from './bot';
+export type { BotLevel } from './bot';
 export { START_LP, MAX_STRESS, HAND_LIMIT, ZONES } from './ops';

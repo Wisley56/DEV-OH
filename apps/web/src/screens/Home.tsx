@@ -1,17 +1,23 @@
-import { validateDeck } from '@devoh/game';
+import { validateDeck, type BotLevel } from '@devoh/game';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import type { Screen } from '../App';
 import { CardFull } from '../components/Card';
-import { allDecks, currentDeck, getName, getSession, setDeckId, setName } from '../storage';
+import { allDecks, currentDeck, getBotLevel, getName, getSession, setBotLevel, setDeckId, setName } from '../storage';
 
 const HERO = ['douglas_ataque', 'thy_revisor', 'patricia'];
+
+const LEVELS: { id: BotLevel; icon: string; title: string; tag: string; desc: string }[] = [
+  { id: 'normal', icon: '🤖', title: 'Com IA', tag: 'Normal', desc: 'O bot aceita a primeira sugestão do autocomplete.' },
+  { id: 'hard', icon: '🧠', title: 'Sem IA', tag: 'Difícil', desc: 'O bot pensa cada jogada na raça, até o fim do turno.' },
+];
 
 export function Home({ go }: { go: (s: Screen) => void }) {
   const invite = new URLSearchParams(location.search).get('sala')?.toUpperCase() ?? '';
   const [name, setNameState] = useState(getName());
   const [deckId, setDeck] = useState(currentDeck().id);
   const [code, setCode] = useState(invite);
+  const [level, setLevel] = useState<BotLevel>(getBotLevel());
   const decks = allDecks();
   const deck = decks.find((d) => d.id === deckId) ?? decks[0];
   const deckErrors = validateDeck(deck.cards);
@@ -70,8 +76,31 @@ export function Home({ go }: { go: (s: Screen) => void }) {
         <p className="deck-desc">{deck.description}</p>
         {deckErrors.length > 0 && <p className="warn">{deckErrors[0]}</p>}
 
+        <div className="field-label">
+          Dificuldade contra o bot
+          <div className="difficulty" role="radiogroup" aria-label="Dificuldade contra o bot">
+            {LEVELS.map((l) => (
+              <button
+                key={l.id}
+                role="radio"
+                aria-checked={level === l.id}
+                className={`diff-option ${level === l.id ? 'on' : ''} diff-${l.id}`}
+                onClick={() => {
+                  setLevel(l.id);
+                  setBotLevel(l.id);
+                }}
+              >
+                <span className="diff-title">
+                  {l.icon} {l.title} <span className="diff-tag">{l.tag}</span>
+                </span>
+                <span className="diff-desc">{l.desc}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="lobby-actions">
-          <button className="btn btn-primary btn-lg" onClick={() => ready() && go({ name: 'bot', deck: deck.cards, playerName: nick })}>
+          <button className="btn btn-primary btn-lg" onClick={() => ready() && go({ name: 'bot', deck: deck.cards, playerName: nick, level })}>
             🤖 Treinar contra o Bot
           </button>
           <button className="btn btn-lg" onClick={() => ready() && go({ name: 'online', intent: { kind: 'create', name: nick, deck: deck.cards } })}>

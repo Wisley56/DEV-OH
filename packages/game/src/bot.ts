@@ -1,13 +1,21 @@
 import { card, tributesNeeded } from './cards';
 import { applyAction } from './engine';
+import { hardBotAction } from './botHard';
 import { getAtk, getDef, other, prosOf, setCardsOf } from './ops';
 import type { Action, GameState, ProSlot, Seat } from './types';
+
+/** "Com IA" = normal (heurístico simples); "Sem IA" = difícil (simula cada jogada). */
+export type BotLevel = 'normal' | 'hard';
+
+export function botAction(s: GameState, seat: Seat, level: BotLevel = 'normal'): Action {
+  return level === 'hard' ? hardBotAction(s, seat, normalBotAction) : normalBotAction(s, seat);
+}
 
 /**
  * Bot heurístico: gera ações candidatas em ordem de prioridade e devolve
  * a primeira que o engine aceita. Sempre termina com endTurn.
  */
-export function botAction(s: GameState, seat: Seat): Action {
+function normalBotAction(s: GameState, seat: Seat): Action {
   if (s.phase === 'main') {
     for (const a of mainCandidates(s, seat)) if (applyAction(s, seat, a).ok) return a;
   } else if (s.phase === 'battle') {

@@ -1,3 +1,4 @@
+import type { BotLevel } from '@devoh/game';
 import { useState } from 'react';
 import { Collection } from './screens/Collection';
 import { DeckBuilder } from './screens/DeckBuilder';
@@ -10,7 +11,7 @@ export type Screen =
   | { name: 'home' }
   | { name: 'collection' }
   | { name: 'decks' }
-  | { name: 'bot'; deck: string[]; playerName: string }
+  | { name: 'bot'; deck: string[]; playerName: string; level: BotLevel }
   | { name: 'online'; intent: OnlineIntent };
 
 export function App() {
@@ -25,7 +26,7 @@ export function App() {
     case 'decks':
       return <DeckBuilder onBack={home} />;
     case 'bot':
-      return <LocalDuel deck={screen.deck} playerName={screen.playerName} onExit={home} />;
+      return <LocalDuel deck={screen.deck} playerName={screen.playerName} level={screen.level} onExit={home} />;
     case 'online':
       return <OnlineDuel intent={screen.intent} onExit={home} />;
     default:
