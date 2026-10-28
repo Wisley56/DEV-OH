@@ -37,6 +37,20 @@ export interface BoardProps {
   badge?: ReactNode;
 }
 
+/** Mesma condição do bloco "celular deitado" em styles.css. */
+const COMPACT_LANDSCAPE = '(orientation: landscape) and (max-height: 560px)';
+
+function useMediaQuery(query: string) {
+  const [match, setMatch] = useState(() => matchMedia(query).matches);
+  useEffect(() => {
+    const mq = matchMedia(query);
+    const on = () => setMatch(mq.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, [query]);
+  return match;
+}
+
 /** Tasks/efeitos em que o alvo é obrigatório (espelha o engine). */
 const REQUIRED = new Set(['refatoracao', 'hotfix', 'thy_revisor', 'copilot']);
 
@@ -48,7 +62,19 @@ export function Board({ view, send, onExit, onRematch, rematchLabel, banner, bad
   const [mode, setMode] = useState<Mode | null>(null);
   const [error, setError] = useState<string | null>(null);
   const toasts = useLogToasts(view.log);
+  // Celular deitado: a mão vira uma grade na coluna da direita, sem leque.
+  const compact = useMediaQuery(COMPACT_LANDSCAPE);
+  // No celular o histórico abre no painel de baixo (no desktop ele fica sempre visível na lateral).
   const [showLog, setShowLog] = useState(false);
+  const lastLogId = view.log.at(-1)?.id ?? 0;
+  const [seenLogId, setSeenLogId] = useState(lastLogId);
+  useEffect(() => {
+    if (showLog) setSeenLogId(lastLogId);
+  }, [showLog, lastLogId]);
+  const unread = view.log.filter((l) => l.id > seenLogId && l.kind !== 'draw').length;
+  useEffect(() => {
+    if (sel) setShowLog(false);
+  }, [sel]);
 
   useEffect(() => {
     if (!myTurn) setMode(null);
@@ -193,7 +219,7 @@ export function Board({ view, send, onExit, onRematch, rematchLabel, banner, bad
 
   return (
     <div className="duel">
-      <aside className={`side ${sel ? 'has-sel' : ''}`}>
+      <aside className={`side ${sel ? 'has-sel' : ''} ${showLog ? 'show-log' : ''}`}>
         <div className="side-card">
           {sel?.cardId ? (
             <>
@@ -249,6 +275,9 @@ export function Board({ view, send, onExit, onRematch, rematchLabel, banner, bad
                 Encerrar turno ⏭
               </button>
             )}
+            <button className="btn btn-ghost exit-btn" onClick={() => (view.winner === null ? confirm('Desistir e sair do duelo?') && onExit() : onExit())}>
+              ✕ Sair
+            </button>
           </div>
         </div>
 
@@ -263,7 +292,7 @@ export function Board({ view, send, onExit, onRematch, rematchLabel, banner, bad
             {me.hand?.map((c, i) => {
               const playable = c.canSummon || c.canActivate || c.canSet;
               const n = me.hand!.length;
-              const rot = (i - (n - 1) / 2) * Math.min(5, 26 / n);
+              const rot = compact ? 0 : (i - (n - 1) / 2) * Math.min(5, 26 / n);
               return (
                 <motion.button
                   key={c.iid}
@@ -271,7 +300,7 @@ export function Board({ view, send, onExit, onRematch, rematchLabel, banner, bad
                   initial={{ y: 80, opacity: 0 }}
                   animate={{ y: 0, opacity: 1, rotate: rot }}
                   exit={{ y: -60, opacity: 0, scale: 0.8 }}
-                  whileHover={{ y: -18, rotate: 0, zIndex: 5 }}
+                  whileHover={{ y: compact ? -4 : -18, rotate: 0, zIndex: 5 }}
                   className={`hand-card ${playable && myTurn ? 'playable' : ''} ${sel?.iid === c.iid ? 'selected' : ''}`}
                   onClick={() => clickZone('hand', c.iid, c.cardId)}
                 >
@@ -325,8 +354,15 @@ export function Board({ view, send, onExit, onRematch, rematchLabel, banner, bad
         )}
       </AnimatePresence>
 
-      <button className="btn btn-ghost exit-btn" onClick={() => (view.winner === null ? confirm('Desistir e sair do duelo?') && onExit() : onExit())}>
-        ✕ Sair
+      <button
+        className="btn log-fab"
+        onClick={() => {
+          setSel(null);
+          setShowLog((v) => !v);
+        }}
+        aria-label="Histórico do duelo"
+      >
+        📜{unread > 0 && !showLog && <span className="log-fab-badge">{unread > 99 ? '99+' : unread}</span>}
       </button>
     </div>
   );

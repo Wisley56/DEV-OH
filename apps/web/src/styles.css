@@ -511,16 +511,19 @@ select:focus {
   grid-column: 1 / -1;
   text-align: center;
   padding-top: 10px;
+  /* O leque de cards gira para fora das bordas: corta sem criar rolagem lateral. */
+  overflow-x: clip;
 }
 .hero-cards {
+  --hc: clamp(104px, 30vw, 190px);
   display: flex;
   justify-content: center;
-  height: 290px;
-  margin-bottom: -40px;
+  height: calc(var(--hc) * 1.53);
+  margin-bottom: calc(var(--hc) * -0.21);
 }
 .hero-card {
-  width: 190px;
-  margin: 0 -26px;
+  width: var(--hc);
+  margin: 0 calc(var(--hc) * -0.14);
   transform-origin: 50% 120%;
 }
 .logo {
@@ -842,12 +845,14 @@ select:focus {
 
 /* ───────── Duelo ───────── */
 .duel {
-  --zw: clamp(50px, min(7.4vw, 8.4vh), 108px);
-  --zh: calc(var(--zw) * 1.458);
-  --zone: calc(var(--zh) + 6px);
+  /* Zona = lado do quadrado de cada espaço do campo; cabe na largura (5 colunas) e na altura (4 linhas + barras + mão). */
+  --zone: clamp(64px, min(calc((100vw - 380px) / 5), calc((100dvh - 272px) / 5.2)), 150px);
+  --zh: calc(var(--zone) - 6px);
+  --zw: calc(var(--zh) / 1.458);
   display: grid;
   grid-template-columns: minmax(250px, 300px) 1fr;
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
 }
 .side {
@@ -1184,7 +1189,8 @@ select:focus {
 .hand {
   display: flex;
   justify-content: center;
-  min-height: calc(var(--zh) * 0.92);
+  min-height: calc(var(--zh) * 1.16 + 6px);
+  align-items: flex-start;
   margin-top: 4px;
   padding: 0 10px;
 }
@@ -1301,24 +1307,29 @@ select:focus {
   margin-top: 16px;
   flex-wrap: wrap;
 }
-.exit-btn {
-  position: fixed;
-  top: 8px;
-  right: 8px;
-  z-index: 20;
+.log-fab {
+  display: none;
+}
+.log-fab-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 20px;
+  text-align: center;
 }
 
 /* ───────── Responsivo ───────── */
 @media (max-width: 860px) {
   .home {
     grid-template-columns: 1fr;
-  }
-  .hero-cards {
-    height: 200px;
-  }
-  .hero-card {
-    width: 130px;
-    margin: 0 -18px;
   }
   .db-layout {
     grid-template-columns: 1fr;
@@ -1329,9 +1340,8 @@ select:focus {
   }
 
   .duel {
-    --zw: clamp(42px, min(12.4vw, 7.2vh), 90px);
+    --zone: clamp(44px, min(calc((100vw - 44px) / 5), calc((100dvh - 257px) / 5.2)), 150px);
     grid-template-columns: 1fr;
-    height: 100dvh;
   }
   .side {
     position: fixed;
@@ -1359,6 +1369,32 @@ select:focus {
   .side .log {
     display: none;
   }
+  .side.show-log {
+    transform: none;
+  }
+  .side.show-log .log {
+    display: flex;
+    height: 60dvh;
+    flex: none;
+  }
+  .side.show-log:not(.has-sel) .side-card {
+    display: none;
+  }
+  .side.show-log .log-body {
+    font-size: 0.85rem;
+  }
+  .log-fab {
+    display: inline-flex;
+    position: fixed;
+    right: 6px;
+    bottom: 8px;
+    z-index: 55;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 1.2rem;
+  }
   .arena {
     padding: 4px 4px 0;
   }
@@ -1376,11 +1412,162 @@ select:focus {
   .toasts {
     left: 50%;
   }
-  .exit-btn {
-    top: auto;
-    bottom: 8px;
-    right: auto;
-    left: 4px;
-    padding: 6px 8px;
+  .midline {
+    gap: 6px;
+  }
+  .phase-actions .btn {
+    padding: 8px 12px;
+  }
+}
+
+/* Celular deitado (e janelas muito baixas): campo à esquerda, ações e mão à direita, detalhes numa gaveta lateral. */
+@media (orientation: landscape) and (max-height: 560px) {
+  .duel {
+    --zone: clamp(40px, min(calc((100dvh - 132px) / 4), calc((100vw - 300px) / 5)), 150px);
+    grid-template-columns: 1fr;
+  }
+  .side {
+    position: fixed;
+    inset: 0 0 0 auto;
+    z-index: 50;
+    width: min(360px, 52vw);
+    max-height: none;
+    transform: translateX(100%);
+    transition: transform 0.25s;
+    border-right: 0;
+    border-left: 1px solid var(--panel-border);
+    border-radius: 16px 0 0 16px;
+    background: rgba(6, 10, 24, 0.97);
+    overflow: auto;
+  }
+  .side.has-sel,
+  .side.show-log {
+    transform: none;
+  }
+  .side .card-full {
+    width: min(150px, 100%);
+    margin: 0 auto;
+  }
+  .side-close {
+    display: inline-flex;
+  }
+  .side .log {
+    display: none;
+  }
+  .side.show-log .log {
+    display: flex;
+    flex: 1;
+    height: auto;
+  }
+  .side.show-log:not(.has-sel) .side-card {
+    display: none;
+  }
+  .log-fab {
+    display: inline-flex;
+    position: fixed;
+    right: 6px;
+    bottom: 6px;
+    z-index: 55;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 1.1rem;
+  }
+  .arena {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto auto auto auto;
+    grid-template-areas:
+      'oppbar mid'
+      'oppfield mid'
+      'myfield hand'
+      'mybar hand';
+    align-content: center;
+    column-gap: 10px;
+    row-gap: 4px;
+    padding: 4px 8px;
+  }
+  .pbar {
+    width: 100%;
+    gap: 8px;
+    padding: 3px 8px;
+    font-size: 0.72rem;
+  }
+  .pbar.top {
+    grid-area: oppbar;
+  }
+  .pbar:not(.top) {
+    grid-area: mybar;
+  }
+  .pbar-counts {
+    display: none;
+  }
+  .lp-label {
+    font-size: 0.68rem;
+  }
+  .lp-label b {
+    font-size: 0.85rem;
+  }
+  .field {
+    padding: 3px 6px;
+    gap: 3px;
+  }
+  .field.opp {
+    grid-area: oppfield;
+  }
+  .field.mine {
+    grid-area: myfield;
+  }
+  .row {
+    gap: 3px;
+  }
+  .midline {
+    grid-area: mid;
+    flex-direction: column;
+    justify-content: center;
+    align-self: stretch;
+    gap: 6px;
+    min-height: 0;
+  }
+  .phase {
+    text-align: center;
+  }
+  .phase-actions {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .phase-actions .btn {
+    padding: 7px 11px;
+    font-size: 0.85rem;
+  }
+  .hand {
+    grid-area: hand;
+    flex-wrap: wrap;
+    align-content: center;
+    align-self: stretch;
+    gap: 4px;
+    min-height: 0;
+    margin: 0;
+    padding: 0 0 46px;
+  }
+  .hand-card {
+    width: clamp(44px, calc((100dvh - 200px) / 2.9), 84px);
+    margin: 0;
+  }
+  .toasts {
+    left: 50%;
+    top: 4px;
+  }
+  .toast {
+    padding: 6px 10px;
+    font-size: 0.78rem;
+  }
+}
+
+/* Com o painel de detalhes aberto, o botão do histórico não cobre o texto da carta. */
+@media (max-width: 860px), (orientation: landscape) and (max-height: 560px) {
+  .side.has-sel ~ .log-fab {
+    display: none;
   }
 }
