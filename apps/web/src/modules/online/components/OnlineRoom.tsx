@@ -10,6 +10,8 @@ import { WaitingRoom } from './WaitingRoom';
 /** Estado de navegação que pede para entrar na sala com o perfil atual (botões do lobby). */
 export interface JoinRequest {
   join?: boolean;
+  /** Ao criar: sala privada (não aparece na lista do lobby). */
+  private?: boolean;
 }
 
 /**
@@ -19,13 +21,14 @@ export interface JoinRequest {
 export function OnlineRoom() {
   const code = useParams().code ?? NEW_ROOM;
   const navigate = useNavigate();
-  const join = (useLocation().state as JoinRequest | null)?.join ?? false;
+  const request = useLocation().state as JoinRequest | null;
+  const join = request?.join ?? false;
   const name = useProfile((s) => s.name);
   const deck = useSelectedDeck();
   const { status, room, error, activeCode, open, close, leave } = useRoomStore();
 
   useEffect(() => {
-    const joinAs = { name: nickOf(name), deck: deck.cards };
+    const joinAs = { name: nickOf(name), deck: deck.cards, private: request?.private };
     open(code, code === NEW_ROOM || join ? joinAs : undefined);
   }, [code]); // eslint-disable-line react-hooks/exhaustive-deps
 

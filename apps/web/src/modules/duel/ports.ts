@@ -16,4 +16,10 @@ export interface DuelController {
   banner?: ReactNode;
   /** Selo na linha do meio, ao lado da fase (ex.: dificuldade do bot). */
   badge?: ReactNode;
+  /** Avisado quando as animações do tabuleiro começam/terminam (o bot espera elas acabarem). */
+  onFxBusyChange?: (busy: boolean) => void;
+  /** Fim do prazo do turno no relógio deste navegador (ms); sem prazo no treino. */
+  turnDeadline?: number | null;
+  /** Mostra o botão "?" (ex.: rever o tutorial). */
+  onHelp?: () => void;
 }

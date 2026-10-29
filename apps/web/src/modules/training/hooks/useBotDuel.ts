@@ -6,16 +6,18 @@ import { BOT_DELAY_MS, BOT_SEAT, botStep, newLocalGame, PLAYER_SEAT } from '../s
 /** Duelo local: estado do jogo, turno do bot (uma jogada por vez) e as jogadas do jogador. */
 export function useBotDuel(deck: string[], playerName: string, level: BotLevel) {
   const [state, setState] = useState(() => newLocalGame(deck, playerName, level));
+  // O bot espera as animações da jogada anterior terminarem.
+  const [fxBusy, setFxBusy] = useState(false);
   const view = useMemo(() => getView(state, PLAYER_SEAT), [state]);
 
   useEffect(() => {
-    if (state.winner !== null || state.active !== BOT_SEAT) return;
+    if (state.winner !== null || state.active !== BOT_SEAT || fxBusy) return;
     const t = setTimeout(() => {
       const next = botStep(state, level);
       if (next) setState(next);
     }, BOT_DELAY_MS);
     return () => clearTimeout(t);
-  }, [state, level]);
+  }, [state, level, fxBusy]);
 
   const send = (a: Action) => {
     const r = applyAction(state, PLAYER_SEAT, a);
@@ -26,5 +28,5 @@ export function useBotDuel(deck: string[], playerName: string, level: BotLevel) 
 
   const restart = () => setState(newLocalGame(deck, playerName, level));
 
-  return { view, send, restart };
+  return { view, send, restart, setFxBusy };
 }

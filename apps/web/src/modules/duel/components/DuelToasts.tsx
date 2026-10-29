@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { useDuel, useDuelUi } from '../hooks/useDuel';
 import { useLogToasts } from '../hooks/useLogToasts';
 
@@ -11,7 +11,7 @@ export function DuelToasts() {
     <div className="toasts" aria-live="polite">
       <AnimatePresence>
         {toasts.map((t) => (
-          <motion.div
+          <m.div
             key={t.id}
             className={`toast toast-${t.kind} ${t.seat === view.you ? 'from-me' : 'from-opp'}`}
             initial={{ opacity: 0, y: -16, scale: 0.95 }}
@@ -19,12 +19,12 @@ export function DuelToasts() {
             exit={{ opacity: 0, scale: 0.95 }}
           >
             {t.text}
-          </motion.div>
+          </m.div>
         ))}
         {error && (
-          <motion.div key="err" className="toast toast-error" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <m.div key="err" className="toast toast-error" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             {error}
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

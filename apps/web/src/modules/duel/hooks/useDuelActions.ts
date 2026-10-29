@@ -35,10 +35,10 @@ export function useDuelActions() {
     });
   }
 
-  function startSummon(iid: string, cardId: string, position: 'atk' | 'def') {
+  function startSummon(iid: string, cardId: string, position: 'atk' | 'def', zone?: number) {
     const d = card(cardId);
     const need = tributesNeeded(d.level ?? 1);
-    const base = summonBase(iid, position);
+    const base = summonBase(iid, position, zone);
     if (need > 0) ui.getState().setMode({ kind: 'tribute', base, need, chosen: [] });
     else withTarget(base, cardId, d.target, 'card');
   }
@@ -54,10 +54,39 @@ export function useDuelActions() {
       case 'attack':
         return intent.direct ? dispatch({ type: 'attack', iid: intent.iid }) : ui.getState().setMode({ kind: 'attack', iid: intent.iid });
       case 'ignition':
-        return withTarget({ type: 'ignition', iid: intent.iid }, intent.cardId, card(intent.cardId).ignition?.target, 'ignition');
+        // Antes de usar, mostra o que a habilidade faz (ver CardInspector).
+        return ui.getState().setConfirm(intent);
       case 'changePosition':
         return dispatch({ type: 'changePosition', iid: intent.iid });
     }
+  }
+
+  /** Confirma a habilidade mostrada no painel: segue para o alvo (se houver) e envia. */
+  function confirmIgnition() {
+    const intent = ui.getState().confirm;
+    if (!intent) return;
+    ui.getState().setConfirm(null);
+    withTarget({ type: 'ignition', iid: intent.iid }, intent.cardId, card(intent.cardId).ignition?.target, 'ignition');
+  }
+
+  /** Card da mão solto numa zona do campo (arrastar e soltar). */
+  function dropFromHand(
+    iid: string,
+    cardId: string,
+    target: { row: 'pro' | 'spell' | 'field'; zone: number },
+    at: { x: number; y: number },
+  ) {
+    const d = card(cardId);
+    const free = (row: 'pro' | 'spell') => !(row === 'pro' ? me.pros : me.spells)[target.zone];
+    if (d.kind === 'pro') {
+      const need = tributesNeeded(d.level ?? 1);
+      // Com sacrifício, a posição é escolhida no painel como hoje; sem, um menu no ponto do drop.
+      if (need > 0) return run({ kind: 'summon', iid, cardId, position: 'atk' });
+      return ui.getState().setDropChoice({ iid, cardId, zone: target.zone, x: at.x, y: at.y });
+    }
+    if (d.kind === 'bug') return dispatch({ type: 'set', iid, zone: target.zone });
+    const zone = d.speed === 'continuous' && target.row === 'spell' && free('spell') ? target.zone : undefined;
+    return withTarget({ type: 'activate', iid, zone }, cardId, d.target, 'card');
   }
 
   /** Clique numa zona: completa a escolha em andamento ou seleciona o card. */
@@ -79,5 +108,5 @@ export function useDuelActions() {
     select({ iid, cardId, where });
   }
 
-  return { dispatch, run, clickZone };
+  return { dispatch, run, clickZone, confirmIgnition, dropFromHand, startSummon };
 }

@@ -1,5 +1,5 @@
 import { MAX_STRESS, START_LP } from '@devoh/engine';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { useDuel } from '../hooks/useDuel';
 import { useLpDelta } from '../hooks/useLpDelta';
 
@@ -10,7 +10,11 @@ export function PlayerHud({ side, active }: { side: 'me' | 'opp'; active: boolea
   const delta = useLpDelta(p.lp);
   const lpPct = Math.max(0, Math.min(100, (p.lp / START_LP) * 100));
   return (
-    <div className={`pbar ${side === 'opp' ? 'top' : ''} ${active ? 'active' : ''}`}>
+    <div
+      className={`pbar ${side === 'opp' ? 'top' : ''} ${active ? 'active' : ''}`}
+      data-hud={side}
+      data-tour={side === 'me' ? 'hud' : undefined}
+    >
       <div className="pbar-name">
         {p.name}
         {p.shocked && <span className="chip chip-shock">😱 Chocado</span>}
@@ -20,11 +24,11 @@ export function PlayerHud({ side, active }: { side: 'me' | 'opp'; active: boolea
           LP <b>{p.lp}</b>
         </div>
         <div className="lp-track">
-          <motion.div className="lp-fill" animate={{ width: `${lpPct}%` }} transition={{ duration: 0.6 }} />
+          <m.div className="lp-fill" animate={{ width: `${lpPct}%` }} transition={{ duration: 0.6 }} />
         </div>
         <AnimatePresence>
           {delta && (
-            <motion.span
+            <m.span
               key={delta.k}
               className={`lp-delta ${delta.v < 0 ? 'neg' : 'pos'}`}
               initial={{ opacity: 0, y: 0 }}
@@ -33,7 +37,7 @@ export function PlayerHud({ side, active }: { side: 'me' | 'opp'; active: boolea
             >
               {delta.v > 0 ? '+' : ''}
               {delta.v}
-            </motion.span>
+            </m.span>
           )}
         </AnimatePresence>
       </div>

@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { CardFull } from '../../cards';
 
 const HERO = ['douglas_ataque', 'thy_revisor', 'wisley'];
@@ -9,7 +9,7 @@ export function HeroShowcase() {
     <header className="hero">
       <div className="hero-cards" aria-hidden>
         {HERO.map((id, i) => (
-          <motion.div
+          <m.div
             key={id}
             className="hero-card"
             initial={{ y: 60, opacity: 0, rotate: 0 }}
@@ -17,7 +17,7 @@ export function HeroShowcase() {
             transition={{ delay: 0.15 * i, type: 'spring', stiffness: 120 }}
           >
             <CardFull cardId={id} />
-          </motion.div>
+          </m.div>
         ))}
       </div>
       <h1 className="logo">

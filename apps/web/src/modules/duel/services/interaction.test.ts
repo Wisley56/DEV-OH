@@ -1,6 +1,7 @@
 import { createGame, getView, STARTER_DECKS, type GameView } from '@devoh/engine';
 import { describe, expect, it } from 'vitest';
 import {
+  canDropOn,
   cardActions,
   isTargetable,
   isTargetOptional,
@@ -88,5 +89,33 @@ describe('interação do tabuleiro', () => {
     expect(winnerText({ ...v, winner: 0 })).toBe('SPRINT ENTREGUE!');
     expect(winnerText({ ...v, winner: 1 })).toBe('PROJETO CANCELADO…');
     expect(winnerText({ ...v, winner: 'draw' })).toBe('EMPATE');
+  });
+});
+
+describe('arrastar da mão para o campo', () => {
+  const me = view().players[0];
+  const hand = (cardId: string, flags: Partial<{ canSummon: boolean; canActivate: boolean; canSet: boolean }> = {}) => ({
+    iid: 'h1',
+    cardId,
+    canSummon: false,
+    canActivate: false,
+    canSet: false,
+    ...flags,
+  });
+
+  it('Profissional só em zona de Profissional livre (com sacrifício, qualquer uma)', () => {
+    const busy = { ...me, pros: [{ iid: 'x' }, null, null] as unknown as typeof me.pros };
+    expect(canDropOn(hand('qa', { canSummon: true }), { row: 'pro', zone: 1 }, busy)).toBe(true);
+    expect(canDropOn(hand('qa', { canSummon: true }), { row: 'pro', zone: 0 }, busy)).toBe(false);
+    expect(canDropOn(hand('qa', { canSummon: true }), { row: 'spell', zone: 1 }, busy)).toBe(false);
+    expect(canDropOn(hand('qa'), { row: 'pro', zone: 1 }, busy)).toBe(false);
+    expect(canDropOn(hand('danilo', { canSummon: true }), { row: 'pro', zone: 0 }, busy)).toBe(true);
+  });
+
+  it('Bug em zona de Task/Bug livre; Task normal em qualquer zona de Task ou Campo', () => {
+    expect(canDropOn(hand('erro_404', { canSet: true }), { row: 'spell', zone: 0 }, me)).toBe(true);
+    expect(canDropOn(hand('erro_404', { canSet: true }), { row: 'field', zone: 0 }, me)).toBe(false);
+    expect(canDropOn(hand('hotfix', { canActivate: true }), { row: 'field', zone: 0 }, me)).toBe(true);
+    expect(canDropOn(hand('hotfix', { canActivate: true }), { row: 'pro', zone: 0 }, me)).toBe(false);
   });
 });

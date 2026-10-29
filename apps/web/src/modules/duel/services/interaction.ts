@@ -1,4 +1,4 @@
-import { card, tributesNeeded, type Action, type GameView, type PlayerView, type TargetKind } from '@devoh/engine';
+import { card, tributesNeeded, type Action, type GameView, type HandCardView, type PlayerView, type TargetKind } from '@devoh/engine';
 
 /**
  * Regras de interação do tabuleiro (funções puras): o que o jogador pode
@@ -82,8 +82,8 @@ export function toggleTribute(mode: Extract<Mode, { kind: 'tribute' }>, iid: str
   return { chosen, done: chosen.length === mode.need };
 }
 
-export function summonBase(iid: string, position: 'atk' | 'def'): SummonAction {
-  return { type: 'summon', iid, position, tributes: [] };
+export function summonBase(iid: string, position: 'atk' | 'def', zone?: number): SummonAction {
+  return zone === undefined ? { type: 'summon', iid, position, tributes: [] } : { type: 'summon', iid, position, tributes: [], zone };
 }
 
 /** Ações disponíveis para o card selecionado (e o motivo, se um Profissional não puder entrar). */
@@ -162,4 +162,25 @@ export function modeText(mode: Mode): string {
   if (mode.kind === 'tribute') return `Escolha ${mode.need - mode.chosen.length} Profissional(is) seu(s) para sacrificar`;
   if (mode.kind === 'attack') return 'Escolha o alvo do ataque';
   return mode.prompt;
+}
+
+/** Zona do meu lado do campo onde um card da mão pode ser solto. */
+export interface DropTarget {
+  row: 'pro' | 'spell' | 'field';
+  zone: number;
+}
+
+/** O card da mão pode ser solto nessa zona? (mesmas regras dos botões do painel) */
+export function canDropOn(c: HandCardView, target: DropTarget, me: PlayerView): boolean {
+  const d = card(c.cardId);
+  if (d.kind === 'pro') {
+    if (!c.canSummon || target.row !== 'pro') return false;
+    // Com sacrifício, qualquer zona de Profissional serve (a escolha segue no painel).
+    return tributesNeeded(d.level ?? 1) > 0 || !me.pros[target.zone];
+  }
+  if (d.kind === 'bug') return c.canSet && target.row === 'spell' && !me.spells[target.zone];
+  if (!c.canActivate) return false;
+  if (d.speed === 'field') return target.row === 'field';
+  if (d.speed === 'continuous') return target.row === 'spell' && !me.spells[target.zone];
+  return target.row !== 'pro';
 }

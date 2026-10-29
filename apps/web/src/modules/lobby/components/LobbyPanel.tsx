@@ -6,6 +6,7 @@ import { useAllDecks } from '../../decks';
 import { getSession, NEW_ROOM, type JoinRequest } from '../../online';
 import { useProfile } from '../../profile';
 import { DifficultyPicker } from '../../training';
+import { OpenRooms } from './OpenRooms';
 
 const JOIN: JoinRequest = { join: true };
 
@@ -18,6 +19,7 @@ export function LobbyPanel() {
   const [name, setName] = useState(profile.name);
   const [deckId, setDeckId] = useState(() => (decks.some((d) => d.id === profile.deckId) ? profile.deckId : decks[0].id));
   const [code, setCode] = useState(invite);
+  const [privateRoom, setPrivateRoom] = useState(false);
   const deck = decks.find((d) => d.id === deckId) ?? decks[0];
   const deckErrors = validateDeck(deck.cards);
   const resume = getSession();
@@ -64,15 +66,23 @@ export function LobbyPanel() {
         <Button variant="primary" size="lg" onClick={() => ready() && navigate('/treino')}>
           🤖 Treinar contra o Bot
         </Button>
-        <Button size="lg" onClick={() => ready() && navigate(`/sala/${NEW_ROOM}`)}>
+        <Button
+          size="lg"
+          onClick={() => ready() && navigate(`/sala/${NEW_ROOM}`, { state: { private: privateRoom } satisfies JoinRequest })}
+        >
           🌐 Criar sala online
         </Button>
+        <label className="check-label">
+          <input type="checkbox" checked={privateRoom} onChange={(e) => setPrivateRoom(e.target.checked)} />
+          Sala privada (só por convite, fora da lista)
+        </label>
         <div className="join">
           <input value={code} maxLength={5} placeholder="CÓDIGO" onChange={(e) => setCode(e.target.value.toUpperCase())} />
           <Button disabled={code.length < 4} onClick={() => ready() && navigate(`/sala/${code}`, { state: JOIN })}>
             Entrar
           </Button>
         </div>
+        <OpenRooms onJoin={(c) => ready() && navigate(`/sala/${c}`, { state: JOIN })} />
       </div>
 
       <div className="lobby-links">

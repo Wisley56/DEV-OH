@@ -2,18 +2,21 @@ import type { Action } from '@devoh/engine';
 import type { RoomState } from '@devoh/protocol';
 import { create } from 'zustand';
 import { RoomClient, type ConnectionStatus } from '../services/roomClient';
-import { getSession } from '../services/session';
+import { getSession, NEW_ROOM } from '../services/session';
 
-export const NEW_ROOM = 'nova';
+export { NEW_ROOM };
 
 interface JoinAs {
   name: string;
   deck: string[];
+  private?: boolean;
 }
 
 interface RoomStoreState {
   status: ConnectionStatus | 'idle' | 'needsJoin';
   room: RoomState | null;
+  /** Diferença entre o relógio do servidor e o deste navegador (ms). */
+  clockOffset: number;
   error: string | null;
   /** Sala a que este navegador está ligado (código definitivo, ou "nova" enquanto cria). */
   activeCode: string | null;
@@ -29,7 +32,7 @@ interface RoomStoreState {
 
 let client: RoomClient | null = null;
 
-const initial = { status: 'idle' as const, room: null, error: null, activeCode: null };
+const initial = { status: 'idle' as const, room: null, error: null, activeCode: null, clockOffset: 0 };
 
 /** Conexão com a sala online (uma por aba). */
 export const useRoomStore = create<RoomStoreState>((set, get) => ({
@@ -44,7 +47,7 @@ export const useRoomStore = create<RoomStoreState>((set, get) => ({
       return;
     }
     client = new RoomClient({
-      state: (room) => set({ room }),
+      state: (room) => set({ room, clockOffset: room.serverNow ? room.serverNow - Date.now() : 0 }),
       status: (status) => set({ status }),
       error: (error) => set({ error }),
       entered: (activeCode) => set({ activeCode }),

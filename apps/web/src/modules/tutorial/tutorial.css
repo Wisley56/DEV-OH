@@ -1,0 +1,47 @@
+/* Tour guiado (TourOverlay). */
+.tour {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+}
+.tour-hole {
+  position: fixed;
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 3px var(--gold2),
+    0 0 0 9999px rgba(3, 6, 16, 0.72);
+  transition:
+    left 0.25s,
+    top 0.25s,
+    width 0.25s,
+    height 0.25s;
+  pointer-events: none;
+}
+.tour-tip {
+  position: fixed;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--panel);
+  border: 1px solid var(--gold);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+}
+.tour-tip h3 {
+  margin: 0 0 6px;
+  font-family: var(--font-title);
+  color: var(--gold2);
+}
+.tour-tip p {
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+.tour-tip .tour-count {
+  margin: 0 0 2px;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.tour-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

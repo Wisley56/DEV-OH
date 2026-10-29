@@ -6,7 +6,7 @@ import { getSession, setSession } from './session';
 
 /** Como entrar na sala: criar, entrar com apelido/deck ou só reconectar pela sessão salva. */
 export type RoomIntent =
-  | { kind: 'create'; name: string; deck: string[] }
+  | { kind: 'create'; name: string; deck: string[]; private?: boolean }
   | { kind: 'join'; code: string; name: string; deck: string[] }
   | { kind: 'rejoin'; code: string };
 
@@ -68,7 +68,7 @@ export class RoomClient {
     if (intent.kind === 'rejoin') return this.on.needsJoin();
     const [event, payload] =
       intent.kind === 'create'
-        ? [EVENTS.createRoom, { name: intent.name, deck: intent.deck }]
+        ? [EVENTS.createRoom, { name: intent.name, deck: intent.deck, private: intent.private }]
         : [EVENTS.joinRoom, { code: intent.code.toUpperCase(), name: intent.name, deck: intent.deck }];
     this.socket?.emit(event, payload, (ack: Ack) => {
       if (ack.ok && ack.code && ack.token) {

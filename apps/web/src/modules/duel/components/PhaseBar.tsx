@@ -1,4 +1,6 @@
 import { Button } from '../../../shared/ui';
+import { SoundToggle } from '../../sound';
+import { TurnTimer } from './TurnTimer';
 import { useDuel, useDuelUi } from '../hooks/useDuel';
 import { useDuelActions } from '../hooks/useDuelActions';
 import { modeText } from '../services/interaction';
@@ -11,13 +13,14 @@ export function PhaseBar() {
   return (
     <div className="midline">
       {ctrl.badge}
+      {ctrl.turnDeadline && view.winner === null && <TurnTimer deadline={ctrl.turnDeadline} />}
       <div className="phase">
         <span className={`turn-dot ${myTurn ? 'mine' : ''}`} />
         {view.winner !== null ? 'Fim de duelo' : myTurn ? 'Seu turno' : `Turno de ${opp.name}`} · T{view.turn} ·{' '}
         {view.phase === 'main' ? 'Fase Principal' : view.phase === 'battle' ? 'Batalha' : '—'}
       </div>
       <ModeHint />
-      <div className="phase-actions">
+      <div className="phase-actions" data-tour="phase">
         {myTurn && view.phase === 'main' && view.turn > 1 && (
           <Button variant="battle" onClick={() => dispatch({ type: 'goBattle' })}>
             ⚔ Batalha
@@ -28,6 +31,12 @@ export function PhaseBar() {
             Encerrar turno ⏭
           </Button>
         )}
+        {ctrl.onHelp && (
+          <Button variant="ghost" size="sm" title="Como jogar (tour)" aria-label="Como jogar" onClick={ctrl.onHelp}>
+            ?
+          </Button>
+        )}
+        <SoundToggle />
         <Button variant="ghost" className="exit-btn" onClick={exit}>
           ✕ Sair
         </Button>

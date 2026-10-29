@@ -1,8 +1,9 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { CardMini } from '../../cards';
 import { useDuel, useDuelUi } from '../hooks/useDuel';
 import { useDuelActions } from '../hooks/useDuelActions';
 import { isTargetable, type Where } from '../services/interaction';
+import { DropZone } from './HandDnd';
 
 type Side = 'me' | 'opp';
 
@@ -19,10 +20,10 @@ export function ProRow({ side }: { side: Side }) {
   return (
     <div className="row pro-row">
       {p.pros.map((x, i) => (
-        <div key={i} className="zone zone-pro">
+        <DropZone key={i} target={{ row: 'pro', zone: i }} enabled={mine} className="zone zone-pro" slotIid={x?.iid}>
           <AnimatePresence mode="popLayout">
             {x && (
-              <motion.button
+              <m.button
                 key={x.iid + x.cardId}
                 className={`zone-card ${x.position === 'def' ? 'is-def' : ''} ${isTargetable(mode, where, x.iid, opp) ? 'targetable' : ''} ${selected === x.iid ? 'selected' : ''} ${tributeChosen.includes(x.iid) ? 'tribute' : ''} ${mine && x.canAttack ? 'ready' : ''}`}
                 initial={{ scale: 1.6, opacity: 0, y: mine ? 40 : -40 }}
@@ -36,12 +37,20 @@ export function ProRow({ side }: { side: Side }) {
                   atk={x.atk}
                   def={x.def}
                   position={x.position}
-                  badge={x.locked ? <span className="badge">💘</span> : undefined}
+                  badge={
+                    x.locked ? (
+                      <span className="badge">💘</span>
+                    ) : mine && x.canIgnite ? (
+                      <span className="badge badge-ability" title="Habilidade disponível">
+                        ⚡
+                      </span>
+                    ) : undefined
+                  }
                 />
-              </motion.button>
+              </m.button>
             )}
           </AnimatePresence>
-        </div>
+        </DropZone>
       ))}
     </div>
   );
@@ -59,7 +68,7 @@ export function SpellRow({ side }: { side: Side }) {
   const fieldWhere: Where = mine ? 'myField' : 'oppField';
   return (
     <div className="row spell-row">
-      <div className="zone zone-field" title="Zona de Campo">
+      <DropZone target={{ row: 'field', zone: 0 }} enabled={mine} className="zone zone-field" title="Zona de Campo">
         {p.field ? (
           <button
             className={`zone-card ${selected === p.field.iid ? 'selected' : ''}`}
@@ -70,12 +79,12 @@ export function SpellRow({ side }: { side: Side }) {
         ) : (
           <span className="zone-label">Campo</span>
         )}
-      </div>
+      </DropZone>
       {p.spells.map((x, i) => (
-        <div key={i} className="zone zone-spell">
+        <DropZone key={i} target={{ row: 'spell', zone: i }} enabled={mine} className="zone zone-spell" slotIid={x?.iid}>
           <AnimatePresence mode="popLayout">
             {x && (
-              <motion.button
+              <m.button
                 key={x.iid}
                 className={`zone-card ${isTargetable(mode, where, x.iid, opp) ? 'targetable' : ''} ${selected === x.iid ? 'selected' : ''}`}
                 initial={{ opacity: 0, y: mine ? 30 : -30 }}
@@ -88,12 +97,12 @@ export function SpellRow({ side }: { side: Side }) {
                   faceDown={x.faceDown}
                   badge={!mine && x.revealed && x.faceDown ? <span className="badge">👁</span> : undefined}
                 />
-              </motion.button>
+              </m.button>
             )}
           </AnimatePresence>
-        </div>
+        </DropZone>
       ))}
-      <div className="zone zone-grave" title="Desligados (cemitério)">
+      <div className="zone zone-grave" title="Desligados (cemitério)" data-grave={side}>
         {p.grave.length ? (
           <button className="zone-card" onClick={() => clickZone('grave', `grave-${mine}`, p.grave[p.grave.length - 1])}>
             <CardMini cardId={p.grave[p.grave.length - 1]} className="grave-top" />

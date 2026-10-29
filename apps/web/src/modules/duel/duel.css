@@ -454,6 +454,66 @@
 .victory-box h2.lose {
   color: #ff8aa5;
 }
+.victory-headline {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+.victory-lp {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.victory-story {
+  text-align: left;
+  margin-top: 6px;
+}
+.victory-story h3 {
+  font-family: var(--font-title);
+  font-size: 0.95rem;
+  margin: 0 0 6px;
+  color: var(--gold2);
+}
+.victory-story ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: min(38vh, 300px);
+  overflow-y: auto;
+  display: grid;
+  gap: 6px;
+}
+.vs-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border-left: 3px solid transparent;
+  font-size: 0.86rem;
+}
+.vs-step.from-opp {
+  border-left-color: #ff8aa5;
+}
+.vs-step.from-me {
+  border-left-color: var(--gold2);
+}
+.vs-damage .vs-text {
+  color: #ff8aa5;
+  font-weight: 700;
+}
+.vs-heal .vs-text {
+  color: #7fe0a8;
+}
+.vs-thumb {
+  flex: 0 0 30px;
+  display: grid;
+  place-items: center;
+}
+.vs-icon {
+  font-size: 1.2rem;
+}
 .victory-actions {
   display: flex;
   gap: 10px;
@@ -713,4 +773,215 @@
   .side.has-sel ~ .log-fab {
     display: none;
   }
+}
+
+/* ───────── Efeitos do tabuleiro (FxLayer) ───────── */
+.fx-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  pointer-events: none;
+}
+.fx-at {
+  position: fixed;
+}
+.fx-box {
+  overflow: hidden;
+  border-radius: 10px;
+}
+.fx-flash {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.fx-flash-red {
+  background: radial-gradient(circle, rgba(255, 70, 90, 0.75), rgba(255, 40, 60, 0.25));
+}
+.fx-flash-green {
+  background: radial-gradient(circle, rgba(110, 240, 160, 0.7), rgba(60, 200, 120, 0.2));
+}
+.fx-slash {
+  position: absolute;
+  left: -10%;
+  top: 50%;
+  width: 120%;
+  height: 4px;
+  transform-origin: left center;
+  rotate: -32deg;
+  background: linear-gradient(90deg, transparent, #fff 30%, #ffe0e6 70%, transparent);
+  box-shadow:
+    0 0 12px #fff,
+    0 0 24px #ff5d7a;
+}
+.fx-swords {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+.fx-sword {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 40px;
+  height: 160px;
+  margin: -80px 0 0 -20px;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6));
+}
+.fx-clash {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  width: 70px;
+  height: 70px;
+  margin: -35px 0 0 -35px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0%, #ffe9a8 30%, rgba(255, 200, 80, 0) 70%);
+}
+.fx-shield {
+  filter: drop-shadow(0 0 14px rgba(124, 195, 255, 0.9));
+}
+.fx-ghost {
+  position: fixed;
+  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.6));
+}
+.fx-ghost .card-mini {
+  width: 100%;
+}
+.fx-crack {
+  position: absolute;
+  inset: 0;
+  border-radius: 6%;
+  background:
+    linear-gradient(115deg, transparent 46%, rgba(255, 255, 255, 0.95) 48%, transparent 51%),
+    linear-gradient(35deg, transparent 55%, rgba(255, 255, 255, 0.8) 57%, transparent 60%);
+}
+.fx-end {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle, rgba(255, 217, 120, 0.35), transparent 70%);
+}
+
+/* FlipCard: verso e frente em 3D. */
+.flip-card {
+  width: 100%;
+  height: 100%;
+  perspective: 900px;
+}
+.flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+.flip-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.flip-front {
+  transform: rotateY(180deg);
+}
+
+/* Confirmação de habilidade (CardInspector) e selo ⚡ no campo. */
+.ability-confirm {
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(233, 185, 73, 0.08);
+  border: 1px solid rgba(233, 185, 73, 0.45);
+}
+.ability-title {
+  margin: 0 0 6px;
+  font-family: var(--font-title);
+  font-weight: 700;
+  color: var(--gold2);
+}
+.ability-text {
+  margin: 0 0 6px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+.ability-target,
+.ability-note {
+  margin: 0 0 4px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.badge-ability {
+  background: linear-gradient(135deg, #ffd978, #e9b949);
+  color: #2a1b00;
+  animation: pulse 0.9s infinite alternate;
+}
+
+/* Arrastar da mão para o campo. */
+.zone.drop-ok {
+  border-color: rgba(124, 255, 178, 0.7);
+  background: rgba(124, 255, 178, 0.06);
+}
+.zone.drop-over {
+  border-style: solid;
+  background: rgba(124, 255, 178, 0.18);
+  box-shadow: 0 0 16px rgba(124, 255, 178, 0.45);
+}
+.drag-card {
+  width: calc(var(--zw) * 1.12);
+  rotate: -4deg;
+  filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.6));
+  cursor: grabbing;
+}
+.hand-card.playable {
+  touch-action: none;
+}
+.drop-menu {
+  position: fixed;
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  width: 160px;
+  border-radius: 12px;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55);
+}
+
+/* Timer de turno (online). */
+.turn-timer {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+}
+.turn-timer svg {
+  rotate: -90deg;
+}
+.tt-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.12);
+  stroke-width: 3.5;
+}
+.tt-fill {
+  fill: none;
+  stroke: var(--gold2);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.25s linear;
+}
+.turn-timer:not(.mine) .tt-fill {
+  stroke: var(--muted);
+}
+.turn-timer.urgent .tt-fill {
+  stroke: #ff5d7a;
+}
+.turn-timer.urgent.mine {
+  animation: pulse 0.5s infinite alternate;
+}
+.tt-secs {
+  position: absolute;
+  font-size: 0.72rem;
+  font-weight: 800;
 }

@@ -6,6 +6,9 @@ import { createDuelUiStore } from '../store/duelUiStore';
 import { CardInspector } from './CardInspector';
 import { DuelLog, LogFab } from './DuelLog';
 import { DuelToasts } from './DuelToasts';
+import { FxLayer } from './fx/FxLayer';
+import { HandDnd } from './HandDnd';
+import { playBoardSound } from './fx/boardSounds';
 import { Hand } from './Hand';
 import { ProRow, SpellRow } from './FieldRows';
 import { PhaseBar } from './PhaseBar';
@@ -31,32 +34,35 @@ function BoardLayout() {
   useSyncWithView();
 
   return (
-    <div className="duel">
-      <aside className={`side ${sel ? 'has-sel' : ''} ${showLog ? 'show-log' : ''}`}>
-        <CardInspector />
-        <DuelLog />
-      </aside>
+    <HandDnd>
+      <div className="duel">
+        <aside className={`side ${sel ? 'has-sel' : ''} ${showLog ? 'show-log' : ''}`}>
+          <CardInspector />
+          <DuelLog />
+        </aside>
 
-      <main className="arena">
-        {ctrl.banner}
-        <PlayerHud side="opp" active={view.active !== view.you} />
-        <div className="field opp">
-          <SpellRow side="opp" />
-          <ProRow side="opp" />
-        </div>
-        <PhaseBar />
-        <div className="field mine">
-          <ProRow side="me" />
-          <SpellRow side="me" />
-        </div>
-        <PlayerHud side="me" active={myTurn} />
-        <Hand />
-      </main>
+        <main className="arena">
+          {ctrl.banner}
+          <PlayerHud side="opp" active={view.active !== view.you} />
+          <div className="field opp">
+            <SpellRow side="opp" />
+            <ProRow side="opp" />
+          </div>
+          <PhaseBar />
+          <div className="field mine" data-tour="field">
+            <ProRow side="me" />
+            <SpellRow side="me" />
+          </div>
+          <PlayerHud side="me" active={myTurn} />
+          <Hand />
+        </main>
 
-      <DuelToasts />
-      <VictoryDialog />
-      <LogFab />
-    </div>
+        <FxLayer onEvent={playBoardSound} />
+        <DuelToasts />
+        <VictoryDialog />
+        <LogFab />
+      </div>
+    </HandDnd>
   );
 }
 

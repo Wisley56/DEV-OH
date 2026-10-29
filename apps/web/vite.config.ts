@@ -1,7 +1,7 @@
 /// <reference types="vitest/config" />
 import react from '@vitejs/plugin-react';
 import { defaultClientConditions, defineConfig, loadEnv } from 'vite';
-import { securityHeaders } from './security-headers';
+import { securityHeaders } from './security-headers.ts';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_');
@@ -13,6 +13,9 @@ export default defineConfig(({ mode }) => {
     },
     test: {
       environment: 'jsdom',
+      setupFiles: ['./src/test/setup.ts'],
+      // Os testes de navegador (Playwright) rodam com npm run e2e.
+      exclude: ['e2e/**', 'node_modules/**'],
     },
   };
 });

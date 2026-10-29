@@ -1,41 +1,51 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { useDraggable } from '@dnd-kit/core';
+import type { HandCardView } from '@devoh/engine';
+import { AnimatePresence, m } from 'framer-motion';
 import { useMediaQuery } from '../../../shared/lib/useMediaQuery';
 import { CardMini } from '../../cards';
 import { useDuel, useDuelUi } from '../hooks/useDuel';
 import { useDuelActions } from '../hooks/useDuelActions';
+import type { DragCard } from './HandDnd';
 
 /** Mesma condição do bloco "celular deitado" no CSS do tabuleiro. */
 const COMPACT_LANDSCAPE = '(orientation: landscape) and (max-height: 560px)';
 
 /** Mão do jogador em leque (no celular deitado vira uma grade, sem leque). */
 export function Hand() {
-  const { me, myTurn } = useDuel();
-  const selected = useDuelUi((s) => s.sel?.iid);
-  const { clickZone } = useDuelActions();
+  const { me } = useDuel();
   const compact = useMediaQuery(COMPACT_LANDSCAPE);
   const n = me.hand?.length ?? 0;
   return (
-    <div className="hand">
+    <div className="hand" data-tour="hand">
       <AnimatePresence initial={false}>
-        {me.hand?.map((c, i) => {
-          const playable = c.canSummon || c.canActivate || c.canSet;
-          const rot = compact ? 0 : (i - (n - 1) / 2) * Math.min(5, 26 / n);
-          return (
-            <motion.button
-              key={c.iid}
-              layout
-              initial={{ y: 80, opacity: 0 }}
-              animate={{ y: 0, opacity: 1, rotate: rot }}
-              exit={{ y: -60, opacity: 0, scale: 0.8 }}
-              whileHover={{ y: compact ? -4 : -18, rotate: 0, zIndex: 5 }}
-              className={`hand-card ${playable && myTurn ? 'playable' : ''} ${selected === c.iid ? 'selected' : ''}`}
-              onClick={() => clickZone('hand', c.iid, c.cardId)}
-            >
-              <CardMini cardId={c.cardId} />
-            </motion.button>
-          );
-        })}
+        {me.hand?.map((c, i) => (
+          <HandCard key={c.iid} card={c} rotate={compact ? 0 : (i - (n - 1) / 2) * Math.min(5, 26 / n)} lift={compact ? -4 : -18} />
+        ))}
       </AnimatePresence>
     </div>
+  );
+}
+
+/** Card da mão: clique abre o painel; arrastar até uma zona do campo joga direto. */
+function HandCard({ card, rotate, lift }: { card: HandCardView; rotate: number; lift: number }) {
+  const { myTurn } = useDuel();
+  const selected = useDuelUi((s) => s.sel?.iid === card.iid);
+  const { clickZone } = useDuelActions();
+  const playable = myTurn && (card.canSummon || card.canActivate || card.canSet);
+  const drag = useDraggable({ id: card.iid, data: { card } satisfies DragCard, disabled: !playable });
+  return (
+    <m.button
+      ref={drag.setNodeRef}
+      {...drag.listeners}
+      layout
+      initial={{ y: 80, opacity: 0 }}
+      animate={{ y: 0, opacity: drag.isDragging ? 0.35 : 1, rotate }}
+      exit={{ y: -60, opacity: 0, scale: 0.8 }}
+      whileHover={{ y: lift, rotate: 0, zIndex: 5 }}
+      className={`hand-card ${playable ? 'playable' : ''} ${selected ? 'selected' : ''}`}
+      onClick={() => clickZone('hand', card.iid, card.cardId)}
+    >
+      <CardMini cardId={card.cardId} />
+    </m.button>
   );
 }

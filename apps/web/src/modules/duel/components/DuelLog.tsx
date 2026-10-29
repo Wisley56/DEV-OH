@@ -13,7 +13,7 @@ export function DuelLog() {
     ref.current?.scrollTo({ top: ref.current.scrollHeight });
   }, [log.length, open]);
   return (
-    <div className={`log ${open ? 'open' : ''}`}>
+    <div className={`log ${open ? 'open' : ''}`} data-tour="log">
       <button className="log-head" onClick={toggleLog}>
         📜 Histórico do duelo <span>{open ? '▾' : '▸'}</span>
       </button>
