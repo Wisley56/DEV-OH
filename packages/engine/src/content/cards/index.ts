@@ -19,6 +19,7 @@ import juju from './squad/juju';
 import diegao from './squad/diegao';
 import brunao from './squad/brunao';
 import pirulito from './squad/pirulito';
+import sandro from './squad/sandro';
 import claudeAlucinando from './generic/claude_alucinando';
 import copilot from './generic/copilot';
 import stackoverflow from './generic/stackoverflow';
@@ -75,6 +76,7 @@ export const CARD_MODULES: CardModule[] = [
   diegao,
   brunao,
   pirulito,
+  sandro,
   claudeAlucinando,
   copilot,
   stackoverflow,

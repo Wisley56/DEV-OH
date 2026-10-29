@@ -42,6 +42,7 @@ export const STARTER_DECKS: DeckList[] = [
       'moises',
       'danilo',
       'paquito',
+      'sandro',
       ...x('po', 2),
       'gerente',
       'cliente',

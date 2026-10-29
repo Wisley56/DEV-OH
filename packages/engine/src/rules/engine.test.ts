@@ -434,3 +434,34 @@ describe('segunda leva: Juju, Diegão, Brunão, Pirulito e Tasks', () => {
     expect(outcomes.fail).toBeGreaterThan(0);
   });
 });
+
+describe('Sandro Ilusionista', () => {
+  it('ao ser invocado manda o oponente para Defesa e custa +4 de Estresse', () => {
+    let s = game();
+    const a = place(s, 1, 'backend_noturno', 'atk');
+    const b = place(s, 1, 'qa', 'atk');
+    s = act(s, 0, { type: 'summon', iid: giveHand(s, 0, 'sandro'), position: 'atk' });
+    expect(s.players[1].pros.filter(Boolean).map((p) => p!.position)).toEqual(['def', 'def']);
+    expect([a, b].every((iid) => s.players[1].pros.some((p) => p?.card.iid === iid))).toBe(true);
+    expect(s.players[0].stress).toBe(4);
+  });
+  it('com Estresse alto a ilusão estoura: o de maior nível pede demissão', () => {
+    let s = game();
+    place(s, 0, 'thy_techlead');
+    s.players[0].stress = 3;
+    s = act(s, 0, { type: 'summon', iid: giveHand(s, 0, 'sandro'), position: 'atk' });
+    expect(s.players[0].stress).toBe(0);
+    expect(s.players[0].pros.filter(Boolean).map((p) => p!.card.cardId)).toEqual(['sandro']);
+  });
+  it('desgaste: no início do turno os outros de maior nível perdem 100 ATK', () => {
+    let s = game();
+    place(s, 0, 'sandro');
+    const g = place(s, 0, 'gerente'); // nível 5
+    const e = place(s, 0, 'estagiario'); // nível 2
+    s = act(s, 0, { type: 'endTurn' });
+    s = act(s, 1, { type: 'endTurn' });
+    const atkMod = (iid: string) => s.players[0].pros.find((p) => p?.card.iid === iid)!.atkMod;
+    expect(atkMod(g)).toBe(-100);
+    expect(atkMod(e)).toBe(0);
+  });
+});

@@ -10,7 +10,7 @@ Invoque os devs, ative Tasks, arme Bugs e entregue a Sprint antes que o servidor
 ![PvP online](https://img.shields.io/badge/PvP-online-7c5cff?style=flat-square)
 ![Treino contra bot](https://img.shields.io/badge/treino-contra%20bot-1b8a6b?style=flat-square)
 ![Sem login](https://img.shields.io/badge/sem-login-b23a7a?style=flat-square)
-![53 cards](https://img.shields.io/badge/cards-53-c46a2b?style=flat-square)
+![54 cards](https://img.shields.io/badge/cards-54-c46a2b?style=flat-square)
 ![Grátis](https://img.shields.io/badge/pre%C3%A7o-gr%C3%A1tis-4ade80?style=flat-square)
 
 </div>
@@ -74,7 +74,7 @@ Sem instalar nada, sem cadastro: abre o link, escolhe um apelido e duela.
   </tr>
 </table>
 
-<div align="center"><sub>…e ainda <b>A Curiosa Caótica</b>, <b>A Mão do Moisés</b>, a <b>Careca Pensante</b>, IAs alucinando, o PO do "só um botãozinho", o Cliente que Mudou de Ideia e mais.</sub></div>
+<div align="center"><sub>…e ainda o <b>Sandro Ilusionista</b>, <b>A Curiosa Caótica</b>, <b>A Mão do Moisés</b>, a <b>Careca Pensante</b>, IAs alucinando, o PO do "só um botãozinho", o Cliente que Mudou de Ideia e mais.</sub></div>
 
 ## 🎮 Como jogar
 
