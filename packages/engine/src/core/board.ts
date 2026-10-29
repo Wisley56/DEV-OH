@@ -65,6 +65,9 @@ export function faceUpTaskIds(s: GameState, seat: Seat): string[] {
   return ids;
 }
 
+/** Profissional com os efeitos anulados neste turno (Diegão, Juju…). */
+export const isNegated = (s: GameState, slot: ProSlot) => (slot.negatedUntilTurn ?? -1) >= s.turn;
+
 export function isOnce(rec: Record<string, number>, key: string, turn: number) {
   return rec[key] === turn;
 }

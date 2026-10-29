@@ -4,7 +4,7 @@ import { HAND_LIMIT, START_HAND, START_LP, ZONES } from '../core/constants';
 import { log, pname } from '../core/log';
 import { shuffle } from '../core/rng';
 import type { GameState, PlayerState, Seat } from '../core/types';
-import { ctxFor } from '../effects/context';
+import { ctxFor, proEffects } from '../effects/context';
 import { draw, toGrave } from './zones';
 
 export interface NewGameOptions {
@@ -74,7 +74,7 @@ function startTurn(s: GameState) {
   // Efeitos de início de turno (Standby).
   for (const pro of prosOf(s, seat)) {
     if (!findPro(s, pro.card.iid)) continue;
-    effectsOf(pro.card.cardId)?.onStandby?.(ctxFor(s, pro.card));
+    proEffects(s, pro)?.onStandby?.(ctxFor(s, pro.card));
     if (s.winner !== null) return;
   }
   for (const sp of [...p.spells, p.field]) {

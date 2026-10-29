@@ -1,9 +1,9 @@
 import { findPro, findSpell } from '../core/board';
-import { effectsOf, nameOf } from '../core/catalog';
+import { nameOf } from '../core/catalog';
 import { log } from '../core/log';
 import { shuffle } from '../core/rng';
 import type { CardInstance, GameState, ProSlot, Seat } from '../core/types';
-import { ctxFor } from '../effects/context';
+import { ctxFor, proEffects } from '../effects/context';
 import { lose } from './win';
 
 /** Movimentação de cards entre deck, mão, campo e cemitério. */
@@ -58,7 +58,7 @@ export function destroyPro(s: GameState, iid: string, cause: DestroyCause): bool
   const f = findPro(s, iid);
   if (!f) return false;
   const id = f.slot.card.cardId;
-  const fx = effectsOf(id);
+  const fx = proEffects(s, f.slot);
   if (!cause.self && !cause.battle && cause.bySeat !== undefined && cause.bySeat !== f.seat) {
     const immune = fx?.immuneToOppEffects?.(ctxFor(s, f.slot.card));
     if (immune) {
@@ -105,7 +105,7 @@ export function setPosition(s: GameState, iid: string, pos: 'atk' | 'def') {
   const f = findPro(s, iid);
   if (!f || f.slot.position === pos) return;
   f.slot.position = pos;
-  const into = effectsOf(f.slot.card.cardId)?.onPositionChange?.(ctxFor(s, f.slot.card), pos);
+  const into = proEffects(s, f.slot)?.onPositionChange?.(ctxFor(s, f.slot.card), pos);
   if (into) transform(s, f.slot, into);
 }
 
@@ -113,4 +113,11 @@ function transform(s: GameState, slot: ProSlot, to: string) {
   const from = slot.card.cardId;
   slot.card = { ...slot.card, cardId: to };
   log(s, 'effect', `"${nameOf(from)}" virou "${nameOf(to)}"!`, { seat: slot.card.owner, cardId: to });
+}
+
+/** Anula os efeitos de um Profissional até `untilTurn` (inclusive); nunca encurta uma anulação maior. */
+export function negatePro(s: GameState, iid: string, untilTurn: number) {
+  const f = findPro(s, iid);
+  if (!f) return;
+  f.slot.negatedUntilTurn = Math.max(f.slot.negatedUntilTurn ?? -1, untilTurn);
 }

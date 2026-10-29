@@ -67,6 +67,8 @@ export interface CardEffects {
   atkBonus?(q: StatCtx): number;
   /** Task virada para cima: bônus de ATK que dá a cada Profissional do mesmo lado. */
   auraAtk?(q: StatCtx): number;
+  /** Profissional ou Task virada para cima: ajuste de ATK/DEF de cada Profissional do oponente. */
+  oppAura?(q: StatCtx): { atk?: number; def?: number };
 
   // ── Batalha ──
   /** Profissional do defensor pode negar um ataque declarado. true = negado. */
@@ -75,8 +77,12 @@ export interface CardEffects {
   onTargeted?(ctx: EffectCtx, info: AttackInfo): boolean;
   /** O próprio Profissional atacou (depois das respostas do defensor). */
   onAttack?(ctx: EffectCtx, info: AttackInfo): void;
+  /** Um Profissional do mesmo lado (inclusive ele) atacou, logo depois do onAttack do atacante. */
+  onAllyAttack?(ctx: EffectCtx, info: AttackInfo): void;
   /** Não é destruído em batalha: retorna a fala do log, ou null. */
   saveFromBattle?(ctx: EffectCtx): string | null;
+  /** Salva outro Profissional do mesmo lado de ser destruído em batalha: retorna a fala do log, ou null. */
+  saveAllyFromBattle?(ctx: EffectCtx, victim: ProSlot): string | null;
   /** Destruiu um Profissional em batalha e continua no campo. */
   afterBattleKill?(ctx: EffectCtx): void;
   /** Foi alvo de um ataque e continua no campo. */

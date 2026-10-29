@@ -1,9 +1,9 @@
 import { findPro, other, prosOf } from '../core/board';
-import { effectsOf, nameOf } from '../core/catalog';
+import { nameOf } from '../core/catalog';
 import { log } from '../core/log';
 import type { GameState, ProSlot, Seat } from '../core/types';
 import { fireBugs } from '../effects/bugs';
-import { ctxFor } from '../effects/context';
+import { ctxFor, proEffects } from '../effects/context';
 import type { AttackInfo } from '../effects/types';
 import { damage } from './life';
 import { getAtk, getDef } from './stats';
@@ -21,7 +21,7 @@ export function attackBlock(s: GameState, seat: Seat, slot: ProSlot): string | n
 /**
  * Ordem de resolução de um ataque:
  * 1. guardAttack dos Profissionais do defensor  2. onTargeted do alvo  3. Bugs do defensor
- * 4. onAttack do atacante  5. cálculo de dano/destruição  6. afterSurviveAttack do alvo.
+ * 4. onAttack do atacante e onAllyAttack do lado dele  5. cálculo de dano/destruição  6. afterSurviveAttack do alvo.
  */
 export function attack(s: GameState, seat: Seat, iid: string, targetIid?: string): string | null {
   const opp = other(seat);
@@ -49,9 +49,9 @@ export function attack(s: GameState, seat: Seat, iid: string, targetIid?: string
   // Respostas do defensor: Profissionais em campo, o próprio alvo e os Bugs.
   const info: AttackInfo = { attacker: A.card.iid, target: target?.card.iid };
   for (const pro of oppPros) {
-    if (effectsOf(pro.card.cardId)?.guardAttack?.(ctxFor(s, pro.card), info)) return null;
+    if (proEffects(s, pro)?.guardAttack?.(ctxFor(s, pro.card), info)) return null;
   }
-  if (target && effectsOf(target.card.cardId)?.onTargeted?.(ctxFor(s, target.card), info)) return null;
+  if (target && proEffects(s, target)?.onTargeted?.(ctxFor(s, target.card), info)) return null;
   const triggers = target ? (['oppAttack'] as const) : (['oppAttack', 'oppDirectAttack'] as const);
   const ev = fireBugs(s, opp, [...triggers], {
     trigger: target ? 'oppAttack' : 'oppDirectAttack',
@@ -62,7 +62,9 @@ export function attack(s: GameState, seat: Seat, iid: string, targetIid?: string
   if (!findPro(s, A.card.iid)) return null;
   if (target && !findPro(s, target.card.iid)) return null;
 
-  effectsOf(A.card.cardId)?.onAttack?.(ctxFor(s, A.card), info);
+  proEffects(s, A)?.onAttack?.(ctxFor(s, A.card), info);
+  for (const pro of prosOf(s, seat)) proEffects(s, pro)?.onAllyAttack?.(ctxFor(s, pro.card), info);
+  if (s.winner !== null || !findPro(s, A.card.iid)) return null;
 
   const atkA = getAtk(s, seat, A);
   if (!target) {
@@ -91,7 +93,7 @@ export function attack(s: GameState, seat: Seat, iid: string, targetIid?: string
       battleDamage(s, seat, defT - atkA, involved);
     }
   }
-  if (findPro(s, target.card.iid) && s.winner === null) effectsOf(target.card.cardId)?.afterSurviveAttack?.(ctxFor(s, target.card));
+  if (findPro(s, target.card.iid) && s.winner === null) proEffects(s, target)?.afterSurviveAttack?.(ctxFor(s, target.card));
   return null;
 }
 
@@ -99,10 +101,18 @@ export function attack(s: GameState, seat: Seat, iid: string, targetIid?: string
 function battleDestroy(s: GameState, victim: ProSlot, by: ProSlot): boolean {
   const f = findPro(s, victim.card.iid);
   if (!f) return false;
-  const saved = effectsOf(victim.card.cardId)?.saveFromBattle?.(ctxFor(s, victim.card));
+  const saved = proEffects(s, victim)?.saveFromBattle?.(ctxFor(s, victim.card));
   if (saved) {
     log(s, 'effect', saved, { seat: f.seat, cardId: victim.card.cardId });
     return false;
+  }
+  for (const ally of prosOf(s, f.seat)) {
+    if (ally === victim) continue;
+    const by = proEffects(s, ally)?.saveAllyFromBattle?.(ctxFor(s, ally.card), victim);
+    if (by) {
+      log(s, 'effect', by, { seat: f.seat, cardId: ally.card.cardId, iid: ally.card.iid, target: victim.card.iid });
+      return false;
+    }
   }
   const ok = destroyPro(s, victim.card.iid, { battle: true, byIid: by.card.iid });
   if (ok) fireBugs(s, f.seat, ['proDestroyedByBattle'], { trigger: 'proDestroyedByBattle', destroyed: victim.card.iid, by: by.card.iid });
@@ -111,16 +121,16 @@ function battleDestroy(s: GameState, victim: ProSlot, by: ProSlot): boolean {
 
 function afterKill(s: GameState, killer: ProSlot) {
   if (!findPro(s, killer.card.iid)) return;
-  effectsOf(killer.card.cardId)?.afterBattleKill?.(ctxFor(s, killer.card));
+  proEffects(s, killer)?.afterBattleKill?.(ctxFor(s, killer.card));
 }
 
 function battleDamage(s: GameState, seat: Seat, amount: number, involved: ProSlot[]) {
   if (amount <= 0 || s.winner !== null) return;
   for (const x of involved) {
-    if (x.card.owner === seat && effectsOf(x.card.cardId)?.shieldBattleDamage?.(ctxFor(s, x.card))) return;
+    if (x.card.owner === seat && proEffects(s, x)?.shieldBattleDamage?.(ctxFor(s, x.card))) return;
   }
   for (const pro of prosOf(s, seat)) {
-    if (effectsOf(pro.card.cardId)?.preventOwnerBattleDamage?.(ctxFor(s, pro.card))) return;
+    if (proEffects(s, pro)?.preventOwnerBattleDamage?.(ctxFor(s, pro.card))) return;
   }
   const ev = fireBugs(s, seat, ['battleDamage'], { trigger: 'battleDamage', damage: amount });
   const final = ev.damage ?? amount;

@@ -3,7 +3,7 @@ import { card, effectsOf } from '../core/catalog';
 import { log } from '../core/log';
 import type { BugTrigger, GameState, Seat } from '../core/types';
 import { toGrave } from '../rules/zones';
-import { ctxFor } from './context';
+import { ctxFor, proEffects } from './context';
 import type { BugEvent } from './types';
 
 /**
@@ -26,7 +26,7 @@ export function fireBugs(s: GameState, defender: Seat, triggers: BugTrigger[], e
     toGrave(s, slot.card);
     log(s, 'bug', `${p.name} ativou o Bug "${d.name}"!`, { seat: defender, cardId: d.id, iid: slot.card.iid });
     for (const seat of [0, 1] as Seat[]) {
-      for (const pro of prosOf(s, seat)) effectsOf(pro.card.cardId)?.onAnyBug?.(ctxFor(s, pro.card));
+      for (const pro of prosOf(s, seat)) proEffects(s, pro)?.onAnyBug?.(ctxFor(s, pro.card));
     }
     fx?.onTrigger?.(ctx, ev);
     break;

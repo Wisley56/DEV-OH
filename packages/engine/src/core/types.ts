@@ -74,6 +74,8 @@ export interface ProSlot {
   lockedUntilTurn: number;
   /** Contadores de "1x por turno" de efeitos passivos. */
   oncePerTurn: Record<string, number>;
+  /** Efeitos anulados até este turno (inclusive). Ausente = nunca foi anulado. */
+  negatedUntilTurn?: number;
 }
 
 export interface SpellSlot {
@@ -118,6 +120,8 @@ export interface LogEntry {
   iid?: string;
   /** Instância alvo (ex.: Profissional atacado). */
   target?: string;
+  /** Dado rolado (A Mão do Moisés): face tirada, bônus somado e se deu certo — o front anima o dado com isso. */
+  roll?: { face: number; bonus: number; ok: boolean };
 }
 
 /** Como o duelo terminou. */

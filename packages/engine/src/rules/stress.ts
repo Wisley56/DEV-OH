@@ -1,9 +1,9 @@
 import { other, prosOf } from '../core/board';
-import { card, effectsOf, nameOf } from '../core/catalog';
+import { card, nameOf } from '../core/catalog';
 import { MAX_STRESS, STRESS_AFTER_MELTDOWN } from '../core/constants';
 import { log } from '../core/log';
 import type { GameState, Seat } from '../core/types';
-import { ctxFor } from '../effects/context';
+import { ctxFor, proEffects } from '../effects/context';
 import { destroyPro } from './zones';
 
 /**
@@ -15,7 +15,7 @@ export function addStress(s: GameState, seat: Seat, n: number, byOpponent = fals
   const p = s.players[seat];
   if (n > 0 && byOpponent) {
     for (const pro of prosOf(s, seat)) {
-      if (effectsOf(pro.card.cardId)?.reflectOppStress?.(ctxFor(s, pro.card))) {
+      if (proEffects(s, pro)?.reflectOppStress?.(ctxFor(s, pro.card))) {
         addStress(s, other(seat), n, false);
         return;
       }

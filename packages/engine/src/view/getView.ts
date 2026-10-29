@@ -1,4 +1,4 @@
-import { prosOf } from '../core/board';
+import { isNegated, prosOf } from '../core/board';
 import { card, effectsOf } from '../core/catalog';
 import { tributesNeeded } from '../core/constants';
 import type { GameState, LogEntry, Outcome, Phase, Seat } from '../core/types';
@@ -25,6 +25,8 @@ export interface ProView {
   canChangePos: boolean;
   canIgnite: boolean;
   locked: boolean;
+  /** Só presente quando os efeitos estão anulados neste turno. */
+  negated?: true;
 }
 
 export interface SpellView {
@@ -111,8 +113,10 @@ export function getView(s: GameState, viewer: Seat): GameView {
             s.phase === 'main' &&
             !!d.ignition &&
             slot.ignitionTurn !== s.turn &&
+            !isNegated(s, slot) &&
             !effectsOf(d.id)?.canIgnite?.(ctxFor(s, slot.card)),
           locked: slot.lockedUntilTurn >= s.turn,
+          ...(isNegated(s, slot) && { negated: true as const }),
         };
       }),
       spells: p.spells.map((x) =>

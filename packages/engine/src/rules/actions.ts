@@ -1,4 +1,4 @@
-import { findPro, newProSlot, other } from '../core/board';
+import { findPro, isNegated, newProSlot, other } from '../core/board';
 import { card, effectsOf, nameOf } from '../core/catalog';
 import { tributesNeeded, ZONES } from '../core/constants';
 import { log, pname } from '../core/log';
@@ -148,6 +148,7 @@ function run(s: GameState, seat: Seat, a: Action): string | null {
       const d = card(f.slot.card.cardId);
       if (!d.ignition) return 'Este card não tem efeito ativável.';
       if (f.slot.ignitionTurn === s.turn) return 'Efeito já usado neste turno.';
+      if (isNegated(s, f.slot)) return 'Os efeitos deste card estão anulados neste turno.';
       const ctx = ctxFor(s, f.slot.card, a.target);
       const cant = effectsOf(d.id)?.canIgnite?.(ctx);
       if (cant) return cant;
