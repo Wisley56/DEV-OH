@@ -1,6 +1,6 @@
 # DEV-OH! — Guia do desenvolvedor
 
-Como rodar, como o código está organizado, como criar cards e módulos e como publicar. A apresentação do jogo está no [README](README.md); as decisões de arquitetura, em [docs/adr](docs/adr).
+Como rodar, como o código está organizado, como criar cards e módulos e como publicar. A apresentação do jogo está no [README](README.md), as decisões de arquitetura em [docs/adr](docs/adr) e as proteções e limites em [SECURITY.md](SECURITY.md).
 
 ## Rodar local
 
@@ -70,8 +70,9 @@ index.ts   instala o catálogo no kernel e define a API pública
 ### Servidor (`apps/server/src`) — NestJS em módulos e camadas
 
 ```
-config/     AppConfig (env validado com zod: PORT, CORS_ORIGIN, ROOM_TTL_MS, ROOM_IDLE_TTL_MS)
-common/     DomainError, ZodValidationPipe, WsAckFilter (erro → ack {ok:false}), adapter do Socket.IO
+config/     AppConfig (env validado com zod: porta, CORS, proxy, TTL das salas, limites; ver SECURITY.md)
+common/     DomainError, ZodValidationPipe, WsAckFilter (erro → ack {ok:false}), adapter do Socket.IO (origem, conexões por IP)
+  security/ limite de taxa (@Throttle), contagem de conexões, log de segurança
 modules/
   rooms/    domain (Room) · application (RoomsService + portas) · infrastructure (repositório em memória, ids, limpeza) · presentation (gateway, notifier)
   duel/     application (DuelService: aplica a jogada no engine) · presentation (gateway do evento "action")
@@ -81,6 +82,7 @@ modules/
 - O **domínio** não depende de Nest nem de Socket.IO. A **aplicação** fala com o mundo só pelas portas de `ports.ts`, e o lint garante as duas coisas.
 - A injeção é sempre explícita (`@Inject(Token)`), para não depender de metadata de decorators. Por isso o mesmo código roda com `tsx` (dev), Vitest (testes) e `tsc` (build).
 - Todo payload que chega passa por um schema do `@devoh/protocol`. Erros viram `{ ok: false, error }` no ack.
+- Todo evento de socket novo precisa de `@Throttle('<balde>')`. Os baldes ficam em `config/app-config.ts`.
 
 ### Web (`apps/web/src`) — páginas burras, componentes inteligentes
 
@@ -148,14 +150,18 @@ Tudo no Railway, em dois serviços do mesmo repositório, configurados pelo pain
 
 1. Settings → Build → Custom Build Command: `npm run build:server`.
 2. Settings → Deploy → Custom Start Command: `npm run start:server`. Healthcheck Path: `/health`. O Railway injeta a `PORT`.
-3. Variável recomendada: `CORS_ORIGIN=https://<url-do-web>`. Sem ela, qualquer origem é liberada.
+3. Variables:
+   - `CORS_ORIGIN=https://<url-do-web>`: **obrigatória**. Em produção, o server não sobe sem ela.
+   - `TRUST_PROXY=true`: lê o IP real do proxy do Railway para os limites por IP.
+   - `NODE_ENV=production`: costuma vir do Railway. Liga o log em JSON e a exigência do `CORS_ORIGIN`.
+   - Limites opcionais: ver [SECURITY.md](SECURITY.md).
 4. Settings → Networking → Generate Domain, apontando para a porta do log (`DEV-OH! server ouvindo na porta ...`).
 
 ### Serviço `@devoh/web`
 
 1. Settings → Build → Custom Build Command: `npm run build`.
 2. Settings → Deploy → Custom Start Command: `npx --yes serve@14 -s apps/web/dist -l tcp://0.0.0.0:$PORT`. O `-s` devolve o `index.html` em qualquer rota (`/sala/X`, `/treino`). Healthcheck Path: `/`.
-3. Variables: `VITE_SERVER_URL=https://<url-do-server>`, sem barra no final. Ela é lida no build: se mudar, faça redeploy.
+3. Variables: `VITE_SERVER_URL=https://<url-do-server>`, sem barra no final. Ela é lida no build: se mudar, faça redeploy. Ela também entra na CSP (`connect-src`) do `serve.json` que o build gera, junto com os outros cabeçalhos de segurança (`apps/web/security-headers.ts`).
 4. Settings → Networking → Generate Domain, apontando para a porta do log (`Accepting connections at http://0.0.0.0:8080`).
 
 Publique o servidor primeiro. O protocolo de rede é compatível nos dois sentidos.
