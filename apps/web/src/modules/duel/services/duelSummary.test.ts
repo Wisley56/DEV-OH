@@ -49,6 +49,7 @@ describe('resumo do fim do duelo', () => {
       changedPosTurn: -5,
       ignitionTurn: -5,
       lockedUntilTurn: -5,
+      faceDown: false,
       oncePerTurn: {},
     };
     s.players[1].hand = s.players[1].hand.filter((c) => c !== pro);

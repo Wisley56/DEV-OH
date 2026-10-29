@@ -35,6 +35,33 @@ describe('interação do tabuleiro', () => {
     expect(actions[0].intent).toEqual({ kind: 'summon', iid: h.iid, cardId: h.cardId, position: 'atk' });
   });
 
+  it('Profissional pode ser baixado virado; virado no campo faz a Invocação-Virar', () => {
+    const base = view();
+    const h = { iid: 'x1', cardId: 'vitor', canSummon: true, canActivate: false, canSet: true };
+    const pro = {
+      iid: 'x2',
+      cardId: 'qa',
+      position: 'def' as const,
+      faceDown: true,
+      atk: 1600,
+      def: 1400,
+      canAttack: false,
+      canChangePos: false,
+      canIgnite: false,
+      canFlip: true,
+      locked: false,
+    };
+    const me = { ...base.players[0], hand: [h], pros: [pro, null, null] };
+    const v = { ...base, players: [me, base.players[1]] as GameView['players'] };
+    expect(cardActions(v, { iid: h.iid, cardId: h.cardId, where: 'hand' }).actions.map((a) => a.label)).toEqual([
+      'Invocar em Ataque',
+      'Invocar em Defesa',
+      'Baixar virado (Defesa)',
+    ]);
+    const { actions } = cardActions(v, { iid: pro.iid, cardId: pro.cardId, where: 'myPro' });
+    expect(actions.map((a) => a.intent)).toEqual([{ kind: 'flipSummon', iid: pro.iid }]);
+  });
+
   it('sem ações fora do meu turno', () => {
     const v = { ...view(), active: 1 as const };
     const h = v.players[0].hand![0];

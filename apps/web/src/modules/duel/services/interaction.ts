@@ -14,10 +14,12 @@ export interface Selection {
 }
 
 export type SummonAction = Extract<Action, { type: 'summon' }>;
+/** Baixar um Profissional virado (também pode pedir sacrifício). */
+export type SetAction = Extract<Action, { type: 'set' }>;
 
 /** Modo de escolha em andamento: sacrifícios, alvo de efeito ou alvo de ataque. */
 export type Mode =
-  | { kind: 'tribute'; base: SummonAction; need: number; chosen: string[] }
+  | { kind: 'tribute'; base: SummonAction | SetAction; need: number; chosen: string[] }
   | { kind: 'target'; base: Action; targetKind: TargetKind; optional: boolean; prompt: string }
   | { kind: 'attack'; iid: string };
 
@@ -26,6 +28,8 @@ export type CardIntent =
   | { kind: 'summon'; iid: string; cardId: string; position: 'atk' | 'def' }
   | { kind: 'activate'; iid: string; cardId: string }
   | { kind: 'set'; iid: string }
+  | { kind: 'setPro'; iid: string; cardId: string }
+  | { kind: 'flipSummon'; iid: string }
   | { kind: 'attack'; iid: string; direct: boolean }
   | { kind: 'ignition'; iid: string; cardId: string }
   | { kind: 'changePosition'; iid: string };
@@ -86,6 +90,10 @@ export function summonBase(iid: string, position: 'atk' | 'def', zone?: number):
   return zone === undefined ? { type: 'summon', iid, position, tributes: [] } : { type: 'summon', iid, position, tributes: [], zone };
 }
 
+export function setProBase(iid: string, zone?: number): SetAction {
+  return zone === undefined ? { type: 'set', iid, tributes: [] } : { type: 'set', iid, tributes: [], zone };
+}
+
 /** Ações disponíveis para o card selecionado (e o motivo, se um Profissional não puder entrar). */
 export function cardActions(view: GameView, sel: Selection | null): { actions: CardAction[]; hint: string | null } {
   const actions: CardAction[] = [];
@@ -108,12 +116,16 @@ export function cardActions(view: GameView, sel: Selection | null): { actions: C
       actions.push({ label: 'Invocar em Defesa', intent: { kind: 'summon', iid: h.iid, cardId: h.cardId, position: 'def' } });
     }
     if (h.canActivate) actions.push({ label: 'Ativar Task', primary: true, intent: { kind: 'activate', iid: h.iid, cardId: d.id } });
-    if (h.canSet) actions.push({ label: 'Baixar Bug virado', primary: true, intent: { kind: 'set', iid: h.iid } });
+    if (h.canSet && d.kind === 'bug') actions.push({ label: 'Baixar Bug virado', primary: true, intent: { kind: 'set', iid: h.iid } });
+    if (h.canSet && d.kind === 'task') actions.push({ label: 'Baixar virada (blefe)', intent: { kind: 'set', iid: h.iid } });
+    if (h.canSet && d.kind === 'pro')
+      actions.push({ label: 'Baixar virado (Defesa)', intent: { kind: 'setPro', iid: h.iid, cardId: h.cardId } });
     if (d.kind === 'pro' && !h.canSummon) hint = summonBlockReason(view, me, d.level ?? 1);
   } else if (sel.where === 'myPro') {
     const p = me.pros.find((x) => x?.iid === sel.iid);
-    if (!p) return { actions, hint };
+    if (!p?.cardId) return { actions, hint };
     const d = card(p.cardId);
+    if (p.canFlip) actions.push({ label: 'Invocação-Virar', primary: true, intent: { kind: 'flipSummon', iid: p.iid } });
     const oppHasPros = opp.pros.some(Boolean);
     if (p.canAttack)
       actions.push({
@@ -127,6 +139,11 @@ export function cardActions(view: GameView, sel: Selection | null): { actions: C
         label: p.position === 'atk' ? 'Mudar para Defesa' : 'Mudar para Ataque',
         intent: { kind: 'changePosition', iid: p.iid },
       });
+  } else if (sel.where === 'mySpell') {
+    // Task baixada virada: ativa do campo.
+    const x = me.spells.find((y) => y?.iid === sel.iid);
+    if (x?.cardId && x.canActivate)
+      actions.push({ label: 'Ativar Task', primary: true, intent: { kind: 'activate', iid: x.iid, cardId: x.cardId } });
   }
   return { actions, hint };
 }
@@ -174,7 +191,7 @@ export interface DropTarget {
 export function canDropOn(c: HandCardView, target: DropTarget, me: PlayerView): boolean {
   const d = card(c.cardId);
   if (d.kind === 'pro') {
-    if (!c.canSummon || target.row !== 'pro') return false;
+    if (!(c.canSummon || c.canSet) || target.row !== 'pro') return false;
     // Com sacrifício, qualquer zona de Profissional serve (a escolha segue no painel).
     return tributesNeeded(d.level ?? 1) > 0 || !me.pros[target.zone];
   }

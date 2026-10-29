@@ -29,6 +29,7 @@ function place(s: GameState, seat: Seat, cardId: string, position: 'atk' | 'def'
     changedPosTurn: -5,
     ignitionTurn: -5,
     lockedUntilTurn: -5,
+    faceDown: false,
     oncePerTurn: {},
   };
   return card.iid;
@@ -77,6 +78,24 @@ describe('eventos do tabuleiro', () => {
     const { events } = step(s, 1, { type: 'attack', iid: atk });
     expect(events.map((e) => e.kind)).toEqual(['attack', 'hit', 'damage']);
     expect(events[1]).toMatchObject({ seat: 0, target: undefined });
+  });
+
+  it('Profissional virado atacado: revela antes do golpe', () => {
+    let s = game();
+    const d = place(s, 0, 'stackoverflow', 'def');
+    s.players[0].pros.find((p) => p?.card.iid === d)!.faceDown = true;
+    const atk = place(s, 1, 'qa', 'atk');
+    s = toBattle(s);
+    const { events } = step(s, 1, { type: 'attack', iid: atk, target: d });
+    expect(events.map((e) => e.kind)).toEqual(['attack', 'flip', 'block', 'damage']);
+    expect(events[1]).toMatchObject({ kind: 'flip', seat: 0, iid: d, cardId: 'stackoverflow' });
+  });
+
+  it('baixar Profissional virado toca o "set" e não revela o card', () => {
+    const s = game();
+    const iid = s.players[0].hand.find((c) => c.cardId === 'qa' || c.cardId === 'backend_noturno')!.iid;
+    const { events } = step(s, 0, { type: 'set', iid });
+    expect(events).toEqual([{ kind: 'set', seat: 0 }]);
   });
 
   it('Bug virado se revela quando dispara', () => {

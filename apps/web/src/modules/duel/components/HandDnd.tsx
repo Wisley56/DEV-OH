@@ -96,7 +96,7 @@ export function DropZone({
   );
 }
 
-/** Menu no ponto do drop: invocar o Profissional em Ataque ou Defesa. */
+/** Menu no ponto do drop: invocar o Profissional em Ataque ou Defesa, ou baixar virado. */
 function DropMenu() {
   const choice = useDuelUi((s) => s.dropChoice);
   const setDropChoice = useDuelUi((s) => s.setDropChoice);
@@ -109,7 +109,7 @@ function DropMenu() {
     return () => window.removeEventListener('pointerdown', close);
   }, [choice, setDropChoice]);
   if (!choice) return null;
-  const pick = (position: 'atk' | 'def') => {
+  const pick = (position: 'atk' | 'def' | 'set') => {
     setDropChoice(null);
     startSummon(choice.iid, choice.cardId, position, choice.zone);
   };
@@ -122,6 +122,9 @@ function DropMenu() {
       </Button>
       <Button size="sm" onClick={() => pick('def')}>
         🛡 Defesa
+      </Button>
+      <Button size="sm" onClick={() => pick('set')}>
+        🂠 Virado
       </Button>
       <Button variant="ghost" size="sm" onClick={() => setDropChoice(null)}>
         Cancelar

@@ -2,6 +2,7 @@ import { card, tributesNeeded, type Action, type TargetKind } from '@devoh/engin
 import {
   hasTargets,
   isTargetOptional,
+  setProBase,
   summonBase,
   TARGET_PROMPTS,
   toggleTribute,
@@ -35,11 +36,13 @@ export function useDuelActions() {
     });
   }
 
-  function startSummon(iid: string, cardId: string, position: 'atk' | 'def', zone?: number) {
+  /** Invocar (Ataque/Defesa) ou baixar virado ('set'): pede os sacrifícios, se houver, e o alvo do efeito. */
+  function startSummon(iid: string, cardId: string, position: 'atk' | 'def' | 'set', zone?: number) {
     const d = card(cardId);
     const need = tributesNeeded(d.level ?? 1);
-    const base = summonBase(iid, position, zone);
+    const base = position === 'set' ? setProBase(iid, zone) : summonBase(iid, position, zone);
     if (need > 0) ui.getState().setMode({ kind: 'tribute', base, need, chosen: [] });
+    else if (base.type === 'set') dispatch(base);
     else withTarget(base, cardId, d.target, 'card');
   }
 
@@ -51,6 +54,10 @@ export function useDuelActions() {
         return withTarget({ type: 'activate', iid: intent.iid }, intent.cardId, card(intent.cardId).target, 'card');
       case 'set':
         return dispatch({ type: 'set', iid: intent.iid });
+      case 'setPro':
+        return startSummon(intent.iid, intent.cardId, 'set');
+      case 'flipSummon':
+        return dispatch({ type: 'flipSummon', iid: intent.iid });
       case 'attack':
         return intent.direct ? dispatch({ type: 'attack', iid: intent.iid }) : ui.getState().setMode({ kind: 'attack', iid: intent.iid });
       case 'ignition':
@@ -98,7 +105,8 @@ export function useDuelActions() {
         const base = { ...mode.base, tributes: chosen };
         const d = card(me.hand!.find((c) => c.iid === base.iid)!.cardId);
         setMode(null);
-        withTarget(base, d.id, d.target, 'card');
+        if (base.type === 'set') dispatch(base);
+        else withTarget(base, d.id, d.target, 'card');
       } else setMode({ ...mode, chosen });
       return;
     }

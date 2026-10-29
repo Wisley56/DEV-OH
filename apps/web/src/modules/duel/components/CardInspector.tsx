@@ -19,7 +19,7 @@ export function CardInspector() {
     <div className="side-card" data-tour="inspector">
       {sel?.cardId ? (
         <>
-          <CardFull cardId={sel.cardId} atk={selectedPro?.atk} def={selectedPro?.def} />
+          <CardFull cardId={sel.cardId} atk={selectedPro?.atk ?? undefined} def={selectedPro?.def ?? undefined} />
           {confirm?.iid === sel.iid ? (
             <IgnitionConfirm cardId={confirm.cardId} />
           ) : (

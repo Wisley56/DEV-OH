@@ -15,6 +15,8 @@ export type BoardEvent =
   | { kind: 'destroy'; seat: Seat; iid: string; cardId: string }
   /** Bug virado que disparou: vira, aparece e vai para o cemitério. */
   | { kind: 'reveal'; seat: Seat; iid: string; cardId: string }
+  /** Profissional virado revelado (Invocação-Virar, atacado ou efeito): vira no lugar e continua no campo. */
+  | { kind: 'flip'; seat: Seat; iid: string; cardId: string }
   /** Task ativada da mão. */
   | { kind: 'activate'; seat: Seat; iid: string; cardId: string }
   | { kind: 'summon'; seat: Seat; iid: string; cardId: string }
@@ -36,7 +38,8 @@ function attackResult(entries: LogEntry[], from: number, defender: Seat, target?
   return { kind: 'block', seat: defender, target };
 }
 
-const faceDownCount = (view: GameView, seat: Seat) => view.players[seat].spells.filter((x) => x?.faceDown).length;
+const faceDownCount = (view: GameView, seat: Seat) =>
+  [...view.players[seat].spells, ...view.players[seat].pros].filter((x) => x?.faceDown).length;
 
 /**
  * Eventos entre duas visões do mesmo duelo: as entradas novas do log (id > `lastLogId`)
@@ -54,14 +57,30 @@ export function boardEvents(prev: GameView | null, next: GameView, lastLogId: nu
     }
   }
 
+  const flipFirst = new Set<number>();
+  const flipEvent = (l: LogEntry): BoardEvent | null =>
+    l.seat !== undefined && l.iid && l.cardId ? { kind: 'flip', seat: l.seat, iid: l.iid, cardId: l.cardId } : null;
   entries.forEach((l, i) => {
     const seat = l.seat;
     switch (l.kind) {
-      case 'attack':
+      case 'attack': {
         if (seat === undefined || !l.iid) return;
         out.push({ kind: 'attack', seat, attacker: l.iid, target: l.target });
+        // Alvo virado: revela antes do golpe/defesa.
+        const flip = entries.slice(i + 1).find((x) => x.kind === 'flip' && x.iid === l.target);
+        const ev = flip && flipEvent(flip);
+        if (flip && ev) {
+          flipFirst.add(flip.id);
+          out.push(ev);
+        }
         out.push(attackResult(entries, i + 1, other(seat), l.target));
         return;
+      }
+      case 'flip': {
+        const ev = flipEvent(l);
+        if (ev && !flipFirst.has(l.id)) out.push(ev);
+        return;
+      }
       case 'damage':
         if (seat !== undefined && l.amount) out.push({ kind: 'damage', seat, amount: l.amount });
         return;

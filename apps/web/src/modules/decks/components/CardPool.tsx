@@ -1,4 +1,4 @@
-import { CARD_LIST, MAX_COPIES, maxCopies } from '@devoh/engine';
+import { CARD_LIST, maxCopies, RARITY_INFO } from '@devoh/engine';
 import { useMemo } from 'react';
 import { CardMini } from '../../cards';
 import { countCards } from '../services/deckEditing';
@@ -12,19 +12,21 @@ export function CardPool() {
   const counts = useMemo(() => countCards(cards), [cards]);
   return (
     <section className="db-pool">
-      <p className="muted">Clique para adicionar · pessoas da squad: 1 cópia · demais: até {MAX_COPIES}</p>
+      <p className="muted">Clique para adicionar · pessoas da squad, Ultra e Secreta: 1 cópia · Super: 2 · demais: 3</p>
       <div className="pool-grid">
         {CARD_LIST.map((c) => {
           const n = counts.get(c.id) ?? 0;
+          const max = maxCopies(c.id);
           return (
             <button
               key={c.id}
-              className={`pool-card ${n >= maxCopies(c.id) ? 'maxed' : ''}`}
+              title={`${c.name} · ${RARITY_INFO[c.rarity].label} · máx. ${max}`}
+              className={`pool-card ${n >= max ? 'maxed' : ''}`}
               onClick={() => addCard(c.id)}
               onMouseEnter={() => setPreview(c.id)}
               onFocus={() => setPreview(c.id)}
             >
-              <CardMini cardId={c.id} badge={n ? <span className="badge count">{n}</span> : undefined} />
+              <CardMini cardId={c.id} badge={n ? <span className="badge count">{max > 1 ? `${n}/${max}` : n}</span> : undefined} />
             </button>
           );
         })}

@@ -1,7 +1,7 @@
-import { card, type Attribute, type CardDef } from '@devoh/engine';
+import { card, cardInfo, RARITY_INFO, type Attribute, type CardDef } from '@devoh/engine';
 import type { CSSProperties, ReactNode } from 'react';
 
-const ATTR: Record<Attribute, { label: string; glyph: string; color: string }> = {
+export const ATTR: Record<Attribute, { label: string; glyph: string; color: string }> = {
   TREVA: { label: 'TREVA', glyph: '闇', color: '#7b2cbf' },
   AGUA: { label: 'ÁGUA', glyph: '水', color: '#1e88e5' },
   TERRA: { label: 'TERRA', glyph: '地', color: '#6d4c2f' },
@@ -10,7 +10,11 @@ const ATTR: Record<Attribute, { label: string; glyph: string; color: string }> =
   TECH: { label: 'TECH', glyph: '⚙', color: '#b8860b' },
 };
 
-const KIND_ICON = { task: '⚡', bug: '🐞' } as const;
+/** Ícone do subtipo de Task/Bug, como os ícones de Magia/Armadilha. */
+function subtypeIcon(d: CardDef): string {
+  if (d.kind === 'task') return { normal: '', continuous: '∞', field: '⛰', quick: '⚡', equip: '✚' }[d.speed ?? 'normal'];
+  return { normal: '', continuous: '∞', counter: '↩' }[d.bugType ?? 'normal'];
+}
 
 export function CardArt({ def, className = '' }: { def: CardDef; className?: string }) {
   if (def.art.startsWith('icon:')) {
@@ -61,9 +65,10 @@ export function AttrBadge({ def }: { def: CardDef }) {
 /** Card completo, no estilo das cartas da squad. Escala pela largura (container queries). */
 export function CardFull({ cardId, atk, def: defVal, style }: { cardId: string; atk?: number; def?: number; style?: CSSProperties }) {
   const d = card(cardId);
-  const speedTag = d.speed === 'continuous' ? ' ∞' : d.speed === 'field' ? ' ⛰' : '';
+  const info = cardInfo(cardId);
+  const icon = d.kind === 'pro' ? '' : subtypeIcon(d);
   return (
-    <div className={`card-full kind-${d.kind}`} style={style}>
+    <div className={`card-full kind-${d.kind} frame-${info.frame} rarity-${d.rarity}`} style={style}>
       <div className="cf-inner">
         <div className="cf-name">
           <span className="cf-name-text">{d.name}</span>
@@ -73,15 +78,21 @@ export function CardFull({ cardId, atk, def: defVal, style }: { cardId: string; 
           <Stars n={d.level ?? 1} />
         ) : (
           <div className="cf-spelltype">
-            [{d.kind === 'task' ? 'TASK' : 'BUG'}
-            {speedTag}] {KIND_ICON[d.kind]}
+            [{info.subtype.toUpperCase()}]{icon && <span className="cf-subicon">{icon}</span>}
           </div>
         )}
         <div className="cf-art">
           <CardArt def={d} />
         </div>
+        <div className="cf-meta">
+          <span className="cf-rarity" title={RARITY_INFO[d.rarity].label}>
+            {RARITY_INFO[d.rarity].short}
+          </span>
+          <span className="cf-code">{info.code}</span>
+        </div>
         <div className="cf-text">
-          <div className="cf-type">[{d.typeLine}]</div>
+          {/* Task/Bug já mostram o subtipo no topo; aqui só o rótulo extra, se houver. */}
+          {(d.kind === 'pro' || d.typeLine) && <div className="cf-type">[{d.kind === 'pro' ? info.typeLine : d.typeLine}]</div>}
           <div className="cf-effect">{d.text}</div>
           {d.flavor && <div className="cf-flavor">{d.flavor}</div>}
           {d.kind === 'pro' && (
@@ -131,7 +142,7 @@ export function CardMini({
   }
   const d = card(cardId);
   return (
-    <div className={`card-mini kind-${d.kind} pos-${position} ${className}`}>
+    <div className={`card-mini kind-${d.kind} frame-${cardInfo(cardId).frame} rarity-${d.rarity} pos-${position} ${className}`}>
       <div className="cm-inner">
         <div className="cm-art">
           <CardArt def={d} />
@@ -143,10 +154,14 @@ export function CardMini({
             <span className={position === 'def' ? 'hi' : ''}>{defVal ?? d.def}</span>
           </div>
         ) : (
-          <div className="cm-kind">{d.kind === 'task' ? 'TASK' : 'BUG'}</div>
+          <div className="cm-kind">
+            {d.kind === 'task' ? 'TASK' : 'BUG'}
+            {subtypeIcon(d) && <span className="cm-subicon"> {subtypeIcon(d)}</span>}
+          </div>
         )}
       </div>
       {d.kind === 'pro' && <div className="cm-level">{'★'.repeat(d.level ?? 0)}</div>}
+      <span className="cm-rarity" title={RARITY_INFO[d.rarity].label} />
       {badge}
     </div>
   );

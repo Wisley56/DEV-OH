@@ -12,6 +12,11 @@ export function RulesSummary() {
         </li>
         <li>Uma invocação por turno. Nível 5–6 sacrifica 1 Profissional; nível 7+ sacrifica 2.</li>
         <li>
+          <b>Virado:</b> a invocação do turno pode baixar o Profissional virado em Defesa (efeitos desligados, o oponente não sabe quem é).
+          A partir do turno seguinte, a <b>Invocação-Virar</b> o coloca em Ataque. Atacado virado, ele é revelado — e o efeito <b>FLIP</b>{' '}
+          resolve mesmo se for destruído.
+        </li>
+        <li>
           <b>Tasks</b> (verdes) são ativadas da mão. <b>Bugs</b> (rosa) ficam virados e disparam sozinhos quando a condição acontece.
         </li>
         <li>

@@ -29,6 +29,9 @@
 .kind-bug .cf-inner {
   --frame: var(--bug);
 }
+.frame-normal .cf-inner {
+  --frame: var(--pro-normal);
+}
 .cf-name {
   display: flex;
   align-items: center;
@@ -121,7 +124,21 @@
   min-height: 9.6cqw;
   text-shadow: 0.25cqw 0.25cqw 0 rgba(0, 0, 0, 0.6);
 }
+.cf-subicon {
+  display: inline-grid;
+  place-items: center;
+  width: 7cqw;
+  height: 7cqw;
+  margin-left: 1.4cqw;
+  border-radius: 50%;
+  vertical-align: middle;
+  font-size: 4.4cqw;
+  background: radial-gradient(circle at 35% 30%, #fff, #d9d9d9 60%, #8a8a8a);
+  color: var(--frame);
+  text-shadow: none;
+}
 .cf-art {
+  position: relative;
   margin: 0 3cqw;
   aspect-ratio: 1 / 0.86;
   border: 1.2cqw solid;
@@ -130,8 +147,28 @@
   overflow: hidden;
   flex: none;
 }
+.cf-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0.8cqw 3cqw 0;
+  font-family: var(--font-ui);
+  font-size: 2.6cqw;
+  font-weight: 700;
+  line-height: 1;
+  color: #1b1209;
+}
+.cf-rarity {
+  padding: 0.5cqw 1.4cqw;
+  border-radius: 1cqw;
+  background: rgba(255, 255, 255, 0.55);
+  letter-spacing: 0.05em;
+}
+.cf-code {
+  opacity: 0.8;
+}
 .cf-text {
-  margin-top: 2.6cqw;
+  margin-top: 1.2cqw;
   flex: 1;
   min-height: 0;
   display: flex;
@@ -253,6 +290,9 @@
 .card-mini.kind-bug .cm-inner {
   background: var(--bug);
 }
+.card-mini.frame-normal .cm-inner {
+  background: var(--pro-normal);
+}
 .cm-art {
   aspect-ratio: 1;
   border: 2.5cqw solid #ccd0da;
@@ -359,4 +399,106 @@
   right: -2px;
   font-size: 18cqw;
   padding: 1cqw 7cqw;
+}
+
+/* ───────── Raridade ───────── */
+.rarity-rara .cf-name-text {
+  color: #f1f4fa;
+  text-shadow:
+    0.3cqw 0.3cqw 0 #2b3140,
+    -0.2cqw -0.2cqw 0 #2b3140;
+}
+.rarity-super .cf-name-text,
+.rarity-ultra .cf-name-text {
+  color: #ffd84a;
+}
+.rarity-secreta .cf-name-text {
+  background: linear-gradient(90deg, #ff9ad5, #ffe27a, #8dffb7, #8fd3ff, #d7a2ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: none;
+  filter: drop-shadow(0.3cqw 0.3cqw 0 #2a1033);
+}
+.rarity-super .cf-rarity,
+.rarity-ultra .cf-rarity {
+  background: linear-gradient(135deg, #fff2b0, #e9b949);
+}
+.rarity-secreta .cf-rarity {
+  background: linear-gradient(135deg, #ffc2e6, #fff2a8, #b8ffd4, #c2e6ff);
+}
+/* Brilho holográfico: na arte (Super/Ultra) e na carta inteira (Secreta). */
+.rarity-super .cf-art::after,
+.rarity-ultra .cf-art::after,
+.rarity-secreta .cf-inner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 20%, rgba(255, 255, 255, 0.55) 40%, rgba(120, 220, 255, 0.35) 48%, transparent 60%);
+  background-size: 250% 250%;
+  mix-blend-mode: soft-light;
+  animation: holo 5s ease-in-out infinite;
+}
+.rarity-ultra .cf-art::after {
+  mix-blend-mode: color-dodge;
+  opacity: 0.55;
+}
+.rarity-secreta .cf-inner::after {
+  background:
+    linear-gradient(115deg, transparent 25%, rgba(255, 255, 255, 0.45) 45%, transparent 60%),
+    linear-gradient(
+      135deg,
+      rgba(255, 0, 170, 0.18),
+      rgba(255, 220, 0, 0.18),
+      rgba(0, 255, 140, 0.18),
+      rgba(0, 170, 255, 0.18),
+      rgba(170, 0, 255, 0.18)
+    );
+  background-size:
+    250% 250%,
+    100% 100%;
+  mix-blend-mode: overlay;
+}
+@keyframes holo {
+  0%,
+  100% {
+    background-position: 100% 100%;
+  }
+  50% {
+    background-position: 0% 0%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rarity-super .cf-art::after,
+  .rarity-ultra .cf-art::after,
+  .rarity-secreta .cf-inner::after {
+    animation: none;
+    background-position: 50% 50%;
+  }
+}
+.cm-rarity {
+  position: absolute;
+  bottom: 4cqw;
+  left: 4cqw;
+  width: 7cqw;
+  height: 7cqw;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.6);
+  background: #9aa0ad;
+  display: none;
+}
+.rarity-rara .cm-rarity {
+  display: block;
+  background: #e9edf5;
+}
+.rarity-super .cm-rarity,
+.rarity-ultra .cm-rarity {
+  display: block;
+  background: radial-gradient(circle at 35% 30%, #fff6c2, #e9b949 60%, #8a5d00);
+}
+.rarity-secreta .cm-rarity {
+  display: block;
+  background: conic-gradient(#ff7ac8, #ffe27a, #7affb2, #7ad3ff, #c47aff, #ff7ac8);
 }

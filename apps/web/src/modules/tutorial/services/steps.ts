@@ -12,7 +12,7 @@ export const DUEL_TOUR: TourStep[] = [
   {
     target: 'hand',
     title: 'Sua mão',
-    text: 'Estes são seus cards. Clique num card para ver o efeito e as ações — ou arraste um Profissional direto para uma zona do campo.',
+    text: 'Estes são seus cards. Clique num card para ver o efeito e as ações — ou arraste um Profissional direto para uma zona do campo. Dá até para baixá-lo virado e blefar!',
   },
   {
     target: 'field',

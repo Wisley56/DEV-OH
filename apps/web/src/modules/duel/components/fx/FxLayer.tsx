@@ -1,4 +1,4 @@
-import type { GameView, Seat } from '@devoh/engine';
+import { card, type GameView, type Seat } from '@devoh/engine';
 import { AnimatePresence, m, useReducedMotion } from 'framer-motion';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { CardMini } from '../../../cards';
@@ -34,6 +34,7 @@ const DURATION: Record<BoardEvent['kind'], [number, number]> = {
   heal: [450, 150],
   destroy: [720, 200],
   reveal: [1900, 500],
+  flip: [1500, 400],
   activate: [1500, 400],
   summon: [0, 0],
   dice: [2500, 1200],
@@ -90,8 +91,19 @@ export function FxLayer({ onEvent }: { onEvent?: (ev: BoardEvent, you: Seat) => 
           case 'block':
             return { id: nextId.current++, ev, side, at: slot(ev.target) ?? hud(side) };
           case 'destroy':
-          case 'reveal':
             return { id: nextId.current++, ev, side, at: slot(ev.iid), to: grave(side) };
+          case 'reveal':
+            // Bug Contínuo fica no campo: volta para a zona em vez do cemitério.
+            return {
+              id: nextId.current++,
+              ev,
+              side,
+              at: slot(ev.iid),
+              to: card(ev.cardId).bugType === 'continuous' ? slot(ev.iid) : grave(side),
+            };
+          case 'flip':
+            // Vira no lugar, aparece em destaque e volta para a zona (continua no campo).
+            return { id: nextId.current++, ev, side, at: slot(ev.iid), to: slot(ev.iid) };
           case 'activate':
             return { id: nextId.current++, ev, side, to: grave(side) };
           default:
@@ -200,6 +212,7 @@ function FxItem({ fx, reduced }: { fx: Fx; reduced: boolean }) {
     case 'destroy':
       return at ? <Ghost cardId={ev.cardId} from={at} to={to} sec={sec} reduced={reduced} mode="shatter" /> : null;
     case 'reveal':
+    case 'flip':
       return <Ghost cardId={ev.cardId} from={at} to={to} sec={sec} reduced={reduced} mode="reveal" side={side} />;
     case 'activate':
       // A sua própria Task você já viu sair da mão: o destaque é para a do oponente.

@@ -28,6 +28,7 @@ function viewWithCopilot() {
     changedPosTurn: -5,
     ignitionTurn: -5,
     lockedUntilTurn: -5,
+    faceDown: false,
     oncePerTurn: {},
   };
   return getView(s, 0);

@@ -26,6 +26,8 @@ export function playBoardSound(ev: BoardEvent, you: Seat) {
     case 'reveal':
       sfx.play('reveal');
       return sfx.play('glitch');
+    case 'flip':
+      return sfx.play('reveal');
     case 'activate':
       return sfx.play('task');
     case 'summon':

@@ -1,1 +1,1 @@
-export { AttrBadge, CardArt, CardFull, CardMini } from './components/Card';
+export { ATTR, AttrBadge, CardArt, CardFull, CardMini } from './components/Card';

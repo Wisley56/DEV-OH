@@ -17,6 +17,7 @@ export function ProRow({ side }: { side: Side }) {
   const p = mine ? me : opp;
   const where: Where = mine ? 'myPro' : 'oppPro';
   const tributeChosen = mine && mode?.kind === 'tribute' ? mode.chosen : [];
+  const equipped = new Set([...me.spells, ...opp.spells].map((x) => x?.equippedTo).filter(Boolean));
   return (
     <div className="row pro-row">
       {p.pros.map((x, i) => (
@@ -25,7 +26,7 @@ export function ProRow({ side }: { side: Side }) {
             {x && (
               <m.button
                 key={x.iid + x.cardId}
-                className={`zone-card ${x.position === 'def' ? 'is-def' : ''} ${isTargetable(mode, where, x.iid, opp) ? 'targetable' : ''} ${selected === x.iid ? 'selected' : ''} ${tributeChosen.includes(x.iid) ? 'tribute' : ''} ${mine && x.canAttack ? 'ready' : ''}`}
+                className={`zone-card ${x.position === 'def' ? 'is-def' : ''} ${x.faceDown ? 'is-facedown' : ''} ${isTargetable(mode, where, x.iid, opp) ? 'targetable' : ''} ${selected === x.iid ? 'selected' : ''} ${tributeChosen.includes(x.iid) ? 'tribute' : ''} ${mine && x.canAttack ? 'ready' : ''}`}
                 initial={{ scale: 1.6, opacity: 0, y: mine ? 40 : -40 }}
                 animate={{ scale: 1, opacity: 1, y: 0, rotate: x.position === 'def' ? 90 : 0 }}
                 exit={{ scale: 0.4, opacity: 0, rotate: 25, filter: 'brightness(3)' }}
@@ -34,11 +35,16 @@ export function ProRow({ side }: { side: Side }) {
               >
                 <CardMini
                   cardId={x.cardId}
-                  atk={x.atk}
-                  def={x.def}
+                  atk={x.atk ?? undefined}
+                  def={x.def ?? undefined}
                   position={x.position}
+                  faceDown={x.faceDown}
                   badge={
-                    x.negated ? (
+                    mine && x.canFlip ? (
+                      <span className="badge badge-ability" title="Pode fazer a Invocação-Virar">
+                        🔄
+                      </span>
+                    ) : x.negated ? (
                       <span className="badge" title="Efeitos anulados neste turno">
                         🚫
                       </span>
@@ -47,6 +53,10 @@ export function ProRow({ side }: { side: Side }) {
                     ) : mine && x.canIgnite ? (
                       <span className="badge badge-ability" title="Habilidade disponível">
                         ⚡
+                      </span>
+                    ) : equipped.has(x.iid) ? (
+                      <span className="badge" title="Equipado">
+                        🔗
                       </span>
                     ) : undefined
                   }
@@ -99,7 +109,19 @@ export function SpellRow({ side }: { side: Side }) {
                 <CardMini
                   cardId={x.cardId}
                   faceDown={x.faceDown}
-                  badge={!mine && x.revealed && x.faceDown ? <span className="badge">👁</span> : undefined}
+                  badge={
+                    x.equippedTo ? (
+                      <span className="badge" title="Equipamento: preso a um Profissional">
+                        🔗
+                      </span>
+                    ) : mine && x.canActivate ? (
+                      <span className="badge badge-ability" title="Pode ser ativada">
+                        ⚡
+                      </span>
+                    ) : !mine && x.revealed && x.faceDown ? (
+                      <span className="badge">👁</span>
+                    ) : undefined
+                  }
                 />
               </m.button>
             )}
