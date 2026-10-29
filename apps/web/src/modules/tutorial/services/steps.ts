@@ -1,3 +1,5 @@
+import { MAX_STRESS } from '@devoh/engine';
+
 /** Um passo do tour: o elemento destacado (atributo data-tour) e o texto do balão. */
 export interface TourStep {
   target: string;
@@ -30,7 +32,7 @@ export const DUEL_TOUR: TourStep[] = [
   {
     target: 'hud',
     title: 'LP e Estresse',
-    text: 'Zere os 4000 LP do oponente para vencer. Tomar dano dá Estresse: +100 ATK por ponto, mas no 10 o seu Profissional mais forte pede demissão!',
+    text: `Zere os 4000 LP do oponente para vencer. Tomar dano dá Estresse: +100 ATK por ponto, mas no ${MAX_STRESS} o seu Profissional de maior nível pede demissão e o Estresse zera!`,
   },
   {
     target: 'log',

@@ -43,12 +43,12 @@ export function PlayerHud({ side, active }: { side: 'me' | 'opp'; active: boolea
       </div>
       <div
         className="stress"
-        title={`Estresse ${p.stress}/${MAX_STRESS}: cada ponto dá +100 ATK aos Profissionais. No 10, o de maior nível pede demissão.`}
+        title={`Estresse ${p.stress}/${MAX_STRESS}: cada ponto dá +100 ATK aos Profissionais. No ${MAX_STRESS}, o de maior nível pede demissão e o Estresse zera.`}
       >
         <span className="stress-label">Estresse</span>
         <div className="stress-pips">
           {Array.from({ length: MAX_STRESS }, (_, i) => (
-            <span key={i} className={`pip ${i < p.stress ? 'on' : ''} ${i >= 7 ? 'danger' : ''}`} />
+            <span key={i} className={`pip ${i < p.stress ? 'on' : ''} ${i >= MAX_STRESS - 2 ? 'danger' : ''}`} />
           ))}
         </div>
       </div>

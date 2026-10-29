@@ -1,3 +1,4 @@
+import { MAX_STRESS } from '@devoh/engine';
 import { Panel } from '../../../shared/ui';
 
 /** Resumo das regras na tela inicial. */
@@ -14,8 +15,8 @@ export function RulesSummary() {
           <b>Tasks</b> (verdes) são ativadas da mão. <b>Bugs</b> (rosa) ficam virados e disparam sozinhos quando a condição acontece.
         </li>
         <li>
-          <b>Estresse</b> (0–10): cada ponto dá +100 ATK aos seus Profissionais (Modo Desespero). Tomar dano de batalha dá +1. No 10, o seu
-          Profissional de maior nível pede demissão.
+          <b>Estresse</b> (0–{MAX_STRESS}): cada ponto dá +100 ATK aos seus Profissionais (Modo Desespero). Tomar dano de batalha dá +1. No{' '}
+          {MAX_STRESS}, o seu Profissional de maior nível pede demissão e o Estresse zera.
         </li>
         <li>Não tem batalha no primeiro turno. Profissionais podem atacar no turno em que entram.</li>
       </ul>
