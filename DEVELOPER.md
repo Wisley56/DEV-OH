@@ -21,6 +21,7 @@ npm run lint       # ESLint, incluindo as fronteiras entre camadas
 npm run typecheck
 npm run format     # Prettier
 npm run build:all  # build de todos os workspaces (o CI roda tudo isso)
+npm run e2e        # Playwright: sobe server + web com prazos curtos e joga no navegador (usa o Chrome instalado; PW_CHANNEL=msedge para o Edge)
 npm run crop-art   # regera as artes a partir de assets/source
 ```
 
@@ -103,7 +104,15 @@ shared/
   lib/      storage seguro, useMediaQuery, env
 ```
 
-Módulos: `cards` (renderização do card), `profile` (apelido, deck e dificuldade salvos), `decks` (biblioteca e deck builder), `collection`, `lobby`, `training` (duelo contra o bot), `online` (salas) e `duel` (o tabuleiro, usado pelo treino e pelo online através da porta `DuelController`).
+Módulos: `cards` (renderização do card), `profile` (apelido, deck, dificuldade e som salvos), `decks` (biblioteca e deck builder), `collection`, `lobby` (inclui a lista de salas abertas), `training` (duelo contra o bot), `online` (salas, timer e queda), `duel` (o tabuleiro, usado pelo treino e pelo online através da porta `DuelController`), `sound` (efeitos sonoros) e `tutorial` (tour guiado).
+
+**Animações e sons do duelo** (`modules/duel/services/boardEvents.ts` → `components/fx/FxLayer.tsx`):
+
+- A cada visão nova, as entradas novas do log (que trazem `iid`/`target` dos cards) e as diferenças entre as visões viram uma fila de eventos: ataque, golpe, defesa, dano, destruição, revelação de Bug, Task ativada, invocação…
+- A `FxLayer` toca um evento por vez: espadas e escudo em SVG (`fx/Swords.tsx`, `fx/Shield.tsx`), card "fantasma" para o que já saiu do campo, `FlipCard` para virar cards em 3D. Respeita `prefers-reduced-motion`.
+- Cada evento também toca um som (`fx/boardSounds.ts` → `modules/sound`). Os arquivos ficam em `apps/web/public/sfx` (CC0, origem em `CREDITS.md`); para trocar um som, substitua o arquivo mantendo o nome.
+- O bot e o diálogo de fim de duelo esperam a fila acabar (`DuelController.onFxBusyChange`).
+- Para animar um card novo, o log do engine precisa trazer o `iid` dele (`log(s, kind, texto, { seat, cardId, iid })`).
 
 **Regras de dependência**, verificadas pelo `npm run lint` (`packages/eslint-config/boundaries.js`):
 
@@ -156,7 +165,7 @@ Tudo no Railway, em dois serviços do mesmo repositório, configurados pelo pain
    - `CORS_ORIGIN=https://<url-do-web>`: **obrigatória**. Em produção, o server não sobe sem ela.
    - `TRUST_PROXY=true`: lê o IP real do proxy do Railway para os limites por IP.
    - `NODE_ENV=production`: costuma vir do Railway. Liga o log em JSON e a exigência do `CORS_ORIGIN`.
-   - Limites opcionais: ver [SECURITY.md](SECURITY.md).
+   - Opcionais: `TURN_TIMEOUT_MS` (tempo do turno no online, padrão 90000) e `RECONNECT_TIMEOUT_MS` (prazo para voltar antes do W.O., padrão 60000). Limites contra abuso: ver [SECURITY.md](SECURITY.md).
 4. Settings → Networking → Generate Domain, apontando para a porta do log (`DEV-OH! server ouvindo na porta ...`).
 
 ### Serviço `@devoh/web`
