@@ -10,7 +10,7 @@ Invoque os devs, ative Tasks, arme Bugs e entregue a Sprint antes que o servidor
 ![PvP online](https://img.shields.io/badge/PvP-online-7c5cff?style=flat-square)
 ![Treino contra bot](https://img.shields.io/badge/treino-contra%20bot-1b8a6b?style=flat-square)
 ![Sem login](https://img.shields.io/badge/sem-login-b23a7a?style=flat-square)
-![43 cards](https://img.shields.io/badge/cards-43-c46a2b?style=flat-square)
+![53 cards](https://img.shields.io/badge/cards-53-c46a2b?style=flat-square)
 ![Grátis](https://img.shields.io/badge/pre%C3%A7o-gr%C3%A1tis-4ade80?style=flat-square)
 
 </div>
@@ -66,9 +66,15 @@ Sem instalar nada, sem cadastro: abre o link, escolhe um apelido e duela.
     <td align="center"><img src="apps/web/public/art/thy_techlead.webp" width="170" /><br/><b>Thy (Tech Lead)</b><br/><sub>"LÁ ELE!"</sub></td>
     <td align="center"><img src="apps/web/public/art/gato_gordo.webp" width="170" /><br/><b>O Gato Gordo da Squad</b><br/><sub>Contemplai.</sub></td>
   </tr>
+  <tr>
+    <td align="center"><img src="apps/web/public/art/juju.webp" width="170" /><br/><b>Juju</b><br/><sub>"Isso é meus ovos."</sub></td>
+    <td align="center"><img src="apps/web/public/art/diegao.webp" width="170" /><br/><b>Diegão</b><br/><sub>Patada Irônica.</sub></td>
+    <td align="center"><img src="apps/web/public/art/brunao.webp" width="170" /><br/><b>Brunão</b><br/><sub>"É muito cremoso."</sub></td>
+    <td align="center"><img src="apps/web/public/art/pirulito.webp" width="170" /><br/><b>Pirulito Atordoado</b><br/><sub>♪ Próxima faixa… ♪</sub></td>
+  </tr>
 </table>
 
-<div align="center"><sub>…e ainda <b>A Curiosa Caótica</b>, IAs alucinando, o PO do "só um botãozinho", o Cliente que Mudou de Ideia e mais.</sub></div>
+<div align="center"><sub>…e ainda <b>A Curiosa Caótica</b>, <b>A Mão do Moisés</b>, a <b>Careca Pensante</b>, IAs alucinando, o PO do "só um botãozinho", o Cliente que Mudou de Ideia e mais.</sub></div>
 
 ## 🎮 Como jogar
 
@@ -96,11 +102,12 @@ O card de mais alto risco do jogo: cara ou coroa. **Cara**, 3000 de dano no opon
 
 ## 🗂️ Decks prontos
 
-| Deck                    | Estilo                                                                                |
-| ----------------------- | ------------------------------------------------------------------------------------- |
-| **Squad do Tech Lead**  | Três versões do Thy, Vitor chamando na DM e IAs para revisar. Controle e paciência.   |
-| **Força Bruta Douglas** | Todas as formas do Douglas, o Gato Gordo e o leite do Danilo. Agressivo e arriscado.  |
-| **Fofoca & Caos**       | Patrícia e Gama chocados, a Curiosa Caótica e IAs alucinando. Ninguém sabe o que vem. |
+| Deck                    | Estilo                                                                                                      |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------- |
+| **Squad do Tech Lead**  | Três versões do Thy, Vitor chamando na DM e IAs para revisar. Controle e paciência.                         |
+| **Força Bruta Douglas** | Todas as formas do Douglas, o Gato Gordo e o leite do Danilo. Agressivo e arriscado.                        |
+| **Fofoca & Caos**       | Patrícia e Gama chocados, a Curiosa Caótica e IAs alucinando. Ninguém sabe o que vem.                       |
+| **Bombeiros & Carecas** | Juju apagando incêndio, Moisés e a Mão, Diegão, Brunão e o Pirulito no som. Anula efeitos e quebra defesas. |
 
 ---
 

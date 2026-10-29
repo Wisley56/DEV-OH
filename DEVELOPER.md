@@ -140,7 +140,7 @@ Convite: `/sala/CODIGO`. Sem sessão na aba, o convite abre o lobby em `/?sala=C
 2. Efeitos: implemente os ganchos de `effects/types.ts` (`onSummon`, `onActivate`, `onTrigger`, `onIgnite`, `onStandby`, `onDestroyed`, `atkBonus`, `guardAttack`…), importando só de `effects/api`.
 3. Registre o card em `content/cards/index.ts`. A posição nessa lista é a ordem da coleção.
 4. Se o bot precisar de uma regra para usá-lo bem, adicione em `packages/ai/src/heuristics/cardPlays.ts`.
-5. Arte: coloque a imagem em `assets/source`, registre o recorte em `scripts/crop-art.ts` e rode `npm run crop-art`. Alternativa: `art: 'icon:<emoji>|<cor1>|<cor2>'`.
+5. Arte: coloque a imagem em `assets/source`, registre o recorte em `scripts/crop-art.ts` e rode `npm run crop-art -- <id>` (sem ids, refaz todos). Alternativa: `art: 'icon:<emoji>|<cor1>|<cor2>'`.
 6. `npm test`: as partidas bot×bot pegam efeitos quebrados.
 
 > **Teste golden** (`packages/ai/src/golden.test.ts`): 50 partidas com seed fixa precisam dar exatamente o mesmo resultado. Ele existe para pegar mudanças de comportamento sem querer. Se a mudança de regra **for** intencional, regrave com `npx vitest run -u` em `packages/ai` e explique no commit.
@@ -185,4 +185,5 @@ Se o domínio mostrar "Application failed to respond" com o app rodando, a porta
 - 3 zonas de Profissional, 3 de Task/Bug e 1 de Campo. Uma invocação por turno: nível 5–6 sacrifica 1, nível 7+ sacrifica 2.
 - Tasks são ativadas da mão. Bugs ficam virados e disparam sozinhos quando a condição acontece (não no turno em que foram baixados).
 - Estresse de 0 a 10: +100 de ATK por ponto, e tomar dano de batalha dá +1. No 10, o Profissional de maior nível pede demissão e o Estresse volta a 5.
+- Efeitos anulados (Diegão, Juju, A Mão do Moisés): o Profissional fica sem nenhum efeito até o fim do turno indicado e aparece com 🚫 no campo. Auras e bônus dele também param.
 - Vence quem zerar os LP do oponente, ou quando o deck do oponente acabar.
