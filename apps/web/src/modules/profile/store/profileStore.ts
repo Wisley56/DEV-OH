@@ -10,9 +10,12 @@ interface ProfileState {
   /** Deck escolhido para jogar. */
   deckId: string;
   botLevel: BotLevel;
+  /** Sons do duelo ligados. */
+  sound: boolean;
   setName(name: string): void;
   setDeckId(id: string): void;
   setBotLevel(level: BotLevel): void;
+  setSound(on: boolean): void;
 }
 
 /** Preferências do jogador neste navegador (localStorage, mesmas chaves da v1). */
@@ -20,6 +23,7 @@ export const useProfile = create<ProfileState>((set) => ({
   name: readJson(STORAGE_KEYS.name, ''),
   deckId: readJson(STORAGE_KEYS.deck, STARTER_DECKS[0].id),
   botLevel: readJson<BotLevel>(STORAGE_KEYS.botLevel, 'normal'),
+  sound: readJson(STORAGE_KEYS.sound, true),
   setName(name) {
     writeJson(STORAGE_KEYS.name, name);
     set({ name });
@@ -31,6 +35,10 @@ export const useProfile = create<ProfileState>((set) => ({
   setBotLevel(botLevel) {
     writeJson(STORAGE_KEYS.botLevel, botLevel);
     set({ botLevel });
+  },
+  setSound(sound) {
+    writeJson(STORAGE_KEYS.sound, sound);
+    set({ sound });
   },
 }));
 

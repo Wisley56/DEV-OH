@@ -27,4 +27,6 @@ export const STORAGE_KEYS = {
   customDecks: 'devoh.customDecks',
   session: 'devoh.session',
   botLevel: 'devoh.botLevel',
+  sound: 'devoh.sound',
+  tutorialSeen: 'devoh.tutorialSeen',
 } as const;
