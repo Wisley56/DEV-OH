@@ -20,6 +20,16 @@ export const EVENTS = {
 export interface CreateRoomPayload {
   name?: string;
   deck: string[];
+  /** Sala privada: não aparece na lista de salas abertas do lobby. */
+  private?: boolean;
+}
+
+/** Sala pública esperando oponente (GET /rooms). */
+export interface OpenRoom {
+  code: string;
+  host: string;
+  /** Há quanto tempo a sala espera (ms). */
+  waitingMs: number;
 }
 
 export interface JoinRoomPayload {
@@ -39,6 +49,8 @@ export type Ack = { ok: true; code?: string; token?: string } | { ok: false; err
 export interface RoomPlayer {
   name: string;
   connected: boolean;
+  /** Caiu no meio do duelo: horário (relógio do servidor, ms) em que perde por W.O. se não voltar. */
+  reconnectDeadline: number | null;
 }
 
 /** Estado da sala enviado a cada jogador, com a visão do duelo filtrada para ele. */
@@ -49,6 +61,10 @@ export interface RoomState {
   players: (RoomPlayer | null)[];
   rematch: [boolean, boolean];
   view: GameView | null;
+  /** Fim do prazo do turno atual (relógio do servidor, ms); null fora de duelo. */
+  turnDeadline: number | null;
+  /** Relógio do servidor no envio: o cliente corrige a diferença para o próprio relógio. */
+  serverNow: number;
 }
 
 /** Sessão guardada no navegador para reconectar (código da sala + token do assento). */
