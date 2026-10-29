@@ -114,6 +114,19 @@ export interface LogEntry {
   seat?: Seat;
   cardId?: string;
   amount?: number;
+  /** Instância envolvida (atacante, card invocado, Bug, destruído…): permite animar o card exato. */
+  iid?: string;
+  /** Instância alvo (ex.: Profissional atacado). */
+  target?: string;
+}
+
+/** Como o duelo terminou. */
+export type OutcomeReason = 'lp' | 'deckout' | 'surrender' | 'timeout' | 'abandon' | 'draw';
+
+export interface Outcome {
+  reason: OutcomeReason;
+  /** Quem perdeu; null no empate. */
+  loser: Seat | null;
 }
 
 export interface GameState {
@@ -122,6 +135,8 @@ export interface GameState {
   active: Seat;
   phase: Phase;
   winner: Seat | 'draw' | null;
+  /** Preenchido quando o duelo acaba. */
+  outcome: Outcome | null;
   log: LogEntry[];
   rng: number;
   nextIid: number;
@@ -129,9 +144,9 @@ export interface GameState {
 }
 
 export type Action =
-  | { type: 'summon'; iid: string; position: 'atk' | 'def'; tributes?: string[]; target?: string }
-  | { type: 'activate'; iid: string; target?: string }
-  | { type: 'set'; iid: string }
+  | { type: 'summon'; iid: string; position: 'atk' | 'def'; tributes?: string[]; target?: string; zone?: number }
+  | { type: 'activate'; iid: string; target?: string; zone?: number }
+  | { type: 'set'; iid: string; zone?: number }
   | { type: 'changePosition'; iid: string }
   | { type: 'ignition'; iid: string; target?: string }
   | { type: 'goBattle' }

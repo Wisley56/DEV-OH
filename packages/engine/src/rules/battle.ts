@@ -42,6 +42,8 @@ export function attack(s: GameState, seat: Seat, iid: string, targetIid?: string
   log(s, 'attack', target ? `"${nameOf(A.card)}" atacou "${nameOf(target.card)}"!` : `"${nameOf(A.card)}" atacou diretamente!`, {
     seat,
     cardId: A.card.cardId,
+    iid: A.card.iid,
+    target: target?.card.iid,
   });
 
   // Respostas do defensor: Profissionais em campo, o próprio alvo e os Bugs.

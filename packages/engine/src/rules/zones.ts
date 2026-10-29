@@ -13,7 +13,7 @@ export function draw(s: GameState, seat: Seat, n = 1) {
   for (let i = 0; i < n; i++) {
     const c = p.deck.pop();
     if (!c) {
-      lose(s, seat, `${p.name} não tem mais cards no deck — backlog vazio, projeto cancelado.`);
+      lose(s, seat, `${p.name} não tem mais cards no deck — backlog vazio, projeto cancelado.`, 'deckout');
       return;
     }
     p.hand.push(c);
@@ -68,7 +68,7 @@ export function destroyPro(s: GameState, iid: string, cause: DestroyCause): bool
   }
   removePro(s, iid);
   toGrave(s, f.slot.card);
-  if (!cause.self) log(s, 'destroy', `"${nameOf(id)}" foi destruído.`, { seat: f.seat, cardId: id });
+  if (!cause.self) log(s, 'destroy', `"${nameOf(id)}" foi destruído.`, { seat: f.seat, cardId: id, iid });
   fx?.onDestroyed?.(ctxFor(s, f.slot.card), { battle: cause.battle, byIid: cause.byIid });
   return true;
 }
@@ -88,7 +88,7 @@ export function destroySpell(s: GameState, iid: string): boolean {
   if (f.idx === -1) p.field = null;
   else p.spells[f.idx] = null;
   toGrave(s, f.slot.card);
-  log(s, 'destroy', `"${nameOf(f.slot.card)}" foi destruído.`, { seat: f.seat, cardId: f.slot.card.cardId });
+  log(s, 'destroy', `"${nameOf(f.slot.card)}" foi destruído.`, { seat: f.seat, cardId: f.slot.card.cardId, iid });
   return true;
 }
 

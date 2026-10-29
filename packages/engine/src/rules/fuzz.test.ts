@@ -42,13 +42,15 @@ function randomAction(s: GameState, rand: () => number): Action {
   const pick = () => ids[Math.floor(rand() * ids.length)];
   const maybe = () => (rand() < 0.5 ? pick() : undefined);
   const pos = rand() < 0.5 ? 'atk' : 'def';
+  // Zona: ausente, válida ou inválida.
+  const zone = rand() < 0.5 ? undefined : Math.floor(rand() * 5) - 1;
   switch (Math.floor(rand() * 9)) {
     case 0:
-      return { type: 'summon', iid: pick(), position: pos, tributes: rand() < 0.5 ? [pick(), pick()] : undefined, target: maybe() };
+      return { type: 'summon', iid: pick(), position: pos, tributes: rand() < 0.5 ? [pick(), pick()] : undefined, target: maybe(), zone };
     case 1:
-      return { type: 'activate', iid: pick(), target: maybe() };
+      return { type: 'activate', iid: pick(), target: maybe(), zone };
     case 2:
-      return { type: 'set', iid: pick() };
+      return { type: 'set', iid: pick(), zone };
     case 3:
       return { type: 'changePosition', iid: pick() };
     case 4:

@@ -1,7 +1,7 @@
 import { prosOf } from '../core/board';
 import { card, effectsOf } from '../core/catalog';
 import { tributesNeeded } from '../core/constants';
-import type { GameState, LogEntry, Phase, Seat } from '../core/types';
+import type { GameState, LogEntry, Outcome, Phase, Seat } from '../core/types';
 import { ctxFor } from '../effects/context';
 import { positionBlock } from '../rules/actions';
 import { attackBlock } from '../rules/battle';
@@ -56,6 +56,7 @@ export interface GameView {
   active: Seat;
   phase: Phase;
   winner: Seat | 'draw' | null;
+  outcome: Outcome | null;
   players: [PlayerView, PlayerView];
   log: LogEntry[];
 }
@@ -135,6 +136,7 @@ export function getView(s: GameState, viewer: Seat): GameView {
     active: s.active,
     phase: s.phase,
     winner: s.winner,
+    outcome: s.outcome,
     players: [mk(0), mk(1)],
     log: s.log.slice(-80),
   };

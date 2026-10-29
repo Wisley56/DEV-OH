@@ -37,6 +37,7 @@ export function createGame(opts: NewGameOptions): GameState {
     active: 0,
     phase: 'main',
     winner: null,
+    outcome: null,
     log: [],
     rng: seed | 0,
     nextIid: 1,

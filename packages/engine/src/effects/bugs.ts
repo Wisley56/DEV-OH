@@ -24,7 +24,7 @@ export function fireBugs(s: GameState, defender: Seat, triggers: BugTrigger[], e
     if (fx?.bugCondition && !fx.bugCondition(ctx, ev)) continue;
     p.spells[i] = null;
     toGrave(s, slot.card);
-    log(s, 'bug', `${p.name} ativou o Bug "${d.name}"!`, { seat: defender, cardId: d.id });
+    log(s, 'bug', `${p.name} ativou o Bug "${d.name}"!`, { seat: defender, cardId: d.id, iid: slot.card.iid });
     for (const seat of [0, 1] as Seat[]) {
       for (const pro of prosOf(s, seat)) effectsOf(pro.card.cardId)?.onAnyBug?.(ctxFor(s, pro.card));
     }

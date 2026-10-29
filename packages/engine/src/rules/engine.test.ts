@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyAction, createGame, getView, STARTER_DECKS, validateDeck, CARD_LIST } from '../index';
+import { applyAction, createGame, forfeit, getView, STARTER_DECKS, validateDeck, CARD_LIST } from '../index';
 import { newInstance, newProSlot } from '../core/board';
 import type { Action, GameState, Seat } from '../core/types';
 
@@ -264,5 +264,65 @@ describe('efeitos especiais', () => {
     expect(run(7)).toEqual(run(7));
     const results = new Set(Array.from({ length: 20 }, (_, i) => run(i).join()));
     expect(results.size).toBe(2); // sucesso e falha acontecem
+  });
+});
+
+describe('fim do duelo e referências no log', () => {
+  it('desistência registra o motivo e quem perdeu', () => {
+    const s = act(game(), 1, { type: 'surrender' });
+    expect(s.winner).toBe(0);
+    expect(s.outcome).toEqual({ reason: 'surrender', loser: 1 });
+    expect(getView(s, 0).outcome).toEqual({ reason: 'surrender', loser: 1 });
+  });
+  it('LP zerado registra o motivo "lp"', () => {
+    let s = game();
+    s.players[0].lp = 500;
+    const atk = place(s, 1, 'backend_noturno', 'atk');
+    s = toTurn2Battle(s);
+    s = act(s, 1, { type: 'attack', iid: atk });
+    expect(s.outcome).toEqual({ reason: 'lp', loser: 0 });
+  });
+  it('deck vazio registra o motivo "deckout"', () => {
+    let s = game();
+    s.players[1].deck = [];
+    s = act(s, 0, { type: 'endTurn' });
+    expect(s.outcome).toEqual({ reason: 'deckout', loser: 1 });
+  });
+  it('forfeit encerra por tempo ou abandono sem mexer no estado original', () => {
+    const s = game();
+    const t = forfeit(s, 0, 'timeout');
+    expect(t.outcome).toEqual({ reason: 'timeout', loser: 0 });
+    expect(t.winner).toBe(1);
+    expect(s.winner).toBeNull();
+    expect(forfeit(s, 1, 'abandon').log.at(-2)?.text).toContain('abandonou');
+  });
+  it('o log do ataque traz atacante e alvo', () => {
+    let s = game();
+    place(s, 0, 'estagiario', 'atk');
+    const atk = place(s, 1, 'backend_noturno', 'atk');
+    s = toTurn2Battle(s);
+    const target = s.players[0].pros.find(Boolean)!.card.iid;
+    s = act(s, 1, { type: 'attack', iid: atk, target });
+    const entry = s.log.find((l) => l.kind === 'attack')!;
+    expect(entry).toMatchObject({ iid: atk, target });
+    expect(s.log.find((l) => l.kind === 'destroy')).toMatchObject({ iid: target });
+  });
+});
+
+describe('escolha de zona', () => {
+  it('invoca e baixa na zona pedida, recusando zona ocupada', () => {
+    let s = game();
+    place(s, 0, 'estagiario', 'atk', 0);
+    const pro = giveHand(s, 0, 'backend_noturno');
+    expect(applyAction(s, 0, { type: 'summon', iid: pro, position: 'atk', zone: 0 })).toEqual({
+      ok: false,
+      error: 'Essa zona está ocupada.',
+    });
+    expect(applyAction(s, 0, { type: 'summon', iid: pro, position: 'atk', zone: 7 })).toMatchObject({ ok: false });
+    s = act(s, 0, { type: 'summon', iid: pro, position: 'atk', zone: 2 });
+    expect(s.players[0].pros[2]?.card.iid).toBe(pro);
+    const bug = giveHand(s, 0, 'erro_404');
+    s = act(s, 0, { type: 'set', iid: bug, zone: 1 });
+    expect(s.players[0].spells[1]?.card.iid).toBe(bug);
   });
 });

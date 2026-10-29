@@ -13,6 +13,7 @@ export { STARTER_DECKS, deckById } from './content';
 
 export { createGame, type NewGameOptions } from './rules/turn';
 export { applyAction } from './rules/actions';
+export { forfeit } from './rules/win';
 export { validateDeck, maxCopies } from './rules/deck';
 export { getView, type GameView, type PlayerView, type ProView, type SpellView, type HandCardView } from './view/getView';
 
