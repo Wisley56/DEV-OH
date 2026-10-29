@@ -18,6 +18,7 @@
     "@nestjs/platform-express": "^12.3.2",
     "@nestjs/platform-socket.io": "^12.3.2",
     "@nestjs/websockets": "^12.3.2",
+    "helmet": "^8.3.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "socket.io": "^4.8.1",

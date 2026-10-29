@@ -1,13 +1,10 @@
-import { Controller, Get, Header, Inject } from '@nestjs/common';
-import { RoomsService } from '../rooms/application/rooms.service.js';
+import { Controller, Get, Header } from '@nestjs/common';
 
 @Controller()
 export class HealthController {
-  constructor(@Inject(RoomsService) private readonly rooms: RoomsService) {}
-
   @Get('health')
   health() {
-    return { ok: true, rooms: this.rooms.count() };
+    return { ok: true };
   }
 
   @Get()

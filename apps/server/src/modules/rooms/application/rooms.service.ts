@@ -1,7 +1,9 @@
 import { validateDeck } from '@devoh/engine';
-import { DEFAULT_NAME, NAME_MAX, type RoomSession } from '@devoh/protocol';
+import { sanitizeName, type RoomSession } from '@devoh/protocol';
 import { Inject, Injectable } from '@nestjs/common';
 import { DomainError } from '../../../common/domain-error.js';
+import { SecurityLog } from '../../../common/security/security-log.js';
+import { AppConfig } from '../../../config/app-config.js';
 import { Room, type Seatholder } from '../domain/room.js';
 import {
   CLOCK,
@@ -14,8 +16,6 @@ import {
   type RoomRepository,
 } from './ports.js';
 
-const cleanName = (n: string | undefined) => n?.trim().slice(0, NAME_MAX) || DEFAULT_NAME;
-
 /** Casos de uso do ciclo de vida das salas (criar, entrar, reconectar, sair, revanche). */
 @Injectable()
 export class RoomsService {
@@ -24,10 +24,16 @@ export class RoomsService {
     @Inject(ID_GENERATOR) private readonly ids: IdGenerator,
     @Inject(CLOCK) private readonly clock: Clock,
     @Inject(ROOM_NOTIFIER) private readonly notifier: RoomNotifier,
+    @Inject(AppConfig) private readonly config: AppConfig,
+    @Inject(SecurityLog) private readonly security: SecurityLog,
   ) {}
 
   create(socketId: string, name: string | undefined, deck: string[]): RoomSession {
     this.checkDeck(deck);
+    if (this.rooms.count() >= this.config.maxRooms) {
+      this.security.warn('room-limit', undefined, { rooms: this.rooms.count() });
+      throw new DomainError('Servidor lotado agora. Tenta de novo daqui a pouco.');
+    }
     let code = this.ids.roomCode();
     while (this.rooms.has(code)) code = this.ids.roomCode();
     const room = new Room(code, this.seat(socketId, name, deck), this.clock.now());
@@ -109,7 +115,7 @@ export class RoomsService {
   }
 
   private seat(socketId: string, name: string | undefined, deck: string[]): Seatholder {
-    return { name: cleanName(name), deck, token: this.ids.token(), socketId };
+    return { name: sanitizeName(name), deck, token: this.ids.token(), socketId };
   }
 
   private checkDeck(deck: string[]) {

@@ -1,14 +1,19 @@
 import 'reflect-metadata';
-import { Logger } from '@nestjs/common';
+import { ConsoleLogger, Logger, type LogLevel } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import helmet from 'helmet';
 import { AppModule } from './app.module.js';
 import { AppSocketAdapter } from './common/socket-adapter.js';
 import { AppConfig } from './config/app-config.js';
 
 /** Cria e sobe o servidor; `port` sobrescreve a configuração (os testes e2e usam 0 e sem log). */
 export async function bootstrap(port?: number, logs = true) {
-  const app = await NestFactory.create(AppModule, { logger: logs ? ['error', 'warn', 'log'] : ['error'] });
+  const levels: LogLevel[] = logs ? ['error', 'warn', 'log'] : ['error'];
+  // Em produção o log sai em JSON, uma linha por evento, para filtrar no Railway.
+  const logger = new AppConfig().production ? new ConsoleLogger({ json: true, logLevels: levels }) : levels;
+  const app = await NestFactory.create(AppModule, { logger });
   const config = app.get(AppConfig);
+  app.use(helmet());
   app.useWebSocketAdapter(new AppSocketAdapter(app));
   app.enableCors({ origin: config.corsOrigin });
   app.enableShutdownHooks();

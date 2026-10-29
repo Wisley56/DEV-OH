@@ -1,6 +1,8 @@
 import { STARTER_DECKS } from '@devoh/engine';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { DomainError } from '../../../common/domain-error.js';
+import { SecurityLog } from '../../../common/security/security-log.js';
+import { AppConfig } from '../../../config/app-config.js';
 import type { Room } from '../domain/room.js';
 import { InMemoryRoomRepository } from '../infrastructure/in-memory-room.repository.js';
 import type { Clock, IdGenerator, RoomNotifier } from './ports.js';
@@ -24,7 +26,7 @@ describe('RoomsService', () => {
     const clock: Clock = { now: () => now };
     const notifier: RoomNotifier = { publish: (r: Room) => published.push(r.code) };
     repo = new InMemoryRoomRepository();
-    svc = new RoomsService(repo, ids, clock, notifier);
+    svc = new RoomsService(repo, ids, clock, notifier, new AppConfig({ MAX_ROOMS: '2' }), new SecurityLog());
   });
 
   it('cria sala, entra e começa o duelo', () => {
@@ -49,6 +51,13 @@ describe('RoomsService', () => {
     svc.create('s1', 'A', deck);
     svc.join('s2', 'AAAAA', 'B', deck);
     expect(() => svc.join('s3', 'AAAAA', 'C', deck)).toThrow('A sala já está cheia.');
+  });
+
+  it('recusa sala nova acima do teto do servidor', () => {
+    codes = ['AAAAA', 'BBBBB', 'CCCCC'];
+    svc.create('s1', 'A', deck);
+    svc.create('s2', 'B', deck);
+    expect(() => svc.create('s3', 'C', deck)).toThrow('Servidor lotado');
   });
 
   it('reconecta pelo token e recusa token errado', () => {

@@ -40,7 +40,7 @@ describe('servidor de duelos (e2e)', () => {
 
   it('responde o healthcheck', async () => {
     const res = await fetch(`${url}/health`);
-    expect(await res.json()).toEqual({ ok: true, rooms: 0 });
+    expect(await res.json()).toEqual({ ok: true });
   });
 
   it('rejeita payload inválido no ack', async () => {
