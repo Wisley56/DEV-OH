@@ -112,7 +112,12 @@ export function SpellRow({ side }: { side: Side }) {
             <CardMini cardId={p.grave[p.grave.length - 1]} className="grave-top" />
           </button>
         ) : (
-          <span className="zone-label">Desligados</span>
+          <span className="zone-label">
+            <span className="zone-label-icon" aria-hidden>
+              🪦
+            </span>
+            <span className="zone-label-text">Desligados</span>
+          </span>
         )}
       </div>
     </div>

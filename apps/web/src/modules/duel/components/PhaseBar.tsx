@@ -5,7 +5,7 @@ import { useDuel, useDuelUi } from '../hooks/useDuel';
 import { useDuelActions } from '../hooks/useDuelActions';
 import { modeText } from '../services/interaction';
 
-/** Linha do meio: selo, fase/turno, dica da escolha em andamento e botões de fase. */
+/** Linha do meio: selo, fase/turno, dica da escolha em andamento, botões de fase e ferramentas (tour, som, sair). */
 export function PhaseBar() {
   const { ctrl, view, opp, myTurn } = useDuel();
   const { dispatch } = useDuelActions();
@@ -31,14 +31,16 @@ export function PhaseBar() {
             Encerrar turno ⏭
           </Button>
         )}
+      </div>
+      <div className="phase-tools">
         {ctrl.onHelp && (
           <Button variant="ghost" size="sm" title="Como jogar (tour)" aria-label="Como jogar" onClick={ctrl.onHelp}>
             ?
           </Button>
         )}
         <SoundToggle />
-        <Button variant="ghost" className="exit-btn" onClick={exit}>
-          ✕ Sair
+        <Button variant="ghost" className="exit-btn" title="Sair do duelo" aria-label="Sair do duelo" onClick={exit}>
+          ✕<span className="btn-text"> Sair</span>
         </Button>
       </div>
     </div>

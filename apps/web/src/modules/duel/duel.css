@@ -163,10 +163,18 @@
   background: rgba(27, 138, 107, 0.06);
 }
 .zone-label {
+  max-width: 100%;
+  overflow: hidden;
   font-size: 0.66rem;
   color: rgba(255, 255, 255, 0.28);
   text-transform: uppercase;
   letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+.zone-label-icon {
+  display: none;
+  font-size: 1.1rem;
+  opacity: 0.5;
 }
 .zone-card {
   width: var(--zw);
@@ -232,9 +240,14 @@
   background: var(--code);
   box-shadow: 0 0 10px var(--code);
 }
-.phase-actions {
+.phase-actions,
+.phase-tools {
   display: flex;
+  align-items: center;
   gap: 8px;
+}
+.phase-tools {
+  gap: 2px;
 }
 .mode-hint {
   display: flex;
@@ -616,10 +629,81 @@
     left: 50%;
   }
   .midline {
-    gap: 6px;
+    gap: 6px 8px;
+  }
+  .phase-actions {
+    flex-wrap: wrap;
+    justify-content: center;
   }
   .phase-actions .btn {
     padding: 8px 12px;
+  }
+}
+
+/* Celular em pé: a linha do meio vira 3 faixas — selo + ferramentas, situação do turno, botões de fase. */
+@media (max-width: 560px) and (orientation: portrait) {
+  .midline {
+    row-gap: 4px;
+  }
+  .midline > .turn-timer {
+    order: 2;
+  }
+  .phase-tools {
+    order: 3;
+  }
+  .midline > .phase {
+    order: 4;
+    flex-basis: 100%;
+    justify-content: center;
+    font-size: 0.76rem;
+  }
+  .mode-hint {
+    order: 5;
+    flex-wrap: wrap;
+    justify-content: center;
+    font-size: 0.8rem;
+  }
+  .phase-actions {
+    order: 6;
+  }
+  .phase-actions .btn {
+    padding: 7px 12px;
+    font-size: 0.88rem;
+  }
+  .phase-tools .btn {
+    padding: 5px 8px;
+  }
+  .exit-btn .btn-text {
+    display: none;
+  }
+  .zone-label {
+    font-size: 0.56rem;
+    letter-spacing: 0.02em;
+  }
+  .zone-grave .zone-label-text {
+    display: none;
+  }
+  .zone-grave .zone-label-icon {
+    display: inline;
+  }
+}
+
+/* Celular/tablet em pé: a mão usa a altura que sobra embaixo do campo (cards maiores, mais fáceis de tocar),
+   sem passar da largura nem ficar embaixo do botão do histórico (52px de cada lado, para o leque seguir centralizado).
+   A sobreposição entre os cards é proporcional à quantidade (--n). */
+@media (max-width: 860px) and (orientation: portrait) {
+  .hand {
+    --hw: clamp(
+      40px,
+      min(calc((100vw - 104px) / (var(--n) * 0.8 + 0.2)), max(calc((100dvh - var(--zone) * 4 - 280px) / 1.46), calc(var(--zw) * 1.12))),
+      104px
+    );
+    min-height: calc(var(--hw) * 1.46 + 16px);
+    padding-bottom: 10px;
+  }
+  .hand-card {
+    width: var(--hw);
+    margin: 0 calc(var(--hw) * -0.1);
   }
 }
 
@@ -765,6 +849,20 @@
   .toast {
     padding: 6px 10px;
     font-size: 0.78rem;
+  }
+}
+
+/* Celular deitado: zonas pequenas demais para escrever "Desligados" — fica só o ícone (o título da zona explica). */
+@media (orientation: landscape) and (max-height: 560px) {
+  .zone-label {
+    font-size: 0.56rem;
+    letter-spacing: 0.02em;
+  }
+  .zone-grave .zone-label-text {
+    display: none;
+  }
+  .zone-grave .zone-label-icon {
+    display: inline;
   }
 }
 

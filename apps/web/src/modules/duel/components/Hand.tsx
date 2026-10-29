@@ -1,6 +1,7 @@
 import { useDraggable } from '@dnd-kit/core';
 import type { HandCardView } from '@devoh/engine';
 import { AnimatePresence, m } from 'framer-motion';
+import type { CSSProperties } from 'react';
 import { useMediaQuery } from '../../../shared/lib/useMediaQuery';
 import { CardMini } from '../../cards';
 import { useDuel, useDuelUi } from '../hooks/useDuel';
@@ -16,7 +17,8 @@ export function Hand() {
   const compact = useMediaQuery(COMPACT_LANDSCAPE);
   const n = me.hand?.length ?? 0;
   return (
-    <div className="hand" data-tour="hand">
+    // --n: quantos cards há na mão — o CSS do celular em pé usa para dividir a largura entre eles.
+    <div className="hand" data-tour="hand" style={{ '--n': Math.max(n, 1) } as CSSProperties}>
       <AnimatePresence initial={false}>
         {me.hand?.map((c, i) => (
           <HandCard key={c.iid} card={c} rotate={compact ? 0 : (i - (n - 1) / 2) * Math.min(5, 26 / n)} lift={compact ? -4 : -18} />
