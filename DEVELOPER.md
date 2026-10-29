@@ -23,6 +23,7 @@ npm run format     # Prettier
 npm run build:all  # build de todos os workspaces (o CI roda tudo isso)
 npm run e2e        # Playwright: sobe server + web com prazos curtos e joga no navegador (usa o Chrome instalado; PW_CHANNEL=msedge para o Edge)
 npm run crop-art   # regera as artes a partir de assets/source
+npm run balance    # round-robin dos decks iniciais com os bots e relatório de balanceamento (--games N, --hard, --out arquivo)
 ```
 
 ## Arquitetura
@@ -137,11 +138,12 @@ Convite: `/sala/CODIGO`. Sem sessão na aba, o convite abre o lobby em `/?sala=C
 ## Criar um card novo
 
 1. Crie `packages/engine/src/content/cards/<grupo>/<id>.ts` com `defineCard({ def, effects })`. Use um card parecido como modelo.
-2. Efeitos: implemente os ganchos de `effects/types.ts` (`onSummon`, `onActivate`, `onTrigger`, `onIgnite`, `onStandby`, `onDestroyed`, `atkBonus`, `guardAttack`…), importando só de `effects/api`.
-3. Registre o card em `content/cards/index.ts`. A posição nessa lista é a ordem da coleção.
-4. Se o bot precisar de uma regra para usá-lo bem, adicione em `packages/ai/src/heuristics/cardPlays.ts`.
-5. Arte: coloque a imagem em `assets/source`, registre o recorte em `scripts/crop-art.ts` e rode `npm run crop-art -- <id>` (sem ids, refaz todos). Alternativa: `art: 'icon:<emoji>|<cor1>|<cor2>'`.
-6. `npm test`: as partidas bot×bot pegam efeitos quebrados.
+2. Dados: `rarity` é obrigatória. Em Task, `speed` (`normal`, `continuous`, `field`, `quick`, `equip`); em Bug, `trigger` e `bugType` (`normal`, `continuous`, `counter`). O `typeLine` tem só raça/função ("Humano / QA"): Normal/Efeito/FLIP e o subtipo são derivados (`cardFrame`, `fullTypeLine` em `core/cardInfo.ts`). Profissional sem módulo de efeito e sem `ignition` é **Normal**.
+3. Efeitos: implemente os ganchos de `effects/types.ts` (`onSummon`, `onFlip`, `onActivate`, `onTrigger`, `onIgnite`, `onStandby`, `onDestroyed`, `atkBonus`, `equip`, `guardAttack`…), importando só de `effects/api`. Ao citar um Profissional no log, use `proLabel(slot)`: ele não vaza o nome de um card virado.
+4. Registre o card em `content/cards/index.ts`. A posição nessa lista é a ordem da coleção.
+5. Se o bot precisar de uma regra para usá-lo bem, adicione em `packages/ai/src/heuristics/cardPlays.ts` (`TASK_PLAYS`, `IGNITION_PLAYS`, `FLIP_PLAYS`, `QUICK_BATTLE_PLAYS`…).
+6. Arte: coloque a imagem em `assets/source`, registre o recorte em `scripts/crop-art.ts` e rode `npm run crop-art -- <id>` (sem ids, refaz todos). Alternativa: `art: 'icon:<emoji>|<cor1>|<cor2>'`.
+7. `npm test`: as partidas bot×bot pegam efeitos quebrados. Mexeu em stats ou nos decks? Rode `npm run balance` (meta: cada deck inicial entre 45% e 55%; o relatório também lista quem passa do orçamento ATK/DEF por nível).
 
 > **Teste golden** (`packages/ai/src/golden.test.ts`): 50 partidas com seed fixa precisam dar exatamente o mesmo resultado. Ele existe para pegar mudanças de comportamento sem querer. Se a mudança de regra **for** intencional, regrave com `npx vitest run -u` em `packages/ai` e explique no commit.
 
@@ -181,9 +183,11 @@ Se o domínio mostrar "Application failed to respond" com o app rodando, a porta
 
 ## Regras (v1)
 
-- 4000 LP. Deck de 20 a 30 cards: pessoas da squad com 1 cópia, os demais com até 3. Mão inicial de 4, compra 1 por turno.
+- 4000 LP. Deck de 20 a 30 cards: pessoas da squad, Ultra e Secreta com 1 cópia, Super com 2, os demais com até 3. Mão inicial de 4, compra 1 por turno.
 - 3 zonas de Profissional, 3 de Task/Bug e 1 de Campo. Uma invocação por turno: nível 5–6 sacrifica 1, nível 7+ sacrifica 2.
-- Tasks são ativadas da mão. Bugs ficam virados e disparam sozinhos quando a condição acontece (não no turno em que foram baixados).
+- A invocação do turno pode baixar o Profissional virado em Defesa (com os mesmos sacrifícios). Virado, ele não tem efeitos e o oponente não vê quem é (`cardId: null` na visão). A Invocação-Virar (`flipSummon`) vale a partir do turno seguinte: vai para Ataque, dispara `oppSummon`, o FLIP e o "ao ser invocado". Atacado virado, é revelado antes do cálculo e o FLIP resolve depois, mesmo se destruído.
+- Tasks são ativadas da mão ou baixadas viradas e ativadas depois do campo (a de Campo não pode ser baixada). Rápidas também valem na Batalha do próprio turno; a Rápida baixada só no turno seguinte. Equipamento exige alvo, fica preso a ele (`equippedTo`) e vai ao cemitério quando ele sai do campo.
+- Bugs ficam virados e disparam sozinhos quando a condição acontece (não no turno em que foram baixados). Bug Contínuo fica virado para cima depois de disparar, com os ganchos passivos ativos. Contra-Bug (trigger `oppBug`) pode anular o Bug do oponente antes de ele resolver (um nível de resposta só).
 - Estresse de 0 a 7: +100 de ATK por ponto, e tomar dano de batalha dá +1. No 7, o Profissional de maior nível pede demissão e o Estresse zera.
 - Efeitos anulados (Diegão, Juju, A Mão do Moisés): o Profissional fica sem nenhum efeito até o fim do turno indicado e aparece com 🚫 no campo. Auras e bônus dele também param.
 - Vence quem zerar os LP do oponente, ou quando o deck do oponente acabar.

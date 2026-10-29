@@ -10,7 +10,7 @@ Invoque os devs, ative Tasks, arme Bugs e entregue a Sprint antes que o servidor
 ![PvP online](https://img.shields.io/badge/PvP-online-7c5cff?style=flat-square)
 ![Treino contra bot](https://img.shields.io/badge/treino-contra%20bot-1b8a6b?style=flat-square)
 ![Sem login](https://img.shields.io/badge/sem-login-b23a7a?style=flat-square)
-![54 cards](https://img.shields.io/badge/cards-54-c46a2b?style=flat-square)
+![54 cards](https://img.shields.io/badge/cards-63-c46a2b?style=flat-square)
 ![Grátis](https://img.shields.io/badge/pre%C3%A7o-gr%C3%A1tis-4ade80?style=flat-square)
 
 </div>
@@ -34,8 +34,10 @@ Sem instalar nada, sem cadastro: abre o link, escolhe um apelido e duela.
 - ⚔️ **PvP online em tempo real**: crie uma sala e mande o link `?sala=CODIGO` pro colega.
 - 🤖 **Treino contra o bot** em duas dificuldades: **Com IA** (normal, aceita a primeira sugestão do autocomplete) e **Sem IA** (difícil, pensa cada jogada na raça).
 - 😤 **Mecânica de Estresse**: quanto mais caos, mais ATK… até alguém pedir demissão.
-- 🛠️ **Deck builder**: monte o seu time ou use um dos 3 decks prontos.
-- 📖 **Coleção completa** com todos os cards e efeitos.
+- 🂠 **Blefe e FLIP**: baixe Profissionais virados, faça a Invocação-Virar e dispare efeitos FLIP quando o oponente atacar o card errado.
+- 💎 **Raridades**: Comum, Rara, Super, Ultra e Secreta, com brilho holográfico e limite de cópias no deck.
+- 🛠️ **Deck builder**: monte o seu time ou use um dos 4 decks prontos.
+- 📖 **Coleção completa** com filtros por raridade, tipo, atributo e nível.
 - 📱 **Funciona no celular**, na tela da firma e na TV da sala de reunião.
 - 🔌 **Caiu da call?** Volte para o duelo de onde parou.
 
@@ -80,17 +82,32 @@ Sem instalar nada, sem cadastro: abre o link, escolhe um apelido e duela.
 
 1. **Abra o jogo**, escolha um apelido e um deck.
 2. **Treine contra o bot** ou **crie uma sala** e mande o link pro colega.
-3. No seu turno, **invoque um Profissional**, ative **Tasks** e baixe **Bugs** virados.
+3. No seu turno, **invoque um Profissional** (ou baixe ele virado para blefar), ative **Tasks** e baixe **Bugs** virados.
 4. Clique em **⚔ Batalha**, escolha quem ataca e o alvo.
 5. **Zere os 4000 LP** do oponente (ou deixe o backlog dele acabar) para entregar a Sprint.
 
 ### Os tipos de card
 
-|     | Tipo             | O que faz                                                                                                  |
-| :-: | ---------------- | ---------------------------------------------------------------------------------------------------------- |
-| 🟧  | **Profissional** | Os devs da squad. Atacam e defendem com ATK/DEF. Nível 5–6 precisa de 1 sacrifício; nível 7+ precisa de 2. |
-| 🟩  | **Task**         | Magias ativadas da mão: Café Extra Forte, Home Office, Refatoração Holística, Deploy na Sexta-Feira…       |
-| 🟪  | **Bug**          | Armadilhas viradas que disparam sozinhas: A IA Fez Cagada, Merge Conflict, Erro 404, Prod Caiu…            |
+|     | Tipo                       | O que faz                                                                                                                              |
+| :-: | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| 🟨  | **Profissional Normal**    | Sem efeito, mas com mais ATK/DEF: Dev Júnior, Dev Fullstack, Arquiteta de Software…                                                    |
+| 🟧  | **Profissional de Efeito** | Os devs da squad. Atacam e defendem com ATK/DEF. Nível 5–6 precisa de 1 sacrifício; nível 7+ precisa de 2. Alguns têm efeito **FLIP**. |
+| 🟩  | **Task**                   | Magias: normais, **Contínuas** (∞), de **Campo** (⛰), **Rápidas** (⚡, também na Batalha) e de **Equipamento** (✚).                    |
+| 🟪  | **Bug**                    | Armadilhas viradas que disparam sozinhas. O **Bug Contínuo** (∞) fica no campo; o **Contra-Bug** (↩) anula o Bug do oponente.          |
+
+### 🂠 Virado e FLIP
+
+A invocação do turno pode **baixar o Profissional virado** em Defesa: o oponente não sabe quem é e os efeitos dele ficam desligados. A partir do turno seguinte, a **Invocação-Virar** o coloca em Ataque. Se o oponente atacar um card virado, ele é revelado antes do cálculo, e o efeito **FLIP** resolve depois, mesmo que o card seja destruído.
+
+### 💎 Raridades
+
+| Raridade       | Cópias no deck |
+| -------------- | -------------- |
+| Comum, Rara    | até 3          |
+| Super          | até 2          |
+| Ultra, Secreta | 1              |
+
+Pessoas da squad continuam com 1 cópia, seja qual for a raridade.
 
 ### 😤 Estresse: a regra da casa
 
