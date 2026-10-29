@@ -211,14 +211,14 @@ describe('efeitos especiais', () => {
     expect(slot.card.cardId).toBe('douglas_defensivo');
     expect(slot.position).toBe('def');
   });
-  it('Estresse 10: Profissional de maior nível pede demissão', () => {
+  it('Estresse 7: Profissional de maior nível pede demissão e o Estresse zera', () => {
     let s = game();
     place(s, 0, 'estagiario');
     place(s, 0, 'thy_techlead');
-    s.players[0].stress = 8;
+    s.players[0].stress = 5;
     const daily = giveHand(s, 0, 'daily');
     s = act(s, 0, { type: 'activate', iid: daily });
-    expect(s.players[0].stress).toBe(5);
+    expect(s.players[0].stress).toBe(0);
     expect(s.players[0].pros.filter(Boolean).map((p) => p!.card.cardId)).toEqual(['estagiario']);
   });
   it('Douglas (Dois Problemas) devolve o Estresse', () => {

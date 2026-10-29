@@ -28,14 +28,18 @@ export function addStress(s: GameState, seat: Seat, n: number, byOpponent = fals
   if (p.stress >= MAX_STRESS) meltdown(s, seat);
 }
 
-/** Estresse no máximo: o Profissional de maior nível pede demissão. */
+/** Estresse no máximo: o Profissional de maior nível pede demissão e o Estresse zera. */
 function meltdown(s: GameState, seat: Seat) {
   const p = s.players[seat];
   const victims = prosOf(s, seat).sort((a, b) => (card(b.card.cardId).level ?? 0) - (card(a.card.cardId).level ?? 0));
-  log(s, 'stress', `${p.name} chegou no limite do Estresse!`, { seat });
+  log(s, 'stress', `${p.name} chegou no limite do Estresse! O Estresse zerou.`, { seat });
   p.stress = STRESS_AFTER_MELTDOWN;
   if (victims[0]) {
-    log(s, 'destroy', `"${nameOf(victims[0].card)}" pediu demissão!`, { seat, cardId: victims[0].card.cardId });
+    log(s, 'destroy', `"${nameOf(victims[0].card)}" pediu demissão!`, {
+      seat,
+      cardId: victims[0].card.cardId,
+      iid: victims[0].card.iid,
+    });
     destroyPro(s, victims[0].card.iid, { battle: false, self: true });
   }
 }

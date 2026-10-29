@@ -3,6 +3,7 @@ import {
   card,
   getAtk,
   getDef,
+  MAX_STRESS,
   other,
   prosOf,
   setCardsOf,
@@ -152,7 +153,7 @@ function evaluate(s: GameState, me: Seat): number {
   const persistent = (seat: Seat) => s.players[seat].spells.filter((x) => x && !x.faceDown).length + (s.players[seat].field ? 1 : 0);
   score += 300 * (persistent(me) - persistent(opp));
 
-  const stressRisk = (x: number) => (x >= 8 ? (x - 7) * 600 : 0);
+  const stressRisk = (x: number) => (x >= MAX_STRESS - 2 ? (x - MAX_STRESS + 3) * 600 : 0);
   score += stressRisk(O.stress) - stressRisk(P.stress);
   score -= Math.max(0, 3 - P.deck.length) * 800;
 

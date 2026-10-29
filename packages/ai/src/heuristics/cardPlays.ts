@@ -25,10 +25,10 @@ export const TASK_PLAYS: Record<string, (c: PlayCtx) => Play> = {
   chama_thy: (c) => (c.me.deck.length > 4 ? {} : null),
   cafe: (c) => (c.me.stress >= 3 ? { target: strongest(c.s, c.seat, (x) => x.position === 'atk')?.card.iid } : null),
   home_office: (c) => (c.me.stress >= 2 || c.me.lp <= 2500 ? {} : null),
-  ferias: (c) => (c.me.stress >= 7 ? {} : null),
+  ferias: (c) => (c.me.stress >= 5 ? {} : null),
   refatoracao: (c) => {
     const t = strongest(c.s, c.opp);
-    return t && value(c.s, c.opp, t) >= 1700 && c.me.stress <= 6 ? { target: t.card.iid } : null;
+    return t && value(c.s, c.opp, t) >= 1700 && c.me.stress <= 4 ? { target: t.card.iid } : null;
   },
   hotfix: (c) => {
     const sets = setCardsOf(c.s, c.opp);
@@ -36,9 +36,9 @@ export const TASK_PLAYS: Record<string, (c: PlayCtx) => Play> = {
   },
   reuniao: (c) => {
     const t = strongest(c.s, c.opp, (x) => x.position === 'atk');
-    return t || c.oppP.stress >= 6 ? { target: t?.card.iid } : null;
+    return t || c.oppP.stress >= 5 ? { target: t?.card.iid } : null;
   },
-  daily: (c) => (c.oppP.stress > c.me.stress && c.me.stress <= 6 ? {} : null),
+  daily: (c) => (c.oppP.stress > c.me.stress && c.me.stress <= 4 ? {} : null),
   leite: (c) =>
     [...c.me.hand, ...c.mine.map((m) => m.card)].some((x) => x.cardId === 'danilo' || card(x.cardId).attribute === 'TERRA') ? {} : null,
   gato_gordo: (c) => (!c.me.field ? {} : null),
@@ -65,7 +65,7 @@ export const IGNITION_PLAYS: Record<string, (c: PlayCtx) => Play> = {
     return ia ? { target: ia.card.iid } : null;
   },
   thy_filosofo: (c) => (c.me.stress >= 2 ? {} : null),
-  moises: (c) => (c.me.stress >= 5 ? {} : null),
+  moises: (c) => (c.me.stress >= 4 ? {} : null),
   diegao: (c) => {
     const t = strongest(c.s, c.opp);
     return t ? { target: t.card.iid } : null;

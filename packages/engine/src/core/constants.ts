@@ -1,7 +1,7 @@
 export const START_LP = 4000;
 export const START_HAND = 4;
-export const MAX_STRESS = 10;
-export const STRESS_AFTER_MELTDOWN = 5;
+export const MAX_STRESS = 7;
+export const STRESS_AFTER_MELTDOWN = 0;
 export const ZONES = 3;
 export const HAND_LIMIT = 7;
 export const MAX_LOG = 200;

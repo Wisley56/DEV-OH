@@ -15,12 +15,12 @@ export default defineCard({
     text:
       'Não tá fácil… (1x por turno): não é destruído em batalha; você não recebe dano de batalha com ele. ' +
       'MESMO… (Revanche): sobreviveu a um ataque, ganha +500 ATK permanente. Destruiu um Profissional em batalha, oponente +2 de Estresse. ' +
-      'Resiliência: Estresse 6+ no início do seu turno, −1.',
+      'Resiliência: Estresse 4+ no início do seu turno, −1.',
     flavor: 'Resiliente a qualquer ataque… mas sempre alfineta.',
   },
   effects: {
     onStandby(ctx) {
-      if (ctx.s.players[ctx.me].stress >= 6) {
+      if (ctx.s.players[ctx.me].stress >= 4) {
         log(ctx.s, 'effect', 'Wisley: "Não tá fácil… mas segue o jogo."', { seat: ctx.me, cardId: 'wisley' });
         addStress(ctx.s, ctx.me, -1);
       }
