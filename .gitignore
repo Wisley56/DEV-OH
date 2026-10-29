@@ -6,3 +6,5 @@ dist
 .vercel
 .turbo
 coverage
+test-results
+playwright-report

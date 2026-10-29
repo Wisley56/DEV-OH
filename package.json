@@ -19,7 +19,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "crop-art": "tsx scripts/crop-art.ts"
+    "crop-art": "tsx scripts/crop-art.ts",
+    "e2e": "npm run e2e -w @devoh/web"
   },
   "devDependencies": {
     "@devoh/eslint-config": "*",
