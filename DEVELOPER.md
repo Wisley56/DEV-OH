@@ -184,6 +184,6 @@ Se o domínio mostrar "Application failed to respond" com o app rodando, a porta
 - 4000 LP. Deck de 20 a 30 cards: pessoas da squad com 1 cópia, os demais com até 3. Mão inicial de 4, compra 1 por turno.
 - 3 zonas de Profissional, 3 de Task/Bug e 1 de Campo. Uma invocação por turno: nível 5–6 sacrifica 1, nível 7+ sacrifica 2.
 - Tasks são ativadas da mão. Bugs ficam virados e disparam sozinhos quando a condição acontece (não no turno em que foram baixados).
-- Estresse de 0 a 10: +100 de ATK por ponto, e tomar dano de batalha dá +1. No 10, o Profissional de maior nível pede demissão e o Estresse volta a 5.
+- Estresse de 0 a 7: +100 de ATK por ponto, e tomar dano de batalha dá +1. No 7, o Profissional de maior nível pede demissão e o Estresse zera.
 - Efeitos anulados (Diegão, Juju, A Mão do Moisés): o Profissional fica sem nenhum efeito até o fim do turno indicado e aparece com 🚫 no campo. Auras e bônus dele também param.
 - Vence quem zerar os LP do oponente, ou quando o deck do oponente acabar.

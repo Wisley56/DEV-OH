@@ -94,7 +94,7 @@ Sem instalar nada, sem cadastro: abre o link, escolhe um apelido e duela.
 
 ### 😤 Estresse: a regra da casa
 
-Cada jogador tem uma barra de **Estresse de 0 a 10**. Bugs, reuniões e dano de batalha enchem a barra, e cada ponto dá **+100 de ATK** aos seus Profissionais (o famoso _Modo Desespero_). Mas se chegar a **10**, o seu Profissional mais forte **pede demissão**. Café e Home Office ajudam a respirar.
+Cada jogador tem uma barra de **Estresse de 0 a 7**. Bugs, reuniões e dano de batalha enchem a barra, e cada ponto dá **+100 de ATK** aos seus Profissionais (o famoso _Modo Desespero_). Mas se chegar a **7**, o seu Profissional mais forte **pede demissão** e a barra zera. Café e Home Office ajudam a respirar.
 
 ### 🚀 Deploy na Sexta-Feira
 
