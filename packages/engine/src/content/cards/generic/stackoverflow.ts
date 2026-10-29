@@ -1,20 +1,25 @@
-import { card, defineCard, log, nameOf, randInt } from '../../../effects/api';
+import { card, defineCard, draw, log, nameOf, randInt } from '../../../effects/api';
 
 export default defineCard({
   def: {
     id: 'stackoverflow',
     name: 'Stack Overflow Ancestral',
     kind: 'pro',
-    typeLine: 'Ferramenta / Ancestral / Efeito',
+    rarity: 'rara',
+    typeLine: 'Ferramenta / Ancestral',
     attribute: 'TREVA',
     level: 4,
     atk: 1000,
     def: 2100,
     art: 'icon:📚|#5a2d0c|#f48024',
-    text: 'Pergunta duplicada: ao ser invocado, adicione 1 Task aleatória dos seus Desligados à mão.',
+    text: 'Pergunta duplicada: ao ser invocado, adicione 1 Task aleatória dos seus Desligados à mão. FLIP — Resposta aceita: compre 1 card.',
     flavor: 'Marked as duplicate. Closed.',
   },
   effects: {
+    onFlip(ctx) {
+      log(ctx.s, 'effect', 'Stack Overflow: resposta aceita ✔', { seat: ctx.me, cardId: 'stackoverflow' });
+      draw(ctx.s, ctx.me, 1);
+    },
     onSummon(ctx) {
       const p = ctx.s.players[ctx.me];
       const tasks = p.grave.map((c, i) => ({ c, i })).filter(({ c }) => card(c.cardId).kind === 'task');

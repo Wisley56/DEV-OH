@@ -13,3 +13,9 @@ export function validTarget(s: GameState, me: Seat, kind: TargetKind, iid: strin
   if (kind === 'oppPro') return f.seat === other(me);
   return true;
 }
+
+/** Existe pelo menos um alvo válido desse tipo? */
+export function hasValidTarget(s: GameState, me: Seat, kind: TargetKind): boolean {
+  const ids = [0, 1].flatMap((seat) => [...s.players[seat].pros, ...s.players[seat].spells].map((x) => x?.card.iid));
+  return ids.some((iid) => validTarget(s, me, kind, iid));
+}

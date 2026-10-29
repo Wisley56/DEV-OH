@@ -1,4 +1,4 @@
-import { defineCard, findPro, isOnce, log, markOnce, nameOf, negatePro } from '../../../effects/api';
+import { defineCard, findPro, isOnce, log, markOnce, nameOf, negatePro, proLabel } from '../../../effects/api';
 import { needOppPro, targetPro } from '../../helpers';
 
 export default defineCard({
@@ -6,7 +6,8 @@ export default defineCard({
     id: 'diegao',
     name: 'Diegão',
     kind: 'pro',
-    typeLine: 'Guerreiro / Superpesado / Efeito',
+    rarity: 'secreta',
+    typeLine: 'Guerreiro / Superpesado',
     attribute: 'TREVA',
     level: 9,
     atk: 3000,
@@ -24,7 +25,7 @@ export default defineCard({
     onIgnite(ctx) {
       const f = targetPro(ctx, 'opp');
       if (!f) return;
-      log(ctx.s, 'effect', `Diegão soltou uma Patada Irônica: "${nameOf(f.slot.card)}" ficou sem reação (efeitos anulados, −1000 ATK).`, {
+      log(ctx.s, 'effect', `Diegão soltou uma Patada Irônica: ${proLabel(f.slot)} ficou sem reação (efeitos anulados, −1000 ATK).`, {
         seat: ctx.me,
         cardId: 'diegao',
         iid: ctx.self.iid,

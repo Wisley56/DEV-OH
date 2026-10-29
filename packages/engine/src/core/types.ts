@@ -5,7 +5,14 @@ export type CardKind = 'pro' | 'task' | 'bug';
 
 export type Attribute = 'TREVA' | 'AGUA' | 'TERRA' | 'FOGO' | 'LUZ' | 'TECH';
 
-export type TaskSpeed = 'normal' | 'continuous' | 'field';
+/** normal = resolve e vai pro cemitério; continuous/field/equip = ficam em campo; quick = também na Batalha. */
+export type TaskSpeed = 'normal' | 'continuous' | 'field' | 'quick' | 'equip';
+
+/** normal = dispara e sai; continuous = fica virado para cima; counter = anula Bugs do oponente. */
+export type BugType = 'normal' | 'continuous' | 'counter';
+
+/** Raridade: muda o visual e limita cópias no deck (ultra/secreta 1, super 2). */
+export type Rarity = 'comum' | 'rara' | 'super' | 'ultra' | 'secreta';
 
 /** Quando uma Armadilha (Bug) dispara automaticamente. */
 export type BugTrigger =
@@ -14,7 +21,8 @@ export type BugTrigger =
   | 'oppDirectAttack' // oponente declarou ataque direto
   | 'oppTask' // oponente ativou uma Task
   | 'battleDamage' // você vai receber dano de batalha
-  | 'proDestroyedByBattle'; // um Profissional seu foi destruído em batalha
+  | 'proDestroyedByBattle' // um Profissional seu foi destruído em batalha
+  | 'oppBug'; // um Bug do oponente vai disparar (Contra-Bug)
 
 /** Tipo de alvo que um efeito pede ao jogador. */
 export type TargetKind = 'ownPro' | 'oppPro' | 'anyPro' | 'oppSet';
@@ -23,8 +31,12 @@ export interface CardDef {
   id: string;
   name: string;
   kind: CardKind;
-  /** Linha entre colchetes: "Humano / Tech Lead / Efeito" */
-  typeLine: string;
+  rarity: Rarity;
+  /**
+   * Raça / função ("Humano / Tech Lead"). Normal/Efeito/FLIP e o subtipo de Task/Bug
+   * são derivados (fullTypeLine); em Task/Bug é só um rótulo extra opcional.
+   */
+  typeLine?: string;
   text: string;
   /** Frase de efeito / piada (itálico na carta) */
   flavor?: string;
@@ -46,6 +58,8 @@ export interface CardDef {
   speed?: TaskSpeed;
   // Bugs
   trigger?: BugTrigger;
+  /** Ausente = normal. */
+  bugType?: BugType;
 
   target?: TargetKind;
   /** Sem alvo o card não faz nada útil: a ativação exige um alvo válido. */
@@ -63,6 +77,8 @@ export interface CardInstance {
 export interface ProSlot {
   card: CardInstance;
   position: 'atk' | 'def';
+  /** Baixado virado (sempre em Defesa): efeitos desligados e identidade escondida do oponente. */
+  faceDown: boolean;
   atkMod: number;
   defMod: number;
   tempAtk: number;
@@ -76,6 +92,8 @@ export interface ProSlot {
   oncePerTurn: Record<string, number>;
   /** Efeitos anulados até este turno (inclusive). Ausente = nunca foi anulado. */
   negatedUntilTurn?: number;
+  /** Turno em que está protegido: não é destruído em batalha e o dono não recebe dano de batalha com ele. */
+  protectedTurn?: number;
 }
 
 export interface SpellSlot {
@@ -83,6 +101,8 @@ export interface SpellSlot {
   faceDown: boolean;
   revealed: boolean;
   setTurn: number;
+  /** Task de Equipamento: iid do Profissional equipado. */
+  equippedTo?: string;
 }
 
 export interface PlayerState {
@@ -107,7 +127,21 @@ export interface PlayerState {
 export type Phase = 'main' | 'battle' | 'ended';
 
 export type LogKind =
-  'info' | 'turn' | 'draw' | 'summon' | 'task' | 'bug' | 'effect' | 'attack' | 'damage' | 'heal' | 'destroy' | 'stress' | 'win' | 'coin';
+  | 'info'
+  | 'turn'
+  | 'draw'
+  | 'summon'
+  | 'task'
+  | 'bug'
+  | 'effect'
+  | 'attack'
+  | 'damage'
+  | 'heal'
+  | 'destroy'
+  | 'stress'
+  | 'win'
+  | 'coin'
+  | 'flip';
 
 export interface LogEntry {
   id: number;
@@ -150,7 +184,8 @@ export interface GameState {
 export type Action =
   | { type: 'summon'; iid: string; position: 'atk' | 'def'; tributes?: string[]; target?: string; zone?: number }
   | { type: 'activate'; iid: string; target?: string; zone?: number }
-  | { type: 'set'; iid: string; zone?: number }
+  | { type: 'set'; iid: string; zone?: number; tributes?: string[] }
+  | { type: 'flipSummon'; iid: string }
   | { type: 'changePosition'; iid: string }
   | { type: 'ignition'; iid: string; target?: string }
   | { type: 'goBattle' }

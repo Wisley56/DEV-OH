@@ -1,8 +1,9 @@
-import { findPro, findSpell } from '../core/board';
-import { nameOf } from '../core/catalog';
+import { findPro, findSpell, isNegated } from '../core/board';
+import { effectsOf, nameOf, proLabel } from '../core/catalog';
 import { log } from '../core/log';
 import { shuffle } from '../core/rng';
 import type { CardInstance, GameState, ProSlot, Seat } from '../core/types';
+import type { FlipCause } from '../effects/types';
 import { ctxFor, proEffects } from '../effects/context';
 import { lose } from './win';
 
@@ -40,7 +41,24 @@ function removePro(s: GameState, iid: string): ProSlot | null {
   const f = findPro(s, iid);
   if (!f) return null;
   s.players[f.seat].pros[f.idx] = null;
+  dropEquips(s, iid);
   return f.slot;
+}
+
+/** O equipado saiu do campo: os Equipamentos presos a ele vão para o cemitério. */
+function dropEquips(s: GameState, iid: string) {
+  for (const p of s.players) {
+    p.spells.forEach((x, i) => {
+      if (!x || x.equippedTo !== iid) return;
+      p.spells[i] = null;
+      toGrave(s, x.card);
+      log(s, 'destroy', `"${nameOf(x.card)}" saiu de campo junto com o equipado.`, {
+        seat: x.card.owner,
+        cardId: x.card.cardId,
+        iid: x.card.iid,
+      });
+    });
+  }
 }
 
 export interface DestroyCause {
@@ -97,13 +115,20 @@ export function bounceToHand(s: GameState, iid: string) {
   if (!f) return;
   removePro(s, iid);
   s.players[f.slot.card.owner].hand.push(f.slot.card);
-  log(s, 'effect', `"${nameOf(f.slot.card)}" voltou para a mão.`, { seat: f.seat, cardId: f.slot.card.cardId });
+  const label = proLabel(f.slot);
+  log(s, 'effect', `${label[0].toUpperCase()}${label.slice(1)} voltou para a mão.`, {
+    seat: f.seat,
+    ...(!f.slot.faceDown && { cardId: f.slot.card.cardId }),
+  });
 }
 
 /** Muda a posição; o card pode se transformar em outro (ex.: par Douglas Ataque/Defensivo). */
 export function setPosition(s: GameState, iid: string, pos: 'atk' | 'def') {
   const f = findPro(s, iid);
-  if (!f || f.slot.position === pos) return;
+  if (!f) return;
+  // Ir para Ataque revela um card virado (como "mude para Ataque com a face para cima").
+  if (f.slot.faceDown && pos === 'atk') flipFaceUp(s, iid, 'effect');
+  if (!findPro(s, iid) || f.slot.position === pos) return;
   f.slot.position = pos;
   const into = proEffects(s, f.slot)?.onPositionChange?.(ctxFor(s, f.slot.card), pos);
   if (into) transform(s, f.slot, into);
@@ -120,4 +145,39 @@ export function negatePro(s: GameState, iid: string, untilTurn: number) {
   const f = findPro(s, iid);
   if (!f) return;
   f.slot.negatedUntilTurn = Math.max(f.slot.negatedUntilTurn ?? -1, untilTurn);
+}
+
+/** Revela um Profissional virado e mostra quem ele é. Não resolve o FLIP (veja flipFaceUp). */
+export function revealPro(s: GameState, slot: ProSlot) {
+  if (!slot.faceDown) return;
+  slot.faceDown = false;
+  log(s, 'flip', `"${nameOf(slot.card)}" foi virado para cima!`, { seat: slot.card.owner, cardId: slot.card.cardId, iid: slot.card.iid });
+}
+
+/** Efeito FLIP do card — resolve mesmo que ele já tenha saído do campo (virado por ataque e destruído). */
+export function resolveFlip(s: GameState, slot: ProSlot, cause: FlipCause) {
+  if (s.winner !== null || isNegated(s, slot)) return;
+  const fx = effectsOf(slot.card.cardId);
+  if (!fx?.onFlip) return;
+  log(s, 'effect', `FLIP! "${nameOf(slot.card)}"`, { seat: slot.card.owner, cardId: slot.card.cardId, iid: slot.card.iid });
+  fx.onFlip(ctxFor(s, slot.card), cause);
+}
+
+/** Vira para cima por efeito (fica na posição em que está) e resolve o FLIP. */
+export function flipFaceUp(s: GameState, iid: string, cause: FlipCause = 'effect') {
+  const f = findPro(s, iid);
+  if (!f || !f.slot.faceDown) return;
+  revealPro(s, f.slot);
+  resolveFlip(s, f.slot, cause);
+}
+
+/** Vira para baixo por efeito: vai para Defesa virado (efeitos desligados). */
+export function setFaceDown(s: GameState, iid: string) {
+  const f = findPro(s, iid);
+  if (!f || f.slot.faceDown) return;
+  setPosition(s, iid, 'def');
+  const g = findPro(s, iid);
+  if (!g) return;
+  g.slot.faceDown = true;
+  log(s, 'info', `"${nameOf(g.slot.card)}" foi virado para baixo.`, { seat: g.seat, iid });
 }

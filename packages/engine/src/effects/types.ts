@@ -24,11 +24,15 @@ export interface BugEvent {
   target?: string;
   summoned?: string;
   task?: string;
+  /** Bug do oponente que vai disparar (trigger oppBug). */
+  bug?: string;
   damage?: number;
   destroyed?: string;
   by?: string;
   negated?: boolean;
 }
+
+export type FlipCause = 'summon' | 'attacked' | 'effect';
 
 /** Declaração de ataque: iid do atacante e do alvo (sem alvo = ataque direto). */
 export interface AttackInfo {
@@ -46,6 +50,8 @@ export interface CardEffects {
   canActivate?(ctx: EffectCtx): string | null;
   onActivate?(ctx: EffectCtx): void;
   onSummon?(ctx: EffectCtx): void;
+  /** Efeito FLIP: o Profissional virado foi revelado (Invocação-Virar, atacado ou por efeito). */
+  onFlip?(ctx: EffectCtx, cause: FlipCause): void;
   canIgnite?(ctx: EffectCtx): string | null;
   onIgnite?(ctx: EffectCtx): void;
   /** Início do turno do dono, enquanto o card está no campo. */
@@ -59,6 +65,12 @@ export interface CardEffects {
   onTrigger?(ctx: EffectCtx, ev: BugEvent): void;
   /** Profissional em campo (de qualquer lado) reage a qualquer Bug ativado. */
   onAnyBug?(ctx: EffectCtx): void;
+
+  // ── Equipamento ──
+  /** Task de Equipamento: ajuste de ATK/DEF do Profissional equipado (q = ele). */
+  equip?(q: StatCtx): { atk?: number; def?: number };
+  /** Task de Equipamento: dano de batalha envolvendo o equipado não dá Estresse ao dono dele. */
+  calmInBattle?(): boolean;
 
   // ── Status (consultas puras) ──
   /** Ajusta o ATK base do próprio Profissional (antes dos bônus). */

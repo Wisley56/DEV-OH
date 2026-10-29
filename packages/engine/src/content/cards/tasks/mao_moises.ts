@@ -11,8 +11,9 @@ export default defineCard({
     id: 'mao_moises',
     name: 'A Mão do Moisés',
     kind: 'task',
+    rarity: 'super',
     speed: 'normal',
-    typeLine: 'Task / Tudo ou Nada',
+    typeLine: 'Tudo ou Nada',
     art: '/art/mao_moises.webp',
     text:
       'Tudo ou nada (8 ou 80)! Jogue um dado (+1 se "Moisés do Jiu-Jitsu" estiver no seu campo). ' +

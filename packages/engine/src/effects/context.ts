@@ -8,7 +8,7 @@ export function ctxFor(s: GameState, self: CardInstance, target?: string): Effec
   return { s, me: self.owner, opp: other(self.owner), self, target };
 }
 
-/** Efeitos de um Profissional no campo — nenhum enquanto estiver anulado. */
+/** Efeitos de um Profissional no campo — nenhum enquanto estiver anulado ou virado. */
 export function proEffects(s: GameState, slot: ProSlot): CardEffects | undefined {
-  return isNegated(s, slot) ? undefined : effectsOf(slot.card.cardId);
+  return slot.faceDown || isNegated(s, slot) ? undefined : effectsOf(slot.card.cardId);
 }

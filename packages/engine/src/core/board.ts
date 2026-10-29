@@ -8,10 +8,11 @@ export function newInstance(s: GameState, cardId: string, owner: Seat): CardInst
   return { iid: `c${s.nextIid++}`, cardId, owner };
 }
 
-export function newProSlot(c: CardInstance, position: 'atk' | 'def', turn: number): ProSlot {
+export function newProSlot(c: CardInstance, position: 'atk' | 'def', turn: number, faceDown = false): ProSlot {
   return {
     card: c,
-    position,
+    position: faceDown ? 'def' : position,
+    faceDown,
     atkMod: 0,
     defMod: 0,
     tempAtk: 0,
@@ -57,8 +58,13 @@ export function hasFaceUp(s: GameState, seat: Seat, cardId: string): boolean {
   return p.spells.some((x) => x && !x.faceDown && x.card.cardId === cardId);
 }
 
-/** Ids distintos das Tasks viradas para cima de `seat` (campo + zonas), na ordem do tabuleiro. */
-export function faceUpTaskIds(s: GameState, seat: Seat): string[] {
+/** Equipamentos (virados para cima) presos ao Profissional `iid`, dos dois lados. */
+export function equipsOf(s: GameState, iid: string): SpellSlot[] {
+  return s.players.flatMap((p) => p.spells.filter((x): x is SpellSlot => !!x && !x.faceDown && x.equippedTo === iid));
+}
+
+/** Ids distintos das Tasks e Bugs virados para cima de `seat` (campo + zonas), na ordem do tabuleiro. */
+export function faceUpSpellIds(s: GameState, seat: Seat): string[] {
   const p = s.players[seat];
   const ids: string[] = [];
   for (const x of [p.field, ...p.spells]) if (x && !x.faceDown && !ids.includes(x.card.cardId)) ids.push(x.card.cardId);

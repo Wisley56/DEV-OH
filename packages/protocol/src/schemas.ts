@@ -19,7 +19,8 @@ const zone = z.number().int().min(0).max(9).optional();
 export const ActionSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('summon'), iid, position, tributes: z.array(iid).max(3).optional(), target: iid.optional(), zone }),
   z.object({ type: z.literal('activate'), iid, target: iid.optional(), zone }),
-  z.object({ type: z.literal('set'), iid, zone }),
+  z.object({ type: z.literal('set'), iid, zone, tributes: z.array(iid).max(3).optional() }),
+  z.object({ type: z.literal('flipSummon'), iid }),
   z.object({ type: z.literal('changePosition'), iid }),
   z.object({ type: z.literal('ignition'), iid, target: iid.optional() }),
   z.object({ type: z.literal('goBattle') }),

@@ -1,4 +1,4 @@
-import { defineCard, log, nameOf, prosOf, rand } from '../../../effects/api';
+import { defineCard, log, proLabel, prosOf, rand } from '../../../effects/api';
 import { targetPro } from '../../helpers';
 
 export default defineCard({
@@ -6,7 +6,8 @@ export default defineCard({
     id: 'copilot',
     name: 'Copilot Autocomplete',
     kind: 'pro',
-    typeLine: 'IA / Ferramenta / Efeito',
+    rarity: 'rara',
+    typeLine: 'IA / Ferramenta',
     attribute: 'LUZ',
     level: 3,
     atk: 1200,
@@ -26,9 +27,7 @@ export default defineCard({
       log(
         ctx.s,
         'effect',
-        wrong
-          ? `Copilot completou errado! "${nameOf(f.slot.card)}" −600 ATK.`
-          : `Copilot acertou de primeira: "${nameOf(f.slot.card)}" +600 ATK.`,
+        wrong ? `Copilot completou errado! ${proLabel(f.slot)} −600 ATK.` : `Copilot acertou de primeira: ${proLabel(f.slot)} +600 ATK.`,
         { seat: ctx.me, cardId: 'copilot' },
       );
     },

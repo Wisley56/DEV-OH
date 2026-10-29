@@ -1,8 +1,12 @@
 import { card, hasCard } from '../core/catalog';
 import { DECK_MAX, DECK_MIN, MAX_COPIES } from '../core/constants';
 
-/** Cópias permitidas de um card no deck: pessoa da squad 1, demais até MAX_COPIES. */
-export const maxCopies = (cardId: string) => (card(cardId).unique ? 1 : MAX_COPIES);
+/** Cópias permitidas de um card no deck: pessoa da squad, Ultra e Secreta 1; Super 2; demais até MAX_COPIES. */
+export function maxCopies(cardId: string): number {
+  const d = card(cardId);
+  if (d.unique || d.rarity === 'ultra' || d.rarity === 'secreta') return 1;
+  return d.rarity === 'super' ? Math.min(2, MAX_COPIES) : MAX_COPIES;
+}
 
 /** Retorna lista de problemas; vazia = deck válido. */
 export function validateDeck(cards: string[]): string[] {

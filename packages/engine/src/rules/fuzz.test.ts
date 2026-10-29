@@ -44,13 +44,13 @@ function randomAction(s: GameState, rand: () => number): Action {
   const pos = rand() < 0.5 ? 'atk' : 'def';
   // Zona: ausente, válida ou inválida.
   const zone = rand() < 0.5 ? undefined : Math.floor(rand() * 5) - 1;
-  switch (Math.floor(rand() * 9)) {
+  switch (Math.floor(rand() * 10)) {
     case 0:
       return { type: 'summon', iid: pick(), position: pos, tributes: rand() < 0.5 ? [pick(), pick()] : undefined, target: maybe(), zone };
     case 1:
       return { type: 'activate', iid: pick(), target: maybe(), zone };
     case 2:
-      return { type: 'set', iid: pick(), zone };
+      return { type: 'set', iid: pick(), zone, tributes: rand() < 0.3 ? [pick(), pick()] : undefined };
     case 3:
       return { type: 'changePosition', iid: pick() };
     case 4:
@@ -61,6 +61,8 @@ function randomAction(s: GameState, rand: () => number): Action {
       return { type: 'attack', iid: pick(), target: maybe() };
     case 7:
       return { type: 'endTurn' };
+    case 8:
+      return { type: 'flipSummon', iid: pick() };
     default:
       // Desistência rara, para as partidas durarem.
       return rand() < 0.02 ? { type: 'surrender' } : { type: 'endTurn' };
@@ -75,6 +77,7 @@ function checkInvariants(s: GameState) {
     expect(p.stress).toBeLessThanOrEqual(10);
     expect(p.pros).toHaveLength(ZONES);
     expect(p.spells).toHaveLength(ZONES);
+    for (const pro of p.pros) if (pro?.faceDown) expect(pro.position, 'virado sempre em Defesa').toBe('def');
     const cards = [...p.hand, ...p.grave, ...p.deck, ...[...p.pros, ...p.spells, p.field].flatMap((z) => (z ? [z.card] : []))];
     for (const c of cards) {
       expect(seen.has(c.iid), `iid ${c.iid} em dois lugares`).toBe(false);

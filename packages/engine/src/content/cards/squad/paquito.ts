@@ -1,11 +1,12 @@
-import { defineCard, getAtk, heal, log, nameOf, prosOf, setPosition } from '../../../effects/api';
+import { defineCard, getAtk, heal, log, proLabel, prosOf, setPosition } from '../../../effects/api';
 
 export default defineCard({
   def: {
     id: 'paquito',
     name: 'Paquito Erótico',
     kind: 'pro',
-    typeLine: 'Humano / Cantor / Efeito',
+    rarity: 'rara',
+    typeLine: 'Humano / Cantor',
     attribute: 'FOGO',
     level: 3,
     atk: 1100,
@@ -21,7 +22,7 @@ export default defineCard({
       if (targets.length) {
         targets.sort((a, b) => getAtk(ctx.s, ctx.opp, b) - getAtk(ctx.s, ctx.opp, a));
         const t = targets[0];
-        log(ctx.s, 'effect', `♪ Prepara o coração… ♪ "${nameOf(t.card)}" ficou encantado.`, { seat: ctx.me, cardId: 'paquito' });
+        log(ctx.s, 'effect', `♪ Prepara o coração… ♪ ${proLabel(t)} ficou encantado.`, { seat: ctx.me, cardId: 'paquito' });
         setPosition(ctx.s, t.card.iid, 'def');
         t.lockedUntilTurn = ctx.s.turn + 1;
       }

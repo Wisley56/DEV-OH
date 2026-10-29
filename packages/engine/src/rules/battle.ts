@@ -1,5 +1,5 @@
-import { findPro, other, prosOf } from '../core/board';
-import { nameOf } from '../core/catalog';
+import { equipsOf, findPro, other, prosOf } from '../core/board';
+import { effectsOf, nameOf, proLabel } from '../core/catalog';
 import { log } from '../core/log';
 import type { GameState, ProSlot, Seat } from '../core/types';
 import { fireBugs } from '../effects/bugs';
@@ -8,7 +8,7 @@ import type { AttackInfo } from '../effects/types';
 import { damage } from './life';
 import { getAtk, getDef } from './stats';
 import { addStress } from './stress';
-import { destroyPro } from './zones';
+import { destroyPro, resolveFlip, revealPro } from './zones';
 
 export function attackBlock(s: GameState, seat: Seat, slot: ProSlot): string | null {
   if (s.phase !== 'battle') return 'Entre na Fase de Batalha primeiro.';
@@ -21,7 +21,8 @@ export function attackBlock(s: GameState, seat: Seat, slot: ProSlot): string | n
 /**
  * Ordem de resolução de um ataque:
  * 1. guardAttack dos Profissionais do defensor  2. onTargeted do alvo  3. Bugs do defensor
- * 4. onAttack do atacante e onAllyAttack do lado dele  5. cálculo de dano/destruição  6. afterSurviveAttack do alvo.
+ * 4. alvo virado é revelado  5. onAttack do atacante e onAllyAttack do lado dele  6. cálculo de dano/destruição
+ * 7. afterSurviveAttack do alvo  8. FLIP do alvo revelado (mesmo se foi destruído).
  */
 export function attack(s: GameState, seat: Seat, iid: string, targetIid?: string): string | null {
   const opp = other(seat);
@@ -39,7 +40,7 @@ export function attack(s: GameState, seat: Seat, iid: string, targetIid?: string
 
   f.slot.attackedTurn = s.turn;
   const A = f.slot;
-  log(s, 'attack', target ? `"${nameOf(A.card)}" atacou "${nameOf(target.card)}"!` : `"${nameOf(A.card)}" atacou diretamente!`, {
+  log(s, 'attack', target ? `"${nameOf(A.card)}" atacou ${proLabel(target)}!` : `"${nameOf(A.card)}" atacou diretamente!`, {
     seat,
     cardId: A.card.cardId,
     iid: A.card.iid,
@@ -62,25 +63,32 @@ export function attack(s: GameState, seat: Seat, iid: string, targetIid?: string
   if (!findPro(s, A.card.iid)) return null;
   if (target && !findPro(s, target.card.iid)) return null;
 
+  const flipped = target?.faceDown ? target : null;
+  if (flipped) revealPro(s, flipped);
+
   proEffects(s, A)?.onAttack?.(ctxFor(s, A.card), info);
   for (const pro of prosOf(s, seat)) proEffects(s, pro)?.onAllyAttack?.(ctxFor(s, pro.card), info);
-  if (s.winner !== null || !findPro(s, A.card.iid)) return null;
+  if (s.winner !== null || !findPro(s, A.card.iid)) {
+    if (flipped) resolveFlip(s, flipped, 'attacked');
+    return null;
+  }
 
   const atkA = getAtk(s, seat, A);
   if (!target) {
-    battleDamage(s, opp, atkA, [A]);
+    battleDamage(s, opp, atkA, [A], calmOwners(s, [A]));
     return null;
   }
   const involved = [A, target];
+  const calm = calmOwners(s, involved);
   if (target.position === 'atk') {
     const atkT = getAtk(s, opp, target);
     if (atkA > atkT) {
       const destroyed = battleDestroy(s, target, A);
-      battleDamage(s, opp, atkA - atkT, involved);
+      battleDamage(s, opp, atkA - atkT, involved, calm);
       if (destroyed) afterKill(s, A);
     } else if (atkA < atkT) {
       battleDestroy(s, A, target);
-      battleDamage(s, seat, atkT - atkA, involved);
+      battleDamage(s, seat, atkT - atkA, involved, calm);
     } else if (atkA > 0) {
       battleDestroy(s, A, target);
       battleDestroy(s, target, A);
@@ -90,10 +98,11 @@ export function attack(s: GameState, seat: Seat, iid: string, targetIid?: string
     if (atkA > defT) {
       if (battleDestroy(s, target, A)) afterKill(s, A);
     } else if (atkA < defT) {
-      battleDamage(s, seat, defT - atkA, involved);
+      battleDamage(s, seat, defT - atkA, involved, calm);
     }
   }
   if (findPro(s, target.card.iid) && s.winner === null) proEffects(s, target)?.afterSurviveAttack?.(ctxFor(s, target.card));
+  if (flipped) resolveFlip(s, flipped, 'attacked');
   return null;
 }
 
@@ -101,6 +110,13 @@ export function attack(s: GameState, seat: Seat, iid: string, targetIid?: string
 function battleDestroy(s: GameState, victim: ProSlot, by: ProSlot): boolean {
   const f = findPro(s, victim.card.iid);
   if (!f) return false;
+  if (victim.protectedTurn === s.turn) {
+    log(s, 'effect', `"${nameOf(victim.card)}" está protegido neste turno e não foi destruído.`, {
+      seat: f.seat,
+      cardId: victim.card.cardId,
+    });
+    return false;
+  }
   const saved = proEffects(s, victim)?.saveFromBattle?.(ctxFor(s, victim.card));
   if (saved) {
     log(s, 'effect', saved, { seat: f.seat, cardId: victim.card.cardId });
@@ -124,10 +140,19 @@ function afterKill(s: GameState, killer: ProSlot) {
   proEffects(s, killer)?.afterBattleKill?.(ctxFor(s, killer.card));
 }
 
-function battleDamage(s: GameState, seat: Seat, amount: number, involved: ProSlot[]) {
+/** Donos que não ganham Estresse por dano de batalha (Equipamento "calmInBattle"); calculado antes das destruições. */
+function calmOwners(s: GameState, involved: ProSlot[]): Set<Seat> {
+  const out = new Set<Seat>();
+  for (const x of involved) if (equipsOf(s, x.card.iid).some((eq) => effectsOf(eq.card.cardId)?.calmInBattle?.())) out.add(x.card.owner);
+  return out;
+}
+
+function battleDamage(s: GameState, seat: Seat, amount: number, involved: ProSlot[], calm: Set<Seat>) {
   if (amount <= 0 || s.winner !== null) return;
-  for (const x of involved) {
-    if (x.card.owner === seat && proEffects(s, x)?.shieldBattleDamage?.(ctxFor(s, x.card))) return;
+  const own = involved.filter((x) => x.card.owner === seat);
+  if (own.some((x) => x.protectedTurn === s.turn)) return;
+  for (const x of own) {
+    if (proEffects(s, x)?.shieldBattleDamage?.(ctxFor(s, x.card))) return;
   }
   for (const pro of prosOf(s, seat)) {
     if (proEffects(s, pro)?.preventOwnerBattleDamage?.(ctxFor(s, pro.card))) return;
@@ -136,5 +161,5 @@ function battleDamage(s: GameState, seat: Seat, amount: number, involved: ProSlo
   const final = ev.damage ?? amount;
   if (final <= 0) return;
   damage(s, seat, final);
-  addStress(s, seat, 1);
+  if (!calm.has(seat)) addStress(s, seat, 1);
 }

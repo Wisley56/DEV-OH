@@ -5,7 +5,8 @@ export default defineCard({
     id: 'wisley',
     name: 'Wisley (Não Tá Fácil)',
     kind: 'pro',
-    typeLine: 'Guerreiro / Defensor / Revanche / Efeito',
+    rarity: 'super',
+    typeLine: 'Guerreiro / Defensor / Revanche',
     attribute: 'TERRA',
     level: 4,
     atk: 1200,
@@ -15,10 +16,17 @@ export default defineCard({
     text:
       'Não tá fácil… (1x por turno): não é destruído em batalha; você não recebe dano de batalha com ele. ' +
       'MESMO… (Revanche): sobreviveu a um ataque, ganha +500 ATK permanente. Destruiu um Profissional em batalha, oponente +2 de Estresse. ' +
-      'Resiliência: Estresse 4+ no início do seu turno, −1.',
+      'Resiliência: Estresse 4+ no início do seu turno, −1. ' +
+      'FLIP — Tô aqui: seu Estresse −2 e ele ganha +500 ATK permanente.',
     flavor: 'Resiliente a qualquer ataque… mas sempre alfineta.',
   },
   effects: {
+    onFlip(ctx) {
+      addStress(ctx.s, ctx.me, -2);
+      const f = findPro(ctx.s, ctx.self.iid);
+      if (f) f.slot.atkMod += 500;
+      log(ctx.s, 'effect', 'Wisley: "Não tá fácil… mas tô aqui." — Estresse −2 e +500 ATK.', { seat: ctx.me, cardId: 'wisley' });
+    },
     onStandby(ctx) {
       if (ctx.s.players[ctx.me].stress >= 4) {
         log(ctx.s, 'effect', 'Wisley: "Não tá fácil… mas segue o jogo."', { seat: ctx.me, cardId: 'wisley' });

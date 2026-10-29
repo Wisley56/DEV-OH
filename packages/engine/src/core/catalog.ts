@@ -1,5 +1,5 @@
 import type { CardEffects } from '../effects/types';
-import type { CardDef, CardInstance } from './types';
+import type { CardDef, CardInstance, ProSlot } from './types';
 
 /**
  * Porta do catálogo de cards: o kernel de regras só conhece esta interface.
@@ -28,8 +28,12 @@ export function card(id: string): CardDef {
   return c;
 }
 
-export const hasCard = (id: string) => Object.hasOwn(catalog().defs, id);
+/** Card da coleção (pode ir no deck). Cards internos, como o oculto dos bots, ficam de fora. */
+export const hasCard = (id: string) => catalog().list.some((c) => c.id === id);
 export const cardList = () => catalog().list;
 export const effectsOf = (id: string): CardEffects | undefined =>
   Object.hasOwn(catalog().effects, id) ? catalog().effects[id] : undefined;
 export const nameOf = (c: CardInstance | string) => card(typeof c === 'string' ? c : c.cardId).name;
+
+/** Nome de um Profissional em campo para o log: "Nome", ou "um Profissional virado" (sem vazar a identidade). */
+export const proLabel = (slot: ProSlot) => (slot.faceDown ? 'um Profissional virado' : `"${nameOf(slot.card)}"`);

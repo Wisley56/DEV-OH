@@ -1,4 +1,4 @@
-import { faceUpTaskIds, other, prosOf } from '../core/board';
+import { equipsOf, faceUpSpellIds, other, prosOf } from '../core/board';
 import { card, effectsOf } from '../core/catalog';
 import type { GameState, ProSlot, Seat } from '../core/types';
 import { proEffects } from '../effects/context';
@@ -8,7 +8,7 @@ import type { CardEffects, StatCtx } from '../effects/types';
 function oppAuraSources(s: GameState, seat: Seat): CardEffects[] {
   const opp = other(seat);
   const out: CardEffects[] = [];
-  for (const id of faceUpTaskIds(s, opp)) {
+  for (const id of faceUpSpellIds(s, opp)) {
     const fx = effectsOf(id);
     if (fx?.oppAura) out.push(fx);
   }
@@ -29,11 +29,12 @@ export function getAtk(s: GameState, seat: Seat, slot: ProSlot): number {
   let atk = base + slot.atkMod + slot.tempAtk;
   atk += s.players[seat].stress * 100; // Modo Desespero
   if (fx?.atkBonus) atk += fx.atkBonus(q);
-  for (const id of faceUpTaskIds(s, seat)) {
+  for (const id of faceUpSpellIds(s, seat)) {
     const aura = effectsOf(id)?.auraAtk;
     if (aura) atk += aura(q);
   }
   for (const src of oppAuraSources(s, seat)) atk += src.oppAura!(q).atk ?? 0;
+  for (const eq of equipsOf(s, slot.card.iid)) atk += effectsOf(eq.card.cardId)?.equip?.(q).atk ?? 0;
   return Math.max(0, atk);
 }
 
@@ -42,5 +43,6 @@ export function getDef(s: GameState, seat: Seat, slot: ProSlot): number {
   const q: StatCtx = { s, seat, slot, def };
   let total = (def.def ?? 0) + slot.defMod;
   for (const src of oppAuraSources(s, seat)) total += src.oppAura!(q).def ?? 0;
+  for (const eq of equipsOf(s, slot.card.iid)) total += effectsOf(eq.card.cardId)?.equip?.(q).def ?? 0;
   return Math.max(0, total);
 }
