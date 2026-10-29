@@ -31,6 +31,9 @@ import sre from './generic/sre';
 import gerente from './generic/gerente';
 import backendNoturno from './generic/backend_noturno';
 import qa from './generic/qa';
+import devJunior from './generic/dev_junior';
+import devFullstack from './generic/dev_fullstack';
+import arquiteta from './generic/arquiteta';
 import cafe from './tasks/cafe';
 import homeOffice from './tasks/home_office';
 import reuniao from './tasks/reuniao';
@@ -46,6 +49,10 @@ import chamaThy from './tasks/chama_thy';
 import jujuSerio from './tasks/juju_serio';
 import careca from './tasks/careca_pensante';
 import maoMoises from './tasks/mao_moises';
+import ctrlZ from './tasks/ctrl_z';
+import pairProgramming from './tasks/pair_programming';
+import tecladoRgb from './tasks/teclado_rgb';
+import foneRuido from './tasks/fone_ruido';
 import iaFezCagada from './bugs/ia_fez_cagada';
 import impedimento from './bugs/impedimento';
 import mudancaEscopo from './bugs/mudanca_escopo';
@@ -53,6 +60,8 @@ import minhaMaquina from './bugs/minha_maquina';
 import mergeConflict from './bugs/merge_conflict';
 import erro404 from './bugs/erro_404';
 import prodCaiu from './bugs/prod_caiu';
+import dividaTecnica from './bugs/divida_tecnica';
+import revertPr from './bugs/revert_pr';
 
 /** Todos os cards do DEV-OH!, na ordem da coleção. */
 export const CARD_MODULES: CardModule[] = [
@@ -88,6 +97,9 @@ export const CARD_MODULES: CardModule[] = [
   gerente,
   backendNoturno,
   qa,
+  devJunior,
+  devFullstack,
+  arquiteta,
   cafe,
   homeOffice,
   reuniao,
@@ -103,6 +115,10 @@ export const CARD_MODULES: CardModule[] = [
   jujuSerio,
   careca,
   maoMoises,
+  ctrlZ,
+  pairProgramming,
+  tecladoRgb,
+  foneRuido,
   iaFezCagada,
   impedimento,
   mudancaEscopo,
@@ -110,4 +126,6 @@ export const CARD_MODULES: CardModule[] = [
   mergeConflict,
   erro404,
   prodCaiu,
+  dividaTecnica,
+  revertPr,
 ];

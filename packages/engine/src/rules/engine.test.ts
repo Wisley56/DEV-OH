@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyAction, createGame, forfeit, getView, STARTER_DECKS, validateDeck, CARD_LIST } from '../index';
+import { applyAction, createGame, forfeit, fullTypeLine, getView, STARTER_DECKS, validateDeck, CARD_LIST } from '../index';
 import { newInstance, newProSlot } from '../core/board';
 import type { Action, GameState, Seat } from '../core/types';
 
@@ -463,5 +463,248 @@ describe('Sandro Ilusionista', () => {
     const atkMod = (iid: string) => s.players[0].pros.find((p) => p?.card.iid === iid)!.atkMod;
     expect(atkMod(g)).toBe(-100);
     expect(atkMod(e)).toBe(0);
+  });
+});
+
+describe('FLIP: baixar virado e Invocação-Virar', () => {
+  /** Baixa no turno 1 (jogador 0) e passa até o turno 3 (de novo o jogador 0). */
+  function setAndWait(cardId: string, s = game()) {
+    const iid = giveHand(s, 0, cardId);
+    s = act(s, 0, { type: 'set', iid });
+    s = act(s, 0, { type: 'endTurn' });
+    s = act(s, 1, { type: 'endTurn' });
+    return { s, iid };
+  }
+
+  it('baixa em Defesa virado, usa a invocação do turno e não dispara oppSummon', () => {
+    let s = game();
+    setBug(s, 1, 'ia_fez_cagada');
+    const iid = giveHand(s, 0, 'qa');
+    const other = giveHand(s, 0, 'estagiario');
+    s = act(s, 0, { type: 'set', iid });
+    const slot = s.players[0].pros.find((p) => p?.card.iid === iid)!;
+    expect(slot).toMatchObject({ position: 'def', faceDown: true });
+    expect(s.players[1].spells.some(Boolean)).toBe(true); // o Bug não disparou
+    expect(applyAction(s, 0, { type: 'summon', iid: other, position: 'atk' }).ok).toBe(false);
+    const last = s.log[s.log.length - 1];
+    expect(last.cardId).toBeUndefined();
+    expect(last.text).not.toContain('QA');
+  });
+
+  it('baixar nível 5+ também pede sacrifício', () => {
+    let s = game();
+    const t = place(s, 0, 'estagiario');
+    const g = giveHand(s, 0, 'gerente');
+    expect(applyAction(s, 0, { type: 'set', iid: g }).ok).toBe(false);
+    s = act(s, 0, { type: 'set', iid: g, tributes: [t] });
+    expect(s.players[0].pros.find((p) => p?.card.iid === g)?.faceDown).toBe(true);
+  });
+
+  it('a visão esconde o card virado do oponente, mas não do dono', () => {
+    let s = game();
+    const iid = giveHand(s, 0, 'docker');
+    s = act(s, 0, { type: 'set', iid });
+    const opp = getView(s, 1).players[0].pros.find((p) => p?.iid === iid)!;
+    expect(opp).toMatchObject({ cardId: null, atk: null, def: null, faceDown: true });
+    expect(JSON.stringify(getView(s, 1))).not.toContain('docker');
+    expect(getView(s, 0).players[0].pros.find((p) => p?.iid === iid)?.cardId).toBe('docker');
+  });
+
+  it('Invocação-Virar: não no mesmo turno; depois vira em Ataque e conta como invocação', () => {
+    let s = game();
+    const iid = giveHand(s, 0, 'sre');
+    s = act(s, 0, { type: 'set', iid });
+    expect(applyAction(s, 0, { type: 'flipSummon', iid }).ok).toBe(false);
+    expect(getView(s, 0).players[0].pros.find((p) => p?.iid === iid)?.canFlip).toBe(false);
+    s = act(s, 0, { type: 'endTurn' });
+    s = act(s, 1, { type: 'endTurn' });
+    setBug(s, 1, 'ia_fez_cagada');
+    expect(getView(s, 0).players[0].pros.find((p) => p?.iid === iid)?.canFlip).toBe(true);
+    const lp = s.players[0].lp;
+    s = act(s, 0, { type: 'flipSummon', iid });
+    const slot = s.players[0].pros.find((p) => p?.card.iid === iid)!;
+    expect(slot).toMatchObject({ position: 'atk', faceDown: false });
+    expect(s.players[0].lp).toBe(lp + 800); // "ao ser invocado" do SRE
+    expect(s.players[1].spells.every((x) => !x)).toBe(true); // o Bug de oppSummon disparou
+    expect(s.log.some((l) => l.kind === 'flip' && l.iid === iid)).toBe(true);
+  });
+
+  it('Invocação-Virar não gasta a invocação normal do turno', () => {
+    const { s: s0, iid } = setAndWait('qa');
+    let s = s0;
+    const other = giveHand(s, 0, 'estagiario');
+    s = act(s, 0, { type: 'flipSummon', iid });
+    s = act(s, 0, { type: 'summon', iid: other, position: 'atk' });
+    expect(s.players[0].pros.filter(Boolean)).toHaveLength(2);
+  });
+
+  it('virado não muda de posição nem usa habilidade', () => {
+    const { s, iid } = setAndWait('copilot');
+    expect(applyAction(s, 0, { type: 'changePosition', iid }).ok).toBe(false);
+    expect(applyAction(s, 0, { type: 'ignition', iid, target: iid }).ok).toBe(false);
+    expect(getView(s, 0).players[0].pros.find((p) => p?.iid === iid)).toMatchObject({ canChangePos: false, canIgnite: false });
+  });
+
+  it('virado tem os efeitos passivos desligados', () => {
+    let s = game();
+    const iid = giveHand(s, 0, 'gerente');
+    const t = place(s, 0, 'estagiario');
+    s = act(s, 0, { type: 'set', iid, tributes: [t] });
+    s = act(s, 0, { type: 'endTurn' });
+    const stress = s.players[1].stress;
+    s = act(s, 1, { type: 'endTurn' }); // standby do jogador 0: Gerente virado não cobra status
+    expect(s.players[1].stress).toBe(stress);
+  });
+
+  it('atacado virado: revela, calcula com o DEF e o card continua para cima', () => {
+    let s = game();
+    const d = giveHand(s, 0, 'stackoverflow'); // 1000/2100
+    s = act(s, 0, { type: 'set', iid: d });
+    const q = place(s, 1, 'qa'); // 1600
+    s = toTurn2Battle(s);
+    const lp = s.players[1].lp;
+    s = act(s, 1, { type: 'attack', iid: q, target: d });
+    const atkLog = s.log.find((l) => l.kind === 'attack')!;
+    expect(atkLog.text).toContain('um Profissional virado');
+    expect(s.players[1].lp).toBe(lp - 500);
+    expect(s.players[0].pros.find((p) => p?.card.iid === d)).toMatchObject({ faceDown: false, position: 'def' });
+  });
+
+  it('Douglas Defensivo virado vira Douglas Ataque na Invocação-Virar', () => {
+    let s = game();
+    const a = place(s, 0, 'estagiario');
+    const b = place(s, 0, 'estagiario');
+    const iid = giveHand(s, 0, 'douglas_defensivo');
+    s = act(s, 0, { type: 'set', iid, tributes: [a, b] });
+    s = act(s, 0, { type: 'endTurn' });
+    s = act(s, 1, { type: 'endTurn' });
+    s = act(s, 0, { type: 'flipSummon', iid });
+    expect(s.players[0].pros.find((p) => p?.card.iid === iid)?.card.cardId).toBe('douglas_ataque');
+  });
+});
+
+describe('FLIP: efeitos', () => {
+  it('atacado virado: o FLIP resolve mesmo se o card for destruído', () => {
+    let s = game();
+    const so = giveHand(s, 0, 'stackoverflow'); // DEF 2100
+    s = act(s, 0, { type: 'set', iid: so });
+    const big = place(s, 1, 'cliente'); // 2300
+    s = toTurn2Battle(s);
+    const hand = s.players[0].hand.length;
+    s = act(s, 1, { type: 'attack', iid: big, target: so });
+    expect(s.players[0].grave.some((c) => c.iid === so)).toBe(true);
+    expect(s.players[0].hand.length).toBe(hand + 1);
+    expect(s.log.some((l) => l.text.startsWith('FLIP!'))).toBe(true);
+  });
+
+  it('Docker: Invocação-Virar destrói o mais forte do oponente com ATK ≤ 1500', () => {
+    let s = game();
+    const d = giveHand(s, 0, 'docker');
+    s = act(s, 0, { type: 'set', iid: d });
+    const weak = place(s, 1, 'estagiario'); // 900
+    const mid = place(s, 1, 'sre'); // 800
+    const strong = place(s, 1, 'cliente'); // 2300
+    s = act(s, 0, { type: 'endTurn' });
+    s = act(s, 1, { type: 'endTurn' });
+    s = act(s, 0, { type: 'flipSummon', iid: d });
+    const left = s.players[1].pros.filter(Boolean).map((p) => p!.card.iid);
+    expect(left).toContain(strong);
+    expect(left).toContain(mid);
+    expect(left).not.toContain(weak);
+  });
+
+  it('cards com FLIP mostram a tag no tipo', () => {
+    const d = CARD_LIST.find((c) => c.id === 'docker')!;
+    expect(fullTypeLine(d)).toBe('Ferramenta / Container / Efeito / FLIP');
+  });
+});
+
+describe('Tasks Rápidas, Equipamentos, Bug Contínuo e Contra-Bug', () => {
+  it('Rápida pode ser ativada na Batalha; Task normal não', () => {
+    let s = game();
+    const q = place(s, 1, 'qa');
+    s = toTurn2Battle(s);
+    const z = giveHand(s, 1, 'ctrl_z');
+    const cafe = giveHand(s, 1, 'cafe');
+    expect(applyAction(s, 1, { type: 'activate', iid: cafe }).ok).toBe(false);
+    s = act(s, 1, { type: 'activate', iid: z, target: q });
+    expect(s.players[1].pros.find((p) => p?.card.iid === q)!.tempAtk).toBe(800);
+  });
+
+  it('Task baixada virada: Rápida só a partir do próximo turno, ativada do campo', () => {
+    let s = game();
+    const q = place(s, 0, 'qa');
+    const z = giveHand(s, 0, 'ctrl_z');
+    s = act(s, 0, { type: 'set', iid: z });
+    expect(getView(s, 1).players[0].spells.find((x) => x?.iid === z)?.cardId).toBeNull();
+    expect(applyAction(s, 0, { type: 'activate', iid: z, target: q }).ok).toBe(false);
+    s = act(s, 0, { type: 'endTurn' });
+    s = act(s, 1, { type: 'endTurn' });
+    expect(getView(s, 0).players[0].spells.find((x) => x?.iid === z)?.canActivate).toBe(true);
+    s = act(s, 0, { type: 'activate', iid: z, target: q });
+    expect(s.players[0].spells.every((x) => !x)).toBe(true);
+    expect(s.players[0].grave.some((c) => c.iid === z)).toBe(true);
+  });
+
+  it('Equipamento: soma no equipado e sai junto quando ele sai do campo', () => {
+    let s = game();
+    const q = place(s, 0, 'qa'); // 1600
+    const t = giveHand(s, 0, 'teclado_rgb');
+    expect(applyAction(s, 0, { type: 'activate', iid: t }).ok).toBe(false); // alvo obrigatório
+    s = act(s, 0, { type: 'activate', iid: t, target: q });
+    expect(getView(s, 0).players[0].pros.find((p) => p?.iid === q)?.atk).toBe(2100);
+    expect(s.players[0].spells.find((x) => x?.card.iid === t)?.equippedTo).toBe(q);
+    const big = place(s, 1, 'thy_techlead');
+    s = toTurn2Battle(s);
+    s = act(s, 1, { type: 'attack', iid: big, target: q });
+    expect(s.players[0].grave.map((c) => c.iid)).toEqual(expect.arrayContaining([q, t]));
+    expect(s.players[0].spells.every((x) => !x)).toBe(true);
+  });
+
+  it('Fone com Cancelamento de Ruído: +600 DEF e sem Estresse no dano de batalha', () => {
+    let s = game();
+    const q = place(s, 0, 'qa');
+    const f = giveHand(s, 0, 'fone_ruido');
+    s = act(s, 0, { type: 'activate', iid: f, target: q });
+    const atk = place(s, 1, 'cliente'); // 2300 vs QA 1600 em Ataque
+    s = toTurn2Battle(s);
+    s = act(s, 1, { type: 'attack', iid: atk, target: q });
+    expect(s.players[0].lp).toBe(4000 - 700);
+    expect(s.players[0].stress).toBe(0);
+  });
+
+  it('Pair Programming: não é destruído e sem dano de batalha neste turno', () => {
+    let s = game();
+    const q = place(s, 1, 'estagiario');
+    const big = place(s, 0, 'cliente', 'atk');
+    s = toTurn2Battle(s);
+    const pp = giveHand(s, 1, 'pair_programming');
+    s = act(s, 1, { type: 'activate', iid: pp, target: q });
+    s = act(s, 1, { type: 'attack', iid: q, target: big });
+    expect(s.players[1].pros.some((p) => p?.card.iid === q)).toBe(true);
+    expect(s.players[1].lp).toBe(4000);
+  });
+
+  it('Bug Contínuo fica virado para cima e enfraquece o oponente', () => {
+    let s = game();
+    setBug(s, 1, 'divida_tecnica');
+    const iid = giveHand(s, 0, 'qa');
+    s = act(s, 0, { type: 'summon', iid, position: 'atk' });
+    const slot = s.players[1].spells.find((x) => x?.card.cardId === 'divida_tecnica');
+    expect(slot).toMatchObject({ faceDown: false, revealed: true });
+    expect(getView(s, 0).players[0].pros.find((p) => p?.iid === iid)?.atk).toBe(1300);
+  });
+
+  it('Contra-Bug anula o Bug do oponente; sem Contra-Bug o Bug resolve', () => {
+    let s = game();
+    const atk = place(s, 1, 'qa');
+    setBug(s, 0, 'impedimento');
+    setBug(s, 1, 'revert_pr');
+    s = toTurn2Battle(s);
+    s = act(s, 1, { type: 'attack', iid: atk });
+    expect(s.players[0].lp).toBe(4000 - 1700); // Impedimento anulado: o ataque passou (+100 do Estresse do Revert)
+    expect(s.players[0].grave.some((c) => c.cardId === 'impedimento')).toBe(true);
+    expect(s.players[1].grave.some((c) => c.cardId === 'revert_pr')).toBe(true);
+    expect(s.players[1].stress).toBe(1);
   });
 });
