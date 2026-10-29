@@ -38,7 +38,11 @@ export function ProRow({ side }: { side: Side }) {
                   def={x.def}
                   position={x.position}
                   badge={
-                    x.locked ? (
+                    x.negated ? (
+                      <span className="badge" title="Efeitos anulados neste turno">
+                        🚫
+                      </span>
+                    ) : x.locked ? (
                       <span className="badge">💘</span>
                     ) : mine && x.canIgnite ? (
                       <span className="badge badge-ability" title="Habilidade disponível">

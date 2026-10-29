@@ -1,6 +1,7 @@
 import type { Seat } from '@devoh/engine';
 import { sfx } from '../../../sound';
 import type { BoardEvent } from '../../services/boardEvents';
+import { DICE_ROLL_MS } from './Dice';
 
 let lastKind: BoardEvent['kind'] | null = null;
 
@@ -31,6 +32,11 @@ export function playBoardSound(ev: BoardEvent, you: Seat) {
       return sfx.play('summon');
     case 'set':
       return sfx.play('set');
+    case 'dice':
+      sfx.play('dice-shake');
+      // O dado cai na mesa quando a animação para de rolar (ver DICE_ROLL_MS).
+      setTimeout(() => sfx.play('dice-throw'), DICE_ROLL_MS);
+      return;
     case 'turn':
       return ev.seat === you ? sfx.play('turn') : undefined;
     case 'end':

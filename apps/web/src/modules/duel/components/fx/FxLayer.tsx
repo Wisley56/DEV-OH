@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { CardMini } from '../../../cards';
 import { useDuel, useDuelUi } from '../../hooks/useDuel';
 import { boardEvents, type BoardEvent } from '../../services/boardEvents';
+import { Dice } from './Dice';
 import { FlipCard } from './FlipCard';
 import { Shield } from './Shield';
 import { Swords } from './Swords';
@@ -35,6 +36,7 @@ const DURATION: Record<BoardEvent['kind'], [number, number]> = {
   reveal: [1900, 500],
   activate: [1500, 400],
   summon: [0, 0],
+  dice: [2500, 1200],
   set: [0, 0],
   turn: [0, 0],
   end: [500, 100],
@@ -202,6 +204,8 @@ function FxItem({ fx, reduced }: { fx: Fx; reduced: boolean }) {
     case 'activate':
       // A sua própria Task você já viu sair da mão: o destaque é para a do oponente.
       return side === 'opp' ? <Ghost cardId={ev.cardId} to={to} sec={sec} reduced={reduced} mode="reveal-faceup" side={side} /> : null;
+    case 'dice':
+      return <Dice face={ev.face} bonus={ev.bonus} ok={ev.ok} side={side} sec={sec} reduced={reduced} />;
     case 'end':
       return <m.div className="fx-end" initial={{ opacity: 0 }} animate={{ opacity: [0, 0.5, 0] }} transition={{ duration: sec }} />;
     default:

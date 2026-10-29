@@ -18,6 +18,8 @@ export type BoardEvent =
   /** Task ativada da mão. */
   | { kind: 'activate'; seat: Seat; iid: string; cardId: string }
   | { kind: 'summon'; seat: Seat; iid: string; cardId: string }
+  /** Dado rolado por um efeito: face tirada, bônus somado e se deu certo. */
+  | { kind: 'dice'; seat: Seat; face: number; bonus: number; ok: boolean }
   | { kind: 'set'; seat: Seat }
   | { kind: 'turn'; seat: Seat }
   | { kind: 'end'; winner: Seat | 'draw' };
@@ -77,6 +79,9 @@ export function boardEvents(prev: GameView | null, next: GameView, lastLogId: nu
         return;
       case 'summon':
         if (seat !== undefined && l.iid && l.cardId) out.push({ kind: 'summon', seat, iid: l.iid, cardId: l.cardId });
+        return;
+      case 'coin':
+        if (seat !== undefined && l.roll) out.push({ kind: 'dice', seat, ...l.roll });
         return;
       case 'turn':
         if (seat !== undefined) out.push({ kind: 'turn', seat });

@@ -855,6 +855,64 @@
     linear-gradient(115deg, transparent 46%, rgba(255, 255, 255, 0.95) 48%, transparent 51%),
     linear-gradient(35deg, transparent 55%, rgba(255, 255, 255, 0.8) 57%, transparent 60%);
 }
+.fx-dice {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 18px;
+  background: radial-gradient(circle, rgba(8, 10, 20, 0.82) 0%, rgba(8, 10, 20, 0.45) 40%, transparent 75%);
+}
+.fx-dice-title {
+  font-family: var(--font-title);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #ffe9a8;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+}
+.fx-die {
+  width: clamp(84px, 18vmin, 128px);
+  aspect-ratio: 1;
+  border-radius: 22%;
+  filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.55));
+  transition: box-shadow 0.25s;
+}
+.fx-die.is-ok {
+  box-shadow:
+    0 0 0 4px #6ef0a0,
+    0 0 32px 8px rgba(110, 240, 160, 0.65);
+}
+.fx-die.is-fail {
+  box-shadow:
+    0 0 0 4px #ff5d7a,
+    0 0 32px 8px rgba(255, 70, 90, 0.6);
+}
+.fx-dice-result {
+  max-width: min(86vw, 360px);
+  padding: 8px 16px;
+  border-radius: 12px;
+  text-align: center;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(14, 16, 30, 0.88);
+  border: 2px solid currentColor;
+}
+.fx-dice-result.is-ok {
+  color: #8ff5b8;
+}
+.fx-dice-result.is-fail {
+  color: #ff8fa3;
+}
+.fx-dice-total {
+  font-size: 2rem;
+  line-height: 1.1;
+  color: #fff;
+}
+.fx-dice-total small {
+  font-size: 0.9rem;
+  color: #ffd978;
+}
 .fx-end {
   position: fixed;
   inset: 0;

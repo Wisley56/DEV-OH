@@ -17,6 +17,8 @@ Todos os arquivos desta pasta são de **domínio público (CC0 1.0)**: dá para 
 | `attack.ogg` | Choque de espadas (ataque) | `sword_clash.4.ogg` | 20 Sword Sound Effects (StarNinjas) |
 | `block.ogg` | Escudo (defesa) | `bfh1_metal_hit_03.ogg` | 75 CC0 breaking/falling/hit sfx (rubberduck) |
 | `hit.ogg` | Golpe / dano | `bfh1_hit_06.ogg` | 75 CC0 breaking/falling/hit sfx (rubberduck) |
+| `dice-shake.ogg` | Dado chacoalhando (A Mão do Moisés) | `dice-shake-1.ogg` | Casino Audio (Kenney) |
+| `dice-throw.ogg` | Dado caindo na mesa | `dice-throw-1.ogg` | Casino Audio (Kenney) |
 | `destroy.ogg` | Card destruído | `bfh1_glass_breaking_02.ogg` | 75 CC0 breaking/falling/hit sfx (rubberduck) |
 
 Fontes:

@@ -3,13 +3,15 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 const TOAST_KINDS = new Set(['bug', 'effect', 'coin', 'stress', 'summon', 'task', 'attack', 'destroy']);
 
-/** Mostra as entradas novas do log como notificações temporárias. */
+/** Mostra as entradas novas do log como notificações temporárias. Dados rolados ficam de fora: a animação mostra o resultado. */
 export function useLogToasts(log: LogEntry[]) {
   const [items, setItems] = useState<LogEntry[]>([]);
   const lastId = useRef<number | null>(null);
   const fresh = useMemo(() => {
     if (lastId.current === null) return [];
-    return log.filter((l) => l.id > lastId.current! && TOAST_KINDS.has(l.kind) && !(l.kind === 'stress' && !l.text.includes('limite')));
+    return log.filter(
+      (l) => l.id > lastId.current! && TOAST_KINDS.has(l.kind) && !(l.kind === 'stress' && !l.text.includes('limite')) && !l.roll,
+    );
   }, [log]);
   useEffect(() => {
     lastId.current = log.at(-1)?.id ?? 0;

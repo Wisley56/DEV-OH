@@ -101,4 +101,20 @@ describe('eventos do tabuleiro', () => {
     r = step(r.s, 1, { type: 'surrender' });
     expect(r.events.at(-1)).toEqual({ kind: 'end', winner: 0 });
   });
+
+  it('A Mão do Moisés rola o dado antes de destruir', () => {
+    const s = game();
+    place(s, 0, 'moises');
+    s.players[1].spells[0] = { card: { iid: 'bug3', cardId: 'erro_404', owner: 1 }, faceDown: true, revealed: false, setTurn: -5 };
+    s.players[0].hand.push({ iid: 'mao1', cardId: 'mao_moises', owner: 0 });
+    const { events } = step(s, 0, { type: 'activate', iid: 'mao1' });
+    const dice = events.find((e) => e.kind === 'dice');
+    expect(dice).toMatchObject({ seat: 0, bonus: 1 });
+    if (dice?.kind !== 'dice') throw new Error('sem dado');
+    expect(dice.face).toBeGreaterThanOrEqual(1);
+    expect(dice.face).toBeLessThanOrEqual(6);
+    expect(dice.ok).toBe(dice.face + 1 >= 4);
+    const kinds = events.map((e) => e.kind);
+    if (dice.ok) expect(kinds.indexOf('destroy')).toBeGreaterThan(kinds.indexOf('dice'));
+  });
 });

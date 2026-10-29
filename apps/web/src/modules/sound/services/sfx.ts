@@ -3,7 +3,22 @@
  * (licença CC0, ver CREDITS.md) e só são baixados quando um duelo abre.
  */
 export type SfxName =
-  'summon' | 'set' | 'task' | 'reveal' | 'glitch' | 'attack' | 'block' | 'hit' | 'destroy' | 'heal' | 'turn' | 'tick' | 'win' | 'lose';
+  | 'summon'
+  | 'set'
+  | 'task'
+  | 'reveal'
+  | 'glitch'
+  | 'attack'
+  | 'block'
+  | 'hit'
+  | 'destroy'
+  | 'heal'
+  | 'turn'
+  | 'tick'
+  | 'win'
+  | 'lose'
+  | 'dice-shake'
+  | 'dice-throw';
 
 /** Volume de cada som (os jingles vêm gravados mais baixos; a espada, mais alta). */
 const VOLUME: Record<SfxName, number> = {
@@ -21,6 +36,8 @@ const VOLUME: Record<SfxName, number> = {
   tick: 0.45,
   win: 1.6,
   lose: 1.6,
+  'dice-shake': 0.8,
+  'dice-throw': 0.9,
 };
 
 /** Som sintetizado de reserva (navegador que não decodifica .ogg): frequência inicial e final. */
@@ -39,6 +56,8 @@ const FALLBACK: Record<SfxName, [number, number]> = {
   tick: [1500, 1500],
   win: [523, 1046],
   lose: [392, 196],
+  'dice-shake': [700, 500],
+  'dice-throw': [300, 150],
 };
 
 class SfxPlayer {
