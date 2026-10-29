@@ -3,6 +3,7 @@ import {
   card,
   getAtk,
   getDef,
+  HIDDEN_CARD,
   MAX_STRESS,
   other,
   prosOf,
@@ -20,8 +21,8 @@ type Policy = (s: GameState, seat: Seat) => Action;
 /**
  * Bot "Sem IA" (difícil): para cada ação legal, simula o resto do turno
  * (seguindo o bot normal) e escolhe a que termina com o tabuleiro melhor.
- * Joga limpo: não enxerga os Bugs virados do oponente nem o resultado de
- * sorteios (cada jogada é avaliada com seeds diferentes da real).
+ * Joga limpo: não enxerga os Bugs e Profissionais virados do oponente nem o
+ * resultado de sorteios (cada jogada é avaliada com seeds diferentes da real).
  */
 export function hardBotAction(s: GameState, seat: Seat, rollout: Policy): Action {
   const fog = fogged(s, seat);
@@ -65,10 +66,15 @@ function scoreAction(fog: GameState, seat: Seat, action: Action, rollout: Policy
   return total / SAMPLES;
 }
 
-/** Cópia do estado como o bot enxerga: Bugs virados do oponente não disparam na simulação. */
+/**
+ * Cópia do estado como o bot enxerga: Bugs virados do oponente não disparam na simulação
+ * e os Profissionais virados dele viram um card genérico desconhecido.
+ */
 function fogged(s: GameState, seat: Seat): GameState {
   const f = structuredClone(s);
-  for (const sp of f.players[other(seat)].spells) if (sp?.faceDown && !sp.revealed) sp.setTurn = f.turn;
+  const theirs = f.players[other(seat)];
+  for (const sp of theirs.spells) if (sp?.faceDown && !sp.revealed) sp.setTurn = f.turn;
+  for (const pro of theirs.pros) if (pro?.faceDown) pro.card = { ...pro.card, cardId: HIDDEN_CARD.id };
   return f;
 }
 
@@ -98,9 +104,11 @@ function mainActions(s: GameState, seat: Seat): Action[] {
     const d = card(c.cardId);
     if (d.kind === 'pro') {
       if (me.summonedThisTurn) continue;
-      for (const tributes of combos(mine, tributesNeeded(d.level ?? 1)))
+      for (const tributes of combos(mine, tributesNeeded(d.level ?? 1))) {
         for (const position of ['atk', 'def'] as const)
           for (const target of targetsFor(s, seat, d.target)) out.push({ type: 'summon', iid: c.iid, position, tributes, target });
+        out.push({ type: 'set', iid: c.iid, tributes });
+      }
     } else if (d.kind === 'task') {
       for (const target of targetsFor(s, seat, d.target)) out.push({ type: 'activate', iid: c.iid, target });
     } else {
@@ -108,6 +116,10 @@ function mainActions(s: GameState, seat: Seat): Action[] {
     }
   }
   for (const p of prosOf(s, seat)) {
+    if (p.faceDown) {
+      out.push({ type: 'flipSummon', iid: p.card.iid });
+      continue;
+    }
     out.push({ type: 'changePosition', iid: p.card.iid });
     const ig = card(p.card.cardId).ignition;
     if (ig) for (const target of targetsFor(s, seat, ig.target)) out.push({ type: 'ignition', iid: p.card.iid, target });
@@ -118,6 +130,11 @@ function mainActions(s: GameState, seat: Seat): Action[] {
 function battleActions(s: GameState, seat: Seat): Action[] {
   const out: Action[] = [];
   const theirs = prosOf(s, other(seat));
+  for (const c of s.players[seat].hand) {
+    const d = card(c.cardId);
+    if (d.kind === 'task' && d.speed === 'quick')
+      for (const target of targetsFor(s, seat, d.target)) out.push({ type: 'activate', iid: c.iid, target });
+  }
   for (const p of prosOf(s, seat)) {
     if (p.position !== 'atk') continue;
     if (!theirs.length) out.push({ type: 'attack', iid: p.card.iid });

@@ -20,6 +20,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "crop-art": "tsx scripts/crop-art.ts",
+    "balance": "tsx --conditions=source packages/ai/scripts/balance.ts",
     "e2e": "npm run e2e -w @devoh/web"
   },
   "devDependencies": {

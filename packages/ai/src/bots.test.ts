@@ -5,7 +5,8 @@ import { botAction } from './index';
 describe('bot difícil (Sem IA)', () => {
   it('só faz jogadas legais e vence o bot normal na maioria', () => {
     let hardWins = 0;
-    const N = 30;
+    // Amostra grande: com 30 partidas o resultado oscila ±10% só pelo sorteio das seeds.
+    const N = 100;
     for (let seed = 1; seed <= N; seed++) {
       const hardSeat: Seat = seed % 2 === 0 ? 0 : 1;
       const decks = [STARTER_DECKS[seed % 3], STARTER_DECKS[(seed + 1) % 3]];
@@ -26,7 +27,7 @@ describe('bot difícil (Sem IA)', () => {
       if (s.winner === hardSeat) hardWins++;
     }
     expect(hardWins / N).toBeGreaterThan(0.55);
-  }, 60_000);
+  }, 180_000);
 });
 
 describe('bot vs bot', () => {

@@ -1,6 +1,6 @@
-import { applyAction, card, getAtk, getDef, prosOf, tributesNeeded, type Action, type GameState, type Seat } from '@devoh/engine';
-import { strongest, value } from './heuristics/board';
-import { FLIP_ATK_GAIN, IGNITION_PLAYS, playCtx, SUMMON_OK, TASK_PLAYS } from './heuristics/cardPlays';
+import { applyAction, card, getAtk, getDef, isFlip, prosOf, tributesNeeded, type Action, type GameState, type Seat } from '@devoh/engine';
+import { chance, strongest, value } from './heuristics/board';
+import { FLIP_ATK_GAIN, FLIP_PLAYS, IGNITION_PLAYS, playCtx, QUICK_BATTLE_PLAYS, SUMMON_OK, TASK_PLAYS } from './heuristics/cardPlays';
 
 /**
  * Bot "Com IA" (normal): gera ações candidatas em ordem de prioridade e devolve
@@ -48,23 +48,32 @@ function mainCandidates(s: GameState, seat: Seat): Action[] {
       if (SUMMON_OK[c.cardId] && !SUMMON_OK[c.cardId](ctx)) continue;
       const d = card(c.cardId);
       const need = tributesNeeded(d.level ?? 1);
-      const fodder = [...mine].sort((a, b) => value(s, seat, a) - value(s, seat, b)).slice(0, need);
+      const fodder = [...mine].sort((a, b) => value(s, seat, a, true) - value(s, seat, b, true)).slice(0, need);
       if (fodder.length < need) continue;
-      const fodderVal = fodder.reduce((n, p) => n + value(s, seat, p), 0);
+      const fodderVal = fodder.reduce((n, p) => n + value(s, seat, p, true), 0);
       if (need && fodderVal >= Math.max(d.atk ?? 0, d.def ?? 0)) continue;
       const atkGuess = (d.atk ?? 0) + me.stress * 100;
       const position = atkGuess >= oppMaxAtk || (d.def ?? 0) < atkGuess ? 'atk' : 'def';
       const target = d.target === 'oppPro' ? strongest(s, opp)?.card.iid : undefined;
-      out.push({ type: 'summon', iid: c.iid, position, tributes: fodder.map((p) => p.card.iid), target });
+      const tributes = fodder.map((p) => p.card.iid);
+      // Na defesa, baixa virado: sempre se tiver FLIP, às vezes para blefar.
+      if (position === 'def' && (isFlip(d) || chance(s, c.iid, 35))) out.push({ type: 'set', iid: c.iid, tributes });
+      out.push({ type: 'summon', iid: c.iid, position, tributes, target });
     }
   }
 
   // 4) Bugs virados.
   for (const c of me.hand) if (card(c.cardId).kind === 'bug') out.push({ type: 'set', iid: c.iid });
 
-  // 5) Posições.
+  // 5) Posições (cards virados: Invocação-Virar).
   for (const p of mine) {
     const atk = getAtk(s, seat, p);
+    if (p.faceDown) {
+      const flipPlay = FLIP_PLAYS[p.card.cardId];
+      const wantsFlip = flipPlay ? flipPlay(ctx) : atk > oppMaxAny && atk >= 1000;
+      if (wantsFlip && s.turn > 1) out.push({ type: 'flipSummon', iid: p.card.iid });
+      continue;
+    }
     if (p.position === 'def') {
       const futureAtk = atk + (FLIP_ATK_GAIN[p.card.cardId]?.() ?? 0);
       if (futureAtk > oppMaxAny && futureAtk >= 1000 && s.turn > 1) out.push({ type: 'changePosition', iid: p.card.iid });
@@ -80,7 +89,20 @@ function mainCandidates(s: GameState, seat: Seat): Action[] {
 
 function battleCandidates(s: GameState, seat: Seat): Action[] {
   const out: Action[] = [];
-  const { opp } = playCtx(s, seat);
+  const ctx = playCtx(s, seat);
+  const { opp } = ctx;
+  // Rápidas antes do ataque que elas viram a favor (da mão ou baixadas).
+  const quick = [...ctx.me.hand, ...ctx.me.spells.filter((x) => x?.faceDown).map((x) => x!.card)].filter(
+    (c) => QUICK_BATTLE_PLAYS[c.cardId],
+  );
+  for (const a of prosOf(s, seat).filter((p) => p.position === 'atk' && p.attackedTurn !== s.turn)) {
+    const theirs = prosOf(s, opp);
+    const target = theirs.sort((x, y) => value(s, opp, y) - value(s, opp, x))[0];
+    for (const c of quick) {
+      const play = QUICK_BATTLE_PLAYS[c.cardId](ctx, a, target);
+      if (play) out.push({ type: 'activate', iid: c.iid, target: play.target });
+    }
+  }
   const attackers = prosOf(s, seat)
     .filter((p) => p.position === 'atk' && p.attackedTurn !== s.turn)
     .sort((a, b) => getAtk(s, seat, b) - getAtk(s, seat, a));
@@ -93,6 +115,11 @@ function battleCandidates(s: GameState, seat: Seat): Action[] {
     }
     const beatable = theirs.filter((t) => atk > value(s, opp, t)).sort((x, y) => value(s, opp, y) - value(s, opp, x));
     if (beatable[0]) out.push({ type: 'attack', iid: a.card.iid, target: beatable[0].card.iid });
+    // Protegido (Pair Programming): pode atacar o mais forte sem risco.
+    else if (a.protectedTurn === s.turn && theirs[0]) {
+      const top = [...theirs].sort((x, y) => value(s, opp, y) - value(s, opp, x))[0];
+      out.push({ type: 'attack', iid: a.card.iid, target: top.card.iid });
+    }
   }
   return out;
 }

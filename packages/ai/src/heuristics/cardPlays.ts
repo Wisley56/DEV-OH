@@ -1,4 +1,15 @@
-import { card, MAX_STRESS, other, prosOf, setCardsOf, type GameState, type PlayerState, type ProSlot, type Seat } from '@devoh/engine';
+import {
+  card,
+  getAtk,
+  MAX_STRESS,
+  other,
+  prosOf,
+  setCardsOf,
+  type GameState,
+  type PlayerState,
+  type ProSlot,
+  type Seat,
+} from '@devoh/engine';
 import { strongest, value } from './board';
 
 /** O que o bot sabe do tabuleiro ao decidir uma jogada. */
@@ -51,6 +62,33 @@ export const TASK_PLAYS: Record<string, (c: PlayCtx) => Play> = {
     const oppCards = [...c.oppP.spells, c.oppP.field].filter(Boolean).length;
     return oppCards >= 2 || c.mine.some((p) => p.card.cardId === 'moises') ? {} : null;
   },
+  // Equipamentos: no Profissional mais forte (Teclado em quem ataca, Fone em quem defende).
+  teclado_rgb: (c) => equipOn(c, 'atk'),
+  fone_ruido: (c) => equipOn(c, 'def'),
+  // Rápidas: guardadas para a Batalha (ver QUICK_BATTLE_PLAYS).
+  ctrl_z: () => null,
+  pair_programming: () => null,
+};
+
+function equipOn(c: PlayCtx, prefer: 'atk' | 'def'): Play {
+  const t = strongest(c.s, c.seat, (x) => !x.faceDown && x.position === prefer) ?? strongest(c.s, c.seat, (x) => !x.faceDown);
+  return t ? { target: t.card.iid } : null;
+}
+
+/**
+ * Tasks Rápidas na Batalha, antes do ataque de `attacker` contra `target` (undefined = direto):
+ * devolve a jogada se ela faz o ataque valer a pena.
+ */
+export const QUICK_BATTLE_PLAYS: Record<string, (c: PlayCtx, attacker: ProSlot, target: ProSlot | undefined) => Play> = {
+  // +800 que transforma um ataque perdido em vitória.
+  ctrl_z: (c, a, t) => {
+    if (!t) return null;
+    const atk = getAtk(c.s, c.seat, a);
+    const guard = value(c.s, c.opp, t);
+    return atk <= guard && atk + 800 > guard ? { target: a.card.iid } : null;
+  },
+  // Atacar um card virado (desconhecido) sem risco.
+  pair_programming: (c, a, t) => (t?.faceDown ? { target: a.card.iid } : null),
 };
 
 /** Quando invocar cada Profissional (sem entrada = sempre que der). */
@@ -62,6 +100,18 @@ export const SUMMON_OK: Record<string, (c: PlayCtx) => boolean> = {
 /** ATK extra que o card ganha ao virar para Ataque (ex.: Douglas Defensivo vira o de Ataque). */
 export const FLIP_ATK_GAIN: Record<string, () => number> = {
   douglas_defensivo: () => card('douglas_ataque').atk ?? 0,
+};
+
+/** Quando fazer a Invocação-Virar de um card com FLIP (sem entrada = quando o ATK vence o campo do oponente). */
+export const FLIP_PLAYS: Record<string, (c: PlayCtx) => boolean> = {
+  docker: (c) => prosOf(c.s, c.opp).some((p) => !p.faceDown && getAtk(c.s, c.opp, p) <= 1500),
+  sre: (c) => prosOf(c.s, c.opp).some((p) => !p.faceDown && getAtk(c.s, c.opp, p) >= 1800),
+  qa: (c) => setCardsOf(c.s, c.opp).length > 0,
+  estagiario: (c) => prosOf(c.s, c.opp).some((p) => p.position === 'atk'),
+  stackoverflow: () => true,
+  wisley: (c) => c.me.stress >= 2,
+  patricia: () => true,
+  curiosa: () => true,
 };
 
 /** Quando usar o efeito ativável (ignition) de cada Profissional. Sem entrada = nunca. */
