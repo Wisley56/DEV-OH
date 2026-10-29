@@ -1,5 +1,5 @@
 import { createGame, type GameState, type Seat } from '@devoh/engine';
-import { timingSafeEqual } from 'node:crypto';
+import { randomInt, timingSafeEqual } from 'node:crypto';
 import { DomainError } from '../../../common/domain-error.js';
 
 export interface Seatholder {
@@ -47,7 +47,10 @@ export class Room {
   startMatch() {
     const [a, b] = this.players;
     if (!b) throw new DomainError('Aguardando oponente.');
+    // Seed e quem começa vêm do crypto: o Math.random do V8 é previsível.
     this.game = createGame({
+      seed: randomInt(2 ** 31),
+      first: randomInt(2) as Seat,
       players: [
         { name: a.name, deck: a.deck },
         { name: b.name, deck: b.deck },
