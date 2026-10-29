@@ -13,6 +13,8 @@ npm run dev        # servidor (porta 3001) + web (porta 5173); o engine é lido 
 
 Abra http://localhost:5173. Para testar o online, crie uma sala numa aba e abra o link de convite em outra.
 
+Nenhuma variável de ambiente é obrigatória em dev. Para mudar alguma, copie `apps/server/.env.example` ou `apps/web/.env.example` para `.env` na mesma pasta: o server lê o arquivo com `--env-file-if-exists` e o Vite lê o dele sozinho. Os `.env` são ignorados pelo git.
+
 ```bash
 npm test           # engine, bots (inclui o golden de paridade), servidor (unit + e2e) e web
 npm run lint       # ESLint, incluindo as fronteiras entre camadas
