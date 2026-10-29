@@ -326,3 +326,111 @@ describe('escolha de zona', () => {
     expect(s.players[0].spells[1]?.card.iid).toBe(bug);
   });
 });
+
+describe('segunda leva: Juju, Diegão, Brunão, Pirulito e Tasks', () => {
+  const proView = (s: GameState, seat: Seat, iid: string) => getView(s, seat).players[seat].pros.find((p) => p?.iid === iid)!;
+
+  it('Pirulito deixa os Profissionais do oponente Atordoados (−300 ATK)', () => {
+    const s = game();
+    place(s, 0, 'pirulito');
+    const b = place(s, 1, 'backend_noturno');
+    expect(proView(s, 1, b).atk).toBe(1500);
+  });
+  it('Patada Irônica anula o efeito do alvo e tira 1000 ATK', () => {
+    let s = game();
+    const k = place(s, 0, 'kelly', 'atk'); // 1400, nega o primeiro ataque
+    const d = place(s, 1, 'diegao');
+    const b = place(s, 1, 'backend_noturno');
+    s = act(s, 0, { type: 'endTurn' });
+    s = act(s, 1, { type: 'ignition', iid: d, target: k });
+    expect(proView(s, 0, k)).toMatchObject({ atk: 400, negated: true });
+    s = act(s, 1, { type: 'goBattle' });
+    s = act(s, 1, { type: 'attack', iid: b, target: k });
+    expect(s.players[0].pros.filter(Boolean)).toHaveLength(0);
+    expect(s.players[0].lp).toBe(4000 - 1400);
+    // A Patada é 1x por turno.
+    expect(applyAction(s, 1, { type: 'ignition', iid: d, target: k }).ok).toBe(false);
+  });
+  it('Coração de ouro: Diegão salva um aliado 1x por turno', () => {
+    let s = game();
+    place(s, 0, 'diegao');
+    const e = place(s, 0, 'estagiario'); // 900
+    const b1 = place(s, 1, 'backend_noturno');
+    const b2 = place(s, 1, 'backend_noturno');
+    s = toTurn2Battle(s);
+    s = act(s, 1, { type: 'attack', iid: b1, target: e });
+    expect(s.players[0].pros.some((p) => p?.card.iid === e)).toBe(true);
+    expect(s.players[0].lp).toBe(4000 - 900);
+    s = act(s, 1, { type: 'attack', iid: b2, target: e });
+    expect(s.players[0].pros.some((p) => p?.card.iid === e)).toBe(false);
+  });
+  it('Isso é meus ovos: anula todos os Profissionais do oponente', () => {
+    let s = game();
+    const k = place(s, 0, 'kelly');
+    const j = place(s, 1, 'juju');
+    const b = place(s, 1, 'backend_noturno');
+    s = act(s, 0, { type: 'endTurn' });
+    s = act(s, 1, { type: 'ignition', iid: j });
+    expect(proView(s, 0, k).negated).toBe(true);
+    s = act(s, 1, { type: 'goBattle' });
+    s = act(s, 1, { type: 'attack', iid: b, target: k });
+    expect(s.players[0].pros.filter(Boolean)).toHaveLength(0);
+  });
+  it('É muito cremoso: −500 DEF, Bugs calados e Brunão não ataca', () => {
+    let s = game();
+    const sre = place(s, 0, 'sre', 'def'); // DEF 1600
+    setBug(s, 0, 'impedimento');
+    const br = place(s, 1, 'brunao');
+    const b = place(s, 1, 'backend_noturno');
+    s = act(s, 0, { type: 'endTurn' });
+    s = act(s, 1, { type: 'ignition', iid: br });
+    expect(proView(s, 0, sre).def).toBe(1100);
+    s = act(s, 1, { type: 'goBattle' });
+    expect(proView(s, 1, br).canAttack).toBe(false);
+    s = act(s, 1, { type: 'attack', iid: b, target: sre });
+    expect(s.players[0].pros.filter(Boolean)).toHaveLength(0);
+    expect(s.players[0].spells.some((x) => x?.card.cardId === 'impedimento')).toBe(true);
+  });
+  it('Juju Sério: −800 DEF em quem está em Defesa e +500 ATK para o Juju', () => {
+    let s = game();
+    const j = place(s, 0, 'juju');
+    const sre = place(s, 1, 'sre', 'def');
+    const qa = place(s, 1, 'qa', 'atk');
+    s = act(s, 0, { type: 'activate', iid: giveHand(s, 0, 'juju_serio') });
+    expect(proView(s, 0, j).atk).toBe(2400);
+    expect(proView(s, 1, sre).def).toBe(800);
+    expect(proView(s, 1, qa).def).toBe(1400);
+  });
+  it('Careca Pensante: +500 ATK para todos os carecas, dos dois lados', () => {
+    let s = game();
+    const c = giveHand(s, 0, 'careca_pensante');
+    expect(applyAction(s, 0, { type: 'activate', iid: c }).ok).toBe(false);
+    const m = place(s, 0, 'moises');
+    const j = place(s, 1, 'juju');
+    const q = place(s, 0, 'qa');
+    s = act(s, 0, { type: 'activate', iid: c });
+    expect(proView(s, 0, m).atk).toBe(2500);
+    expect(proView(s, 1, j).atk).toBe(2400);
+    expect(proView(s, 0, q).atk).toBe(1600);
+  });
+  it('A Mão do Moisés: 4+ limpa as zonas do oponente; menos trava um Profissional seu', () => {
+    const outcomes = { ok: 0, fail: 0 };
+    for (let seed = 1; seed <= 30; seed++) {
+      let s = game({ seed });
+      const e = place(s, 0, 'estagiario');
+      setBug(s, 1, 'impedimento');
+      setBug(s, 1, 'erro_404');
+      s = act(s, 0, { type: 'activate', iid: giveHand(s, 0, 'mao_moises') });
+      const roll = s.log.findLast((l) => l.roll)?.roll;
+      expect(roll?.ok).toBe((roll?.face ?? 0) >= 4);
+      if (s.players[1].spells.every((x) => !x)) {
+        outcomes.ok++;
+      } else {
+        outcomes.fail++;
+        expect(proView(s, 0, e)).toMatchObject({ position: 'def', locked: true, negated: true });
+      }
+    }
+    expect(outcomes.ok).toBeGreaterThan(0);
+    expect(outcomes.fail).toBeGreaterThan(0);
+  });
+});
