@@ -4,7 +4,8 @@
  * Regiões mais largas que o alvo são encaixadas sobre uma cópia desfocada,
  * para não cortar o texto dos stickers.
  *
- * Uso: npm run crop-art
+ * Uso: npm run crop-art            (todos)
+ *      npm run crop-art -- juju diegao   (só os ids informados)
  */
 import sharp from 'sharp';
 import { mkdirSync } from 'node:fs';
@@ -36,11 +37,22 @@ const CROPS: Record<string, { src: string; box?: Box }> = {
   kelly: { src: 'kelly', box: { left: 170, top: 0, width: 684, height: 572 } },
   gama: { src: 'gama', box: { left: 110, top: 0, width: 804, height: 572 } },
   patricia: { src: 'patricia', box: { left: 160, top: 0, width: 712, height: 572 } },
+  // Segunda leva (cartas prontas, 1493×2000; Juju 1620×2000): janela da ilustração sem a moldura.
+  pirulito: { src: 'pirulito', box: { left: 188, top: 388, width: 1117, height: 960 } },
+  diegao: { src: 'diegao', box: { left: 188, top: 388, width: 1120, height: 963 } },
+  mao_moises: { src: 'mao_moises', box: { left: 190, top: 388, width: 1112, height: 956 } },
+  juju_serio: { src: 'juju_serio', box: { left: 195, top: 395, width: 1105, height: 950 } },
+  brunao: { src: 'brunao', box: { left: 195, top: 388, width: 1103, height: 948 } },
+  careca_pensante: { src: 'careca_pensante', box: { left: 198, top: 390, width: 1100, height: 946 } },
+  juju: { src: 'juju', box: { left: 205, top: 385, width: 1210, height: 1040 } },
 };
+
+const only = process.argv.slice(2);
 
 mkdirSync(OUT, { recursive: true });
 
 for (const [id, { src, box }] of Object.entries(CROPS)) {
+  if (only.length && !only.includes(id)) continue;
   const base = sharp(`${SRC}/${src}.webp`);
   const region = await (box ? base.extract(box) : base).toBuffer();
   const bg = await sharp(region).resize(OUT_W, OUT_H, { fit: 'cover' }).blur(28).modulate({ brightness: 0.6 }).toBuffer();

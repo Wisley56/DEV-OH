@@ -11,6 +11,7 @@ export default defineCard({
     atk: 2000,
     def: 1700,
     unique: true,
+    tags: ['careca'],
     art: '/art/moises.webp',
     text:
       'Finalização: se for destruído em batalha, aplica um mata-leão e destrói o Profissional que o destruiu. ' +

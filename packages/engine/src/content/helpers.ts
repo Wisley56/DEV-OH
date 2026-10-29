@@ -4,6 +4,7 @@ import { card, findPro, prosOf, type EffectCtx } from '../effects/api';
 
 export const isThy = (id: string) => card(id).tags?.includes('thy') ?? false;
 export const isIA = (id: string) => card(id).tags?.includes('ia') ?? false;
+export const isCareca = (id: string) => card(id).tags?.includes('careca') ?? false;
 
 /** Profissional escolhido como alvo, se estiver do lado pedido. */
 export function targetPro(ctx: EffectCtx, side: 'me' | 'opp') {

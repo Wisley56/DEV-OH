@@ -15,6 +15,10 @@ import gama from './squad/gama';
 import paquito from './squad/paquito';
 import moises from './squad/moises';
 import curiosa from './squad/curiosa';
+import juju from './squad/juju';
+import diegao from './squad/diegao';
+import brunao from './squad/brunao';
+import pirulito from './squad/pirulito';
 import claudeAlucinando from './generic/claude_alucinando';
 import copilot from './generic/copilot';
 import stackoverflow from './generic/stackoverflow';
@@ -38,6 +42,9 @@ import gatoGordo from './tasks/gato_gordo';
 import deploySexta from './tasks/deploy_sexta';
 import ferias from './tasks/ferias';
 import chamaThy from './tasks/chama_thy';
+import jujuSerio from './tasks/juju_serio';
+import careca from './tasks/careca_pensante';
+import maoMoises from './tasks/mao_moises';
 import iaFezCagada from './bugs/ia_fez_cagada';
 import impedimento from './bugs/impedimento';
 import mudancaEscopo from './bugs/mudanca_escopo';
@@ -64,6 +71,10 @@ export const CARD_MODULES: CardModule[] = [
   paquito,
   moises,
   curiosa,
+  juju,
+  diegao,
+  brunao,
+  pirulito,
   claudeAlucinando,
   copilot,
   stackoverflow,
@@ -87,6 +98,9 @@ export const CARD_MODULES: CardModule[] = [
   deploySexta,
   ferias,
   chamaThy,
+  jujuSerio,
+  careca,
+  maoMoises,
   iaFezCagada,
   impedimento,
   mudancaEscopo,
