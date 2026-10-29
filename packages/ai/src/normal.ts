@@ -62,8 +62,8 @@ function mainCandidates(s: GameState, seat: Seat): Action[] {
     }
   }
 
-  // 4) Bugs virados.
-  for (const c of me.hand) if (card(c.cardId).kind === 'bug') out.push({ type: 'set', iid: c.iid });
+  // 4) Bugs e Tasks de defesa (com gatilho) virados.
+  for (const c of me.hand) if (card(c.cardId).kind === 'bug' || card(c.cardId).trigger) out.push({ type: 'set', iid: c.iid });
 
   // 5) Posições (cards virados: Invocação-Virar).
   for (const p of mine) {

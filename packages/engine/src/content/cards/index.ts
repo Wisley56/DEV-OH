@@ -53,6 +53,7 @@ import ctrlZ from './tasks/ctrl_z';
 import pairProgramming from './tasks/pair_programming';
 import tecladoRgb from './tasks/teclado_rgb';
 import foneRuido from './tasks/fone_ruido';
+import moisesBombado from './tasks/moises_bombado';
 import iaFezCagada from './bugs/ia_fez_cagada';
 import impedimento from './bugs/impedimento';
 import mudancaEscopo from './bugs/mudanca_escopo';
@@ -119,6 +120,7 @@ export const CARD_MODULES: CardModule[] = [
   pairProgramming,
   tecladoRgb,
   foneRuido,
+  moisesBombado,
   iaFezCagada,
   impedimento,
   mudancaEscopo,

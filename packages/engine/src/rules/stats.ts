@@ -34,8 +34,8 @@ export function getAtk(s: GameState, seat: Seat, slot: ProSlot): number {
     if (aura) atk += aura(q);
   }
   for (const src of oppAuraSources(s, seat)) atk += src.oppAura!(q).atk ?? 0;
-  for (const eq of equipsOf(s, slot.card.iid)) atk += effectsOf(eq.card.cardId)?.equip?.(q).atk ?? 0;
-  return Math.max(0, atk);
+  const eq = equipBonus(s, q);
+  return Math.max(0, (atk + eq.atk) * eq.mult);
 }
 
 export function getDef(s: GameState, seat: Seat, slot: ProSlot): number {
@@ -43,6 +43,18 @@ export function getDef(s: GameState, seat: Seat, slot: ProSlot): number {
   const q: StatCtx = { s, seat, slot, def };
   let total = (def.def ?? 0) + slot.defMod;
   for (const src of oppAuraSources(s, seat)) total += src.oppAura!(q).def ?? 0;
-  for (const eq of equipsOf(s, slot.card.iid)) total += effectsOf(eq.card.cardId)?.equip?.(q).def ?? 0;
-  return Math.max(0, total);
+  const eq = equipBonus(s, q);
+  return Math.max(0, (total + eq.def) * eq.mult);
+}
+
+/** Soma dos Equipamentos presos ao Profissional: bônus de ATK/DEF e o multiplicador (Moisés Bombado = 2). */
+function equipBonus(s: GameState, q: StatCtx) {
+  const out = { atk: 0, def: 0, mult: 1 };
+  for (const eq of equipsOf(s, q.slot.card.iid)) {
+    const b = effectsOf(eq.card.cardId)?.equip?.(q);
+    out.atk += b?.atk ?? 0;
+    out.def += b?.def ?? 0;
+    out.mult *= b?.mult ?? 1;
+  }
+  return out;
 }

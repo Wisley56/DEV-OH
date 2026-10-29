@@ -65,6 +65,8 @@ export const TASK_PLAYS: Record<string, (c: PlayCtx) => Play> = {
   // Equipamentos: no Profissional mais forte (Teclado em quem ataca, Fone em quem defende).
   teclado_rgb: (c) => equipOn(c, 'atk'),
   fone_ruido: (c) => equipOn(c, 'def'),
+  // Baixado virado como defesa (ver o passo dos cards virados do bot).
+  moises_bombado: () => null,
   // Rápidas: guardadas para a Batalha (ver QUICK_BATTLE_PLAYS).
   ctrl_z: () => null,
   pair_programming: () => null,

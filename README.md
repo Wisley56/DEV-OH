@@ -88,12 +88,12 @@ Sem instalar nada, sem cadastro: abre o link, escolhe um apelido e duela.
 
 ### Os tipos de card
 
-|     | Tipo                       | O que faz                                                                                                                              |
-| :-: | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| 🟨  | **Profissional Normal**    | Sem efeito, mas com mais ATK/DEF: Dev Júnior, Dev Fullstack, Arquiteta de Software…                                                    |
-| 🟧  | **Profissional de Efeito** | Os devs da squad. Atacam e defendem com ATK/DEF. Nível 5–6 precisa de 1 sacrifício; nível 7+ precisa de 2. Alguns têm efeito **FLIP**. |
-| 🟩  | **Task**                   | Magias: normais, **Contínuas** (∞), de **Campo** (⛰), **Rápidas** (⚡, também na Batalha) e de **Equipamento** (✚).                    |
-| 🟪  | **Bug**                    | Armadilhas viradas que disparam sozinhas. O **Bug Contínuo** (∞) fica no campo; o **Contra-Bug** (↩) anula o Bug do oponente.          |
+|     | Tipo                       | O que faz                                                                                                                                                                                       |
+| :-: | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🟨  | **Profissional Normal**    | Sem efeito, mas com mais ATK/DEF: Dev Júnior, Dev Fullstack, Arquiteta de Software…                                                                                                             |
+| 🟧  | **Profissional de Efeito** | Os devs da squad. Atacam e defendem com ATK/DEF. Nível 5–6 precisa de 1 sacrifício; nível 7+ precisa de 2. Alguns têm efeito **FLIP**.                                                          |
+| 🟩  | **Task**                   | Magias: normais, **Contínuas** (∞), de **Campo** (⛰), **Rápidas** (⚡, também na Batalha) e de **Equipamento** (✚) — o Moisés Bombado, baixado virado, defende sozinho quando o oponente ataca. |
+| 🟪  | **Bug**                    | Armadilhas viradas que disparam sozinhas. O **Bug Contínuo** (∞) fica no campo; o **Contra-Bug** (↩) anula o Bug do oponente.                                                                   |
 
 ### 🂠 Virado e FLIP
 

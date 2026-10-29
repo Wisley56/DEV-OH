@@ -111,6 +111,7 @@ function mainActions(s: GameState, seat: Seat): Action[] {
       }
     } else if (d.kind === 'task') {
       for (const target of targetsFor(s, seat, d.target)) out.push({ type: 'activate', iid: c.iid, target });
+      if (d.trigger) out.push({ type: 'set', iid: c.iid });
     } else {
       out.push({ type: 'set', iid: c.iid });
     }

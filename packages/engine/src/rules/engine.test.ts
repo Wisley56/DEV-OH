@@ -708,3 +708,43 @@ describe('Tasks Rápidas, Equipamentos, Bug Contínuo e Contra-Bug', () => {
     expect(s.players[1].stress).toBe(1);
   });
 });
+
+describe('Moisés Bombado', () => {
+  it('ativado da mão: dobra ATK e DEF do equipado até o fim do turno e é destruído', () => {
+    let s = game();
+    const q = place(s, 0, 'qa');
+    const base = getView(s, 0).players[0].pros.find((p) => p?.iid === q)!;
+    const m = giveHand(s, 0, 'moises_bombado');
+    s = act(s, 0, { type: 'activate', iid: m, target: q });
+    const buffed = getView(s, 0).players[0].pros.find((p) => p?.iid === q)!;
+    expect(buffed.atk).toBe(base.atk! * 2);
+    expect(buffed.def).toBe(base.def! * 2);
+    s = act(s, 0, { type: 'endTurn' });
+    expect(s.players[0].spells.every((x) => !x)).toBe(true);
+    expect(s.players[0].grave.some((c) => c.iid === m)).toBe(true);
+    expect(getView(s, 0).players[0].pros.find((p) => p?.iid === q)?.atk).toBe(base.atk);
+  });
+
+  it('baixado virado: ativa sozinho quando o oponente ataca e equipa o atacado', () => {
+    let s = game();
+    const q = place(s, 0, 'qa'); // 1600 → 3200
+    const m = setBug(s, 0, 'moises_bombado');
+    const atk = place(s, 1, 'cliente'); // 2300
+    s = toTurn2Battle(s);
+    s = act(s, 1, { type: 'attack', iid: atk, target: q });
+    expect(s.players[1].grave.some((c) => c.iid === atk)).toBe(true);
+    expect(s.players[1].lp).toBe(4000 - 900);
+    expect(s.players[0].spells.find((x) => x?.card.iid === m)).toMatchObject({ faceDown: false, equippedTo: q });
+    s = act(s, 1, { type: 'endTurn' });
+    expect(s.players[0].grave.some((c) => c.iid === m)).toBe(true);
+  });
+
+  it('não dispara no ataque direto nem no turno em que foi baixado', () => {
+    let s = game();
+    const m = setBug(s, 0, 'moises_bombado');
+    const atk = place(s, 1, 'qa');
+    s = toTurn2Battle(s);
+    s = act(s, 1, { type: 'attack', iid: atk });
+    expect(s.players[0].spells.find((x) => x?.card.iid === m)?.faceDown).toBe(true);
+  });
+});

@@ -56,6 +56,8 @@ export interface CardEffects {
   onIgnite?(ctx: EffectCtx): void;
   /** Início do turno do dono, enquanto o card está no campo. */
   onStandby?(ctx: EffectCtx): void;
+  /** Task virada para cima: fim de qualquer turno (antes de zerar os bônus do turno). */
+  onEndTurn?(ctx: EffectCtx): void;
   /** Depois de ir para o cemitério. byIid = Profissional que destruiu em batalha. */
   onDestroyed?(ctx: EffectCtx, info: { battle: boolean; byIid?: string }): void;
 
@@ -67,8 +69,8 @@ export interface CardEffects {
   onAnyBug?(ctx: EffectCtx): void;
 
   // ── Equipamento ──
-  /** Task de Equipamento: ajuste de ATK/DEF do Profissional equipado (q = ele). */
-  equip?(q: StatCtx): { atk?: number; def?: number };
+  /** Task de Equipamento: ajuste de ATK/DEF do Profissional equipado (q = ele); `mult` multiplica o total dos dois. */
+  equip?(q: StatCtx): { atk?: number; def?: number; mult?: number };
   /** Task de Equipamento: dano de batalha envolvendo o equipado não dá Estresse ao dono dele. */
   calmInBattle?(): boolean;
 

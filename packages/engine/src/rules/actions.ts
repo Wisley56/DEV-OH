@@ -6,10 +6,11 @@ import type { Action, ActionResult, CardInstance, GameState, ProSlot, Seat } fro
 import { fireBugs } from '../effects/bugs';
 import { ctxFor } from '../effects/context';
 import { attack } from './battle';
+import { resolveTask } from './tasks';
 import { validTarget } from './targets';
 import { endTurn } from './turn';
 import { checkWin, lose } from './win';
-import { resolveFlip, revealPro, setPosition, toGrave, tribute } from './zones';
+import { resolveFlip, revealPro, setPosition, tribute } from './zones';
 
 /** Ponto de entrada das regras: aplica a ação numa cópia do estado. */
 export function applyAction(state: GameState, seat: Seat, action: Action): ActionResult {
@@ -36,7 +37,6 @@ function run(s: GameState, seat: Seat, a: Action): string | null {
   }
   if (seat !== s.active) return 'Não é o seu turno.';
   const p = s.players[seat];
-  const opp = other(seat);
 
   switch (a.type) {
     case 'summon': {
@@ -86,9 +86,7 @@ function run(s: GameState, seat: Seat, a: Action): string | null {
       const quick = d.speed === 'quick';
       if (s.phase !== 'main' && !(quick && s.phase === 'battle')) return 'Tasks só na Fase Principal (Rápidas também na Batalha).';
       if (set && quick && set.setTurn === s.turn) return 'Task Rápida baixada só pode ser ativada a partir do próximo turno.';
-      const fx = effectsOf(d.id);
-      const ctx = ctxFor(s, c, a.target);
-      const cant = fx?.canActivate?.(ctx);
+      const cant = effectsOf(d.id)?.canActivate?.(ctxFor(s, c, a.target));
       if (cant) return cant;
       const equip = d.speed === 'equip';
       if (d.target) {
@@ -102,30 +100,7 @@ function run(s: GameState, seat: Seat, a: Action): string | null {
       }
       if (set) p.spells[si] = null;
       else p.hand.splice(hi, 1);
-      log(s, 'task', `${p.name} ativou a Task "${d.name}".`, { seat, cardId: d.id, iid: c.iid });
-      const ev = fireBugs(s, opp, ['oppTask'], { trigger: 'oppTask', task: c.iid });
-      if (ev.negated) {
-        toGrave(s, c);
-        log(s, 'effect', `"${d.name}" foi anulada.`, { seat });
-        return null;
-      }
-      if (equip && !findPro(s, a.target)) {
-        toGrave(s, c);
-        log(s, 'effect', `"${d.name}" ficou sem quem equipar.`, { seat });
-        return null;
-      }
-      if (d.speed === 'field') {
-        if (p.field) {
-          toGrave(s, p.field.card);
-          log(s, 'info', `"${nameOf(p.field.card)}" saiu de campo.`, { seat });
-        }
-        p.field = { card: c, faceDown: false, revealed: true, setTurn: s.turn };
-      } else if (stays) {
-        const zone = set ? si : (a.zone ?? p.spells.findIndex((x) => !x));
-        p.spells[zone] = { card: c, faceDown: false, revealed: true, setTurn: s.turn, ...(equip && { equippedTo: a.target }) };
-      }
-      fx?.onActivate?.(ctx);
-      if (!stays && d.speed !== 'field') toGrave(s, c);
+      resolveTask(s, seat, c, a.target, set ? si : a.zone);
       return null;
     }
 

@@ -56,7 +56,7 @@ export interface CardDef {
 
   // Tasks
   speed?: TaskSpeed;
-  // Bugs
+  // Bugs (e Tasks baixadas que disparam sozinhas, como o Moisés Bombado)
   trigger?: BugTrigger;
   /** Ausente = normal. */
   bugType?: BugType;

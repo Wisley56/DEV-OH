@@ -19,9 +19,10 @@ describe('catálogo', () => {
     }
   });
 
-  it('só Bugs têm bugType e trigger; só Tasks têm speed', () => {
+  it('só Bugs têm bugType; trigger só em Bugs e Tasks que podem ser baixadas; só Tasks têm speed', () => {
     for (const c of CARD_LIST) {
-      if (c.kind !== 'bug') expect(c.bugType ?? c.trigger, c.id).toBeUndefined();
+      if (c.kind !== 'bug') expect(c.bugType, c.id).toBeUndefined();
+      if (c.kind === 'pro' || c.speed === 'field') expect(c.trigger, c.id).toBeUndefined();
       if (c.kind === 'bug') expect(c.trigger, c.id).toBeDefined();
       if (c.kind !== 'task') expect(c.speed, c.id).toBeUndefined();
     }
@@ -34,6 +35,7 @@ describe('catálogo', () => {
     expect(fullTypeLine(CARD_LIST.find((c) => c.id === 'merge_conflict')!)).toBe('Contra-Bug');
     expect(cardFrame(CARD_LIST.find((c) => c.id === 'backend_noturno')!)).toBe('normal');
     expect(setCode(CARD_LIST[0].id)).toBe('DVOH-001');
+    expect(setCode('moises_bombado')).toBe('DVOH-055');
   });
 
   it('limite de cópias pela raridade', () => {

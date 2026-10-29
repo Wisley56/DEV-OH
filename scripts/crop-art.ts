@@ -47,6 +47,7 @@ const CROPS: Record<string, { src: string; box?: Box }> = {
   juju: { src: 'juju', box: { left: 205, top: 385, width: 1210, height: 1040 } },
   // Terceira leva (765×1024).
   sandro: { src: 'sandro', box: { left: 98, top: 198, width: 570, height: 492 } },
+  moises_bombado: { src: 'moises_bombado', box: { left: 92, top: 230, width: 574, height: 463 } },
 };
 
 const only = process.argv.slice(2);

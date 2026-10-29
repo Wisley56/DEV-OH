@@ -8,6 +8,7 @@ import type { AttackInfo } from '../effects/types';
 import { damage } from './life';
 import { getAtk, getDef } from './stats';
 import { addStress } from './stress';
+import { fireSetTasks } from './tasks';
 import { destroyPro, resolveFlip, revealPro } from './zones';
 
 export function attackBlock(s: GameState, seat: Seat, slot: ProSlot): string | null {
@@ -20,7 +21,7 @@ export function attackBlock(s: GameState, seat: Seat, slot: ProSlot): string | n
 
 /**
  * Ordem de resolução de um ataque:
- * 1. guardAttack dos Profissionais do defensor  2. onTargeted do alvo  3. Bugs do defensor
+ * 1. guardAttack dos Profissionais do defensor  2. onTargeted do alvo  3. Bugs do defensor e Tasks de defesa
  * 4. alvo virado é revelado  5. onAttack do atacante e onAllyAttack do lado dele  6. cálculo de dano/destruição
  * 7. afterSurviveAttack do alvo  8. FLIP do alvo revelado (mesmo se foi destruído).
  */
@@ -62,6 +63,11 @@ export function attack(s: GameState, seat: Seat, iid: string, targetIid?: string
   if (ev.negated || s.winner !== null) return null;
   if (!findPro(s, A.card.iid)) return null;
   if (target && !findPro(s, target.card.iid)) return null;
+  // Tasks baixadas de defesa (ex.: Moisés Bombado) disparam no Profissional atacado.
+  if (target) {
+    fireSetTasks(s, opp, 'oppAttack', target.card.iid);
+    if (s.winner !== null || !findPro(s, A.card.iid) || !findPro(s, target.card.iid)) return null;
+  }
 
   const flipped = target?.faceDown ? target : null;
   if (flipped) revealPro(s, flipped);

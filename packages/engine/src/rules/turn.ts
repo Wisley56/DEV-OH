@@ -89,6 +89,9 @@ export function endTurn(s: GameState) {
     toGrave(s, c);
     log(s, 'info', `${p.name} descartou "${nameOf(c)}" (limite de ${HAND_LIMIT} cards na mão).`, { seat: s.active, cardId: c.cardId });
   }
+  for (const seat of [0, 1] as Seat[]) {
+    for (const sp of s.players[seat].spells) if (sp && !sp.faceDown) effectsOf(sp.card.cardId)?.onEndTurn?.(ctxFor(s, sp.card));
+  }
   for (const seat of [0, 1] as Seat[]) for (const pro of prosOf(s, seat)) pro.tempAtk = 0;
   startTurn(s);
 }
