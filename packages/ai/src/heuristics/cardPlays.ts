@@ -1,4 +1,4 @@
-import { card, other, prosOf, setCardsOf, type GameState, type PlayerState, type ProSlot, type Seat } from '@devoh/engine';
+import { card, MAX_STRESS, other, prosOf, setCardsOf, type GameState, type PlayerState, type ProSlot, type Seat } from '@devoh/engine';
 import { strongest, value } from './board';
 
 /** O que o bot sabe do tabuleiro ao decidir uma jogada. */
@@ -51,6 +51,12 @@ export const TASK_PLAYS: Record<string, (c: PlayCtx) => Play> = {
     const oppCards = [...c.oppP.spells, c.oppP.field].filter(Boolean).length;
     return oppCards >= 2 || c.mine.some((p) => p.card.cardId === 'moises') ? {} : null;
   },
+};
+
+/** Quando invocar cada Profissional (sem entrada = sempre que der). */
+export const SUMMON_OK: Record<string, (c: PlayCtx) => boolean> = {
+  // O Sandro custa +4 de Estresse: não vale estourar o limite e perder o melhor Profissional.
+  sandro: (c) => c.me.stress + 4 < MAX_STRESS,
 };
 
 /** ATK extra que o card ganha ao virar para Ataque (ex.: Douglas Defensivo vira o de Ataque). */

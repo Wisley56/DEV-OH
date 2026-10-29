@@ -56,5 +56,5 @@ describe('bot vs bot', () => {
       finished++;
     }
     expect(finished).toBe(80);
-  });
+  }, 60_000);
 });

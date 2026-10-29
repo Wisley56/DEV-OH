@@ -1,6 +1,6 @@
 import { applyAction, card, getAtk, getDef, prosOf, tributesNeeded, type Action, type GameState, type Seat } from '@devoh/engine';
 import { strongest, value } from './heuristics/board';
-import { FLIP_ATK_GAIN, IGNITION_PLAYS, playCtx, TASK_PLAYS } from './heuristics/cardPlays';
+import { FLIP_ATK_GAIN, IGNITION_PLAYS, playCtx, SUMMON_OK, TASK_PLAYS } from './heuristics/cardPlays';
 
 /**
  * Bot "Com IA" (normal): gera ações candidatas em ordem de prioridade e devolve
@@ -45,6 +45,7 @@ function mainCandidates(s: GameState, seat: Seat): Action[] {
         (a, b) => (card(b.cardId).atk ?? 0) + (card(b.cardId).def ?? 0) / 2 - ((card(a.cardId).atk ?? 0) + (card(a.cardId).def ?? 0) / 2),
       );
     for (const c of pros) {
+      if (SUMMON_OK[c.cardId] && !SUMMON_OK[c.cardId](ctx)) continue;
       const d = card(c.cardId);
       const need = tributesNeeded(d.level ?? 1);
       const fodder = [...mine].sort((a, b) => value(s, seat, a) - value(s, seat, b)).slice(0, need);
