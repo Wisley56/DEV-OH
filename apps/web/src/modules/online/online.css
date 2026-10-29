@@ -1,0 +1,28 @@
+/* ───────── Sala online ───────── */
+.waiting {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: center;
+  max-width: 420px;
+}
+.room-code {
+  font-family: var(--font-title);
+  font-size: 3.4rem;
+  font-weight: 900;
+  letter-spacing: 0.25em;
+  color: var(--gold2);
+  text-shadow: 0 4px 20px rgba(233, 185, 73, 0.35);
+}
+.net-banner {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: rgba(127, 80, 10, 0.92);
+  font-size: 0.85rem;
+  font-weight: 600;
+}

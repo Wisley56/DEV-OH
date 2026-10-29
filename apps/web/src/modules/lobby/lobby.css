@@ -1,0 +1,116 @@
+/* ───────── Home ───────── */
+.home {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 24px 16px 60px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.hero {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding-top: 10px;
+  /* O leque de cards gira para fora das bordas: corta sem criar rolagem lateral. */
+  overflow-x: clip;
+}
+.hero-cards {
+  --hc: clamp(104px, 30vw, 190px);
+  display: flex;
+  justify-content: center;
+  height: calc(var(--hc) * 1.53);
+  margin-bottom: calc(var(--hc) * -0.21);
+}
+.hero-card {
+  width: var(--hc);
+  margin: 0 calc(var(--hc) * -0.14);
+  transform-origin: 50% 120%;
+}
+.logo {
+  position: relative;
+  font-family: var(--font-title);
+  font-weight: 900;
+  font-size: clamp(3rem, 9vw, 5.6rem);
+  margin: 0;
+  letter-spacing: 0.04em;
+  background: linear-gradient(#fff6cf, var(--gold) 55%, #9a6410);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 4px 0 #3a1d00) drop-shadow(0 10px 24px rgba(0, 0, 0, 0.7));
+}
+.logo span {
+  color: var(--code);
+  -webkit-text-fill-color: var(--code);
+}
+.tagline {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+.lobby {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.field-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+.deck-desc {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+.invite {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(124, 255, 178, 0.1);
+  border: 1px solid rgba(124, 255, 178, 0.35);
+}
+.lobby-actions {
+  display: grid;
+  gap: 10px;
+  margin-top: 6px;
+}
+.join {
+  display: flex;
+  gap: 8px;
+}
+.join input {
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  font-weight: 700;
+  text-align: center;
+}
+.lobby-links {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.rules h2 {
+  font-family: var(--font-title);
+  margin: 0 0 8px;
+  color: var(--gold);
+}
+.rules ul {
+  margin: 0;
+  padding-left: 18px;
+  line-height: 1.55;
+  color: #d5dbf5;
+}
+.rules li {
+  margin-bottom: 6px;
+}
+
+/* Celular / janelas estreitas */
+@media (max-width: 860px) {
+  .home {
+    grid-template-columns: 1fr;
+  }
+}

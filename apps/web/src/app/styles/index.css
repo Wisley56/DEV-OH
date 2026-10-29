@@ -1,0 +1,10 @@
+/* Ordem da cascata: tokens → base → módulos (do mais genérico ao tabuleiro). */
+@import './tokens.css';
+@import './base.css';
+@import '../../modules/cards/cards.css';
+@import '../../modules/lobby/lobby.css';
+@import '../../modules/training/training.css';
+@import '../../modules/collection/collection.css';
+@import '../../modules/online/online.css';
+@import '../../modules/decks/decks.css';
+@import '../../modules/duel/duel.css';

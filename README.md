@@ -80,15 +80,15 @@ Sem instalar nada, sem cadastro: abre o link, escolhe um apelido e duela.
 
 ### Os tipos de card
 
-| | Tipo | O que faz |
-|:-:|---|---|
-| 🟧 | **Profissional** | Os devs da squad. Atacam e defendem com ATK/DEF. Nível 5–6 precisa de 1 sacrifício; nível 7+ precisa de 2. |
-| 🟩 | **Task** | Magias ativadas da mão: Café Extra Forte, Home Office, Refatoração Holística, Deploy na Sexta-Feira… |
-| 🟪 | **Bug** | Armadilhas viradas que disparam sozinhas: A IA Fez Cagada, Merge Conflict, Erro 404, Prod Caiu… |
+|     | Tipo             | O que faz                                                                                                  |
+| :-: | ---------------- | ---------------------------------------------------------------------------------------------------------- |
+| 🟧  | **Profissional** | Os devs da squad. Atacam e defendem com ATK/DEF. Nível 5–6 precisa de 1 sacrifício; nível 7+ precisa de 2. |
+| 🟩  | **Task**         | Magias ativadas da mão: Café Extra Forte, Home Office, Refatoração Holística, Deploy na Sexta-Feira…       |
+| 🟪  | **Bug**          | Armadilhas viradas que disparam sozinhas: A IA Fez Cagada, Merge Conflict, Erro 404, Prod Caiu…            |
 
 ### 😤 Estresse: a regra da casa
 
-Cada jogador tem uma barra de **Estresse de 0 a 10**. Bugs, reuniões e dano de batalha enchem a barra, e cada ponto dá **+100 de ATK** aos seus Profissionais (o famoso *Modo Desespero*). Mas se chegar a **10**, o seu Profissional mais forte **pede demissão**. Café e Home Office ajudam a respirar.
+Cada jogador tem uma barra de **Estresse de 0 a 10**. Bugs, reuniões e dano de batalha enchem a barra, e cada ponto dá **+100 de ATK** aos seus Profissionais (o famoso _Modo Desespero_). Mas se chegar a **10**, o seu Profissional mais forte **pede demissão**. Café e Home Office ajudam a respirar.
 
 ### 🚀 Deploy na Sexta-Feira
 
@@ -96,11 +96,11 @@ O card de mais alto risco do jogo: cara ou coroa. **Cara**, 3000 de dano no opon
 
 ## 🗂️ Decks prontos
 
-| Deck | Estilo |
-|---|---|
-| **Squad do Tech Lead** | Três versões do Thy, Vitor chamando na DM e IAs para revisar. Controle e paciência. |
-| **Força Bruta Douglas** | Todas as formas do Douglas, o Gato Gordo e o leite do Danilo. Agressivo e arriscado. |
-| **Fofoca & Caos** | Patrícia e Gama chocados, a Curiosa Caótica e IAs alucinando. Ninguém sabe o que vem. |
+| Deck                    | Estilo                                                                                |
+| ----------------------- | ------------------------------------------------------------------------------------- |
+| **Squad do Tech Lead**  | Três versões do Thy, Vitor chamando na DM e IAs para revisar. Controle e paciência.   |
+| **Força Bruta Douglas** | Todas as formas do Douglas, o Gato Gordo e o leite do Danilo. Agressivo e arriscado.  |
+| **Fofoca & Caos**       | Patrícia e Gama chocados, a Curiosa Caótica e IAs alucinando. Ninguém sabe o que vem. |
 
 ---
 

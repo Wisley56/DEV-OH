@@ -1,0 +1,19 @@
+:root {
+  --bg: #0a0f1f;
+  --bg2: #111a35;
+  --panel: rgba(18, 26, 54, 0.88);
+  --panel-border: rgba(233, 185, 73, 0.22);
+  --gold: #e9b949;
+  --gold2: #ffd978;
+  --text: #eef1ff;
+  --muted: #98a2c8;
+  --code: #7cffb2;
+  --danger: #ff4d6d;
+  --ok: #4ade80;
+  --task: #1b8a6b;
+  --bug: #b23a7a;
+  --pro: #c46a2b;
+  --font-title: 'Cinzel', Georgia, serif;
+  --font-ui: 'Inter', system-ui, sans-serif;
+  color-scheme: dark;
+}

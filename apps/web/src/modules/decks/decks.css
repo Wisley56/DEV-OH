@@ -1,0 +1,98 @@
+/* ───────── Deck builder ───────── */
+.db-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 20px;
+  align-items: start;
+}
+.pool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 10px;
+}
+.pool-card {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  transition: transform 0.12s;
+}
+.pool-card:hover {
+  transform: translateY(-4px);
+}
+.pool-card.maxed {
+  opacity: 0.4;
+}
+.db-deck {
+  position: sticky;
+  top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: calc(100vh - 24px);
+  overflow: auto;
+}
+.deck-name {
+  font-family: var(--font-title);
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+.deck-count {
+  font-weight: 700;
+}
+.deck-count.good {
+  color: var(--ok);
+}
+.deck-count.bad {
+  color: #ffb4c0;
+}
+.deck-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+.deck-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 4px 4px 10px;
+  border-radius: 8px;
+  border-left: 4px solid var(--pro);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 0.88rem;
+}
+.deck-list li.kind-task {
+  border-color: var(--task);
+}
+.deck-list li.kind-bug {
+  border-color: var(--bug);
+}
+.dl-n {
+  font-weight: 800;
+  color: var(--gold);
+  width: 24px;
+}
+.dl-name {
+  flex: 1;
+}
+.db-actions {
+  display: flex;
+  gap: 8px;
+}
+.db-preview {
+  width: 240px;
+  align-self: center;
+}
+
+/* Celular / janelas estreitas */
+@media (max-width: 860px) {
+  .db-layout {
+    grid-template-columns: 1fr;
+  }
+  .db-deck {
+    position: static;
+    max-height: none;
+  }
+}

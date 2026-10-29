@@ -1,0 +1,8 @@
+node_modules
+dist
+.turbo
+package-lock.json
+**/__golden__/**
+apps/web/public
+assets
+docs/*.webp

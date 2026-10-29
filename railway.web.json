@@ -4,7 +4,7 @@
     "buildCommand": "npm run build"
   },
   "deploy": {
-    "startCommand": "npx --yes serve@14 apps/web/dist -l tcp://0.0.0.0:$PORT",
+    "startCommand": "npx --yes serve@14 -s apps/web/dist -l tcp://0.0.0.0:$PORT",
     "healthcheckPath": "/",
     "restartPolicyType": "ON_FAILURE"
   }

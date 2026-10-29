@@ -1,0 +1,35 @@
+{
+  "name": "@devoh/protocol",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./schemas": {
+      "source": "./src/schemas.ts",
+      "types": "./dist/schemas.d.ts",
+      "import": "./dist/schemas.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@devoh/engine": "*",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@devoh/tsconfig": "*",
+    "@types/node": "^22.15.0",
+    "tsup": "^9.0.0"
+  }
+}

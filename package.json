@@ -1,27 +1,43 @@
 {
   "name": "dev-oh",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
+  "packageManager": "npm@11.11.0",
   "workspaces": [
     "packages/*",
     "apps/*"
   ],
   "scripts": {
-    "dev": "concurrently -n server,web -c magenta,cyan \"npm run dev -w @devoh/server\" \"npm run dev -w @devoh/web\"",
-    "build": "npm run build -w @devoh/web",
+    "dev": "turbo run dev --filter=@devoh/server --filter=@devoh/web",
+    "build": "turbo run build --filter=@devoh/web",
+    "build:server": "turbo run build --filter=@devoh/server",
+    "build:all": "turbo run build",
     "start:server": "npm run start -w @devoh/server",
-    "test": "npm test -w @devoh/game",
-    "typecheck": "tsc -p packages/game && tsc -p apps/server && tsc -p apps/web",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "crop-art": "tsx scripts/crop-art.ts"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2",
+    "@devoh/eslint-config": "*",
+    "@devoh/tsconfig": "*",
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.13.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.10",
     "sharp": "^0.34.1",
     "tsx": "^4.19.3",
-    "typescript": "^5.8.3"
+    "turbo": "^2.11.10",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.72.1",
+    "vite": "^8.3.5"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22.22"
   }
 }
