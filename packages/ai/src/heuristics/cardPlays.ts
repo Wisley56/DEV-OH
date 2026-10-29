@@ -43,6 +43,14 @@ export const TASK_PLAYS: Record<string, (c: PlayCtx) => Play> = {
     [...c.me.hand, ...c.mine.map((m) => m.card)].some((x) => x.cardId === 'danilo' || card(x.cardId).attribute === 'TERRA') ? {} : null,
   gato_gordo: (c) => (!c.me.field ? {} : null),
   deploy_sexta: (c) => (c.oppP.lp <= 3000 || c.me.lp < c.oppP.lp - 1500 ? {} : null),
+  careca_pensante: (c) => {
+    const carecas = (seat: Seat) => prosOf(c.s, seat).filter((p) => card(p.card.cardId).tags?.includes('careca')).length;
+    return carecas(c.seat) > carecas(c.opp) ? {} : null;
+  },
+  mao_moises: (c) => {
+    const oppCards = [...c.oppP.spells, c.oppP.field].filter(Boolean).length;
+    return oppCards >= 2 || c.mine.some((p) => p.card.cardId === 'moises') ? {} : null;
+  },
 };
 
 /** ATK extra que o card ganha ao virar para Ataque (ex.: Douglas Defensivo vira o de Ataque). */
@@ -58,6 +66,12 @@ export const IGNITION_PLAYS: Record<string, (c: PlayCtx) => Play> = {
   },
   thy_filosofo: (c) => (c.me.stress >= 2 ? {} : null),
   moises: (c) => (c.me.stress >= 5 ? {} : null),
+  diegao: (c) => {
+    const t = strongest(c.s, c.opp);
+    return t ? { target: t.card.iid } : null;
+  },
+  juju: (c) => (c.oppP.pros.some(Boolean) ? {} : null),
+  brunao: (c) => (setCardsOf(c.s, c.opp).length || c.oppP.pros.some((p) => p?.position === 'def') ? {} : null),
   copilot: (c) => {
     if (c.s.turn <= 1) return null;
     const best = strongest(c.s, c.seat, (x) => x.position === 'atk');

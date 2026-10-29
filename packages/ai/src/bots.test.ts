@@ -31,10 +31,11 @@ describe('bot difícil (Sem IA)', () => {
 
 describe('bot vs bot', () => {
   it('partidas terminam sem erro com todos os decks', () => {
+    const n = STARTER_DECKS.length;
     let finished = 0;
-    for (let seed = 1; seed <= 60; seed++) {
-      const d0 = STARTER_DECKS[seed % 3];
-      const d1 = STARTER_DECKS[(seed + 1) % 3];
+    for (let seed = 1; seed <= 80; seed++) {
+      const d0 = STARTER_DECKS[seed % n];
+      const d1 = STARTER_DECKS[(seed + 1 + Math.floor(seed / n)) % n];
       let s = createGame({
         players: [
           { name: 'Bot A', deck: d0.cards },
@@ -54,6 +55,6 @@ describe('bot vs bot', () => {
       expect(s.winner, `seed ${seed} não terminou`).not.toBeNull();
       finished++;
     }
-    expect(finished).toBe(60);
+    expect(finished).toBe(80);
   });
 });
