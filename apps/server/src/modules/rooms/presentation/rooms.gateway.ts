@@ -40,7 +40,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     @MessageBody(new ZodValidationPipe(CreateRoomSchema, 'Deck inválido.')) msg: CreateRoomPayload,
   ): Ack {
     this.leaveCurrent(socket);
-    const session = this.rooms.create(socket.id, msg.name, msg.deck);
+    const session = this.rooms.create(socket.id, msg.name, msg.deck, msg.private);
     setRoom(socket, session.code);
     return { ok: true, ...session };
   }

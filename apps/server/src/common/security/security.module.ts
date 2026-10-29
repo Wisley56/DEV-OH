@@ -1,7 +1,7 @@
 import { Global, Inject, Injectable, Module, type OnModuleDestroy, type OnModuleInit } from '@nestjs/common';
 import { ConnectionCounter, RateLimiter } from './rate-limiter.js';
 import { SecurityLog } from './security-log.js';
-import { WsThrottleGuard } from './throttle.js';
+import { ThrottleGuard } from './throttle.js';
 
 /** Esquece baldes ociosos a cada minuto, para a memória não crescer. */
 @Injectable()
@@ -26,9 +26,9 @@ class RateLimiterSweeper implements OnModuleInit, OnModuleDestroy {
     { provide: RateLimiter, useFactory: () => new RateLimiter() },
     ConnectionCounter,
     SecurityLog,
-    WsThrottleGuard,
+    ThrottleGuard,
     RateLimiterSweeper,
   ],
-  exports: [RateLimiter, ConnectionCounter, SecurityLog, WsThrottleGuard],
+  exports: [RateLimiter, ConnectionCounter, SecurityLog, ThrottleGuard],
 })
 export class SecurityModule {}

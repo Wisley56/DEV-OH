@@ -23,6 +23,10 @@ const EnvSchema = z.object({
   RATE_JOIN_PER_MIN: int(10),
   /** Jogadas por segundo, por conexão (a rajada aceita o triplo). */
   RATE_ACTION_PER_SEC: int(10),
+  /** Tempo de cada turno no online; estourou, o turno passa sozinho. */
+  TURN_TIMEOUT_MS: int(90 * 1000),
+  /** Quem cai no meio do duelo tem esse tempo para voltar; depois, perde por W.O. */
+  RECONNECT_TIMEOUT_MS: int(60 * 1000),
 });
 
 /** Regra de um balde de tokens: até `capacity` de rajada, recarregando `perSec` por segundo. */
@@ -31,7 +35,7 @@ export interface RateRule {
   perSec: number;
 }
 
-export type RateBucket = 'create' | 'join' | 'action' | 'room' | 'strikes';
+export type RateBucket = 'create' | 'join' | 'action' | 'room' | 'list' | 'strikes';
 
 /** Configuração do servidor, validada a partir das variáveis de ambiente. */
 export class AppConfig {
@@ -43,6 +47,8 @@ export class AppConfig {
   readonly roomIdleTtlMs: number;
   readonly maxRooms: number;
   readonly maxConnPerIp: number;
+  readonly turnTimeoutMs: number;
+  readonly reconnectTimeoutMs: number;
   readonly rates: Record<RateBucket, RateRule>;
 
   constructor(env: Record<string, string | undefined> = process.env) {
@@ -63,11 +69,15 @@ export class AppConfig {
     this.roomIdleTtlMs = e.ROOM_IDLE_TTL_MS;
     this.maxRooms = e.MAX_ROOMS;
     this.maxConnPerIp = e.MAX_CONN_PER_IP;
+    this.turnTimeoutMs = e.TURN_TIMEOUT_MS;
+    this.reconnectTimeoutMs = e.RECONNECT_TIMEOUT_MS;
     this.rates = {
       create: { capacity: e.RATE_CREATE_PER_MIN, perSec: e.RATE_CREATE_PER_MIN / 60 },
       join: { capacity: e.RATE_JOIN_PER_MIN, perSec: e.RATE_JOIN_PER_MIN / 60 },
       action: { capacity: e.RATE_ACTION_PER_SEC * 3, perSec: e.RATE_ACTION_PER_SEC },
       room: { capacity: 5, perSec: 5 },
+      /** Lista de salas do lobby (atualiza a cada poucos segundos). */
+      list: { capacity: 20, perSec: 1 },
       /** Pedidos barrados: ao esgotar, a conexão é derrubada. */
       strikes: { capacity: 10, perSec: 0.1 },
     };

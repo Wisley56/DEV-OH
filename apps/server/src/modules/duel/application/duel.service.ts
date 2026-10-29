@@ -23,6 +23,7 @@ export class DuelService {
     }
     if (!r.ok) throw new DomainError(r.error);
     room.game = r.state;
+    room.noteAction(seat);
     this.rooms.publish(room);
   }
 }

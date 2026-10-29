@@ -20,6 +20,12 @@ export interface Clock {
   now(): number;
 }
 
+/** Agenda tarefas por chave (agendar de novo a mesma chave substitui a anterior). */
+export interface Scheduler {
+  schedule(key: string, at: number, task: () => void): void;
+  cancel(key: string): void;
+}
+
 /** Envia a cada jogador conectado o estado atual da sala. */
 export interface RoomNotifier {
   publish(room: Room): void;
@@ -28,4 +34,5 @@ export interface RoomNotifier {
 export const ROOM_REPOSITORY = Symbol('RoomRepository');
 export const ID_GENERATOR = Symbol('IdGenerator');
 export const CLOCK = Symbol('Clock');
+export const SCHEDULER = Symbol('Scheduler');
 export const ROOM_NOTIFIER = Symbol('RoomNotifier');

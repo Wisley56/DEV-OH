@@ -1,8 +1,8 @@
 import { EVENTS } from '@devoh/protocol';
 import type { Seat } from '@devoh/engine';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import type { Server } from 'socket.io';
-import type { RoomNotifier } from '../application/ports.js';
+import { CLOCK, type Clock, type RoomNotifier } from '../application/ports.js';
 import { roomStateFor } from '../application/room-state.js';
 import type { Room } from '../domain/room.js';
 
@@ -11,6 +11,8 @@ import type { Room } from '../domain/room.js';
 export class SocketRoomNotifier implements RoomNotifier {
   private server: Server | null = null;
 
+  constructor(@Inject(CLOCK) private readonly clock: Clock) {}
+
   attach(server: Server) {
     this.server = server;
   }
@@ -18,7 +20,7 @@ export class SocketRoomNotifier implements RoomNotifier {
   publish(room: Room) {
     room.players.forEach((p, i) => {
       if (!p?.socketId) return;
-      this.server?.to(p.socketId).emit(EVENTS.roomState, roomStateFor(room, i as Seat));
+      this.server?.to(p.socketId).emit(EVENTS.roomState, roomStateFor(room, i as Seat, this.clock.now()));
     });
   }
 }

@@ -5,7 +5,7 @@ import { SecurityLog } from '../../../common/security/security-log.js';
 import { AppConfig } from '../../../config/app-config.js';
 import type { Room } from '../domain/room.js';
 import { InMemoryRoomRepository } from '../infrastructure/in-memory-room.repository.js';
-import type { Clock, IdGenerator, RoomNotifier } from './ports.js';
+import type { Clock, IdGenerator, RoomNotifier, Scheduler } from './ports.js';
 import { RoomsService } from './rooms.service.js';
 
 const deck = STARTER_DECKS[0].cards;
@@ -16,6 +16,14 @@ describe('RoomsService', () => {
   let published: string[];
   let repo: InMemoryRoomRepository;
   let svc: RoomsService;
+  /** Agendador falso: guarda as tarefas para o teste disparar. */
+  let tasks: Map<string, { at: number; task: () => void }>;
+  const fire = (prefix: string) => {
+    const [key, t] = [...tasks].find(([k]) => k.startsWith(prefix))!;
+    tasks.delete(key);
+    now = t.at;
+    t.task();
+  };
 
   beforeEach(() => {
     now = 1000;
@@ -26,7 +34,10 @@ describe('RoomsService', () => {
     const clock: Clock = { now: () => now };
     const notifier: RoomNotifier = { publish: (r: Room) => published.push(r.code) };
     repo = new InMemoryRoomRepository();
-    svc = new RoomsService(repo, ids, clock, notifier, new AppConfig({ MAX_ROOMS: '2' }), new SecurityLog());
+    tasks = new Map();
+    const scheduler: Scheduler = { schedule: (key, at, task) => tasks.set(key, { at, task }), cancel: (key) => tasks.delete(key) };
+    const config = new AppConfig({ MAX_ROOMS: '2', TURN_TIMEOUT_MS: '90000', RECONNECT_TIMEOUT_MS: '60000' });
+    svc = new RoomsService(repo, ids, clock, notifier, config, new SecurityLog(), scheduler);
   });
 
   it('cria sala, entra e começa o duelo', () => {
@@ -98,5 +109,65 @@ describe('RoomsService', () => {
     now += 6 * 60 * 1000;
     expect(svc.sweep(60 * 60 * 1000, 10 * 60 * 1000)).toBe(1);
     expect(svc.count()).toBe(0);
+  });
+
+  it('timer do turno: estourou, passa a vez; 3 estouros seguidos dão derrota', () => {
+    const { code } = svc.create('s1', 'A', deck);
+    svc.join('s2', code, 'B', deck);
+    const room = repo.get(code)!;
+    const first = room.game!.active;
+    expect(room.turnDeadline).toBe(now + 90000);
+    fire('turn:');
+    expect(room.game!.active).not.toBe(first);
+    expect(room.timeouts[first]).toBe(1);
+    // Os dois deixam estourar: na 3ª vez seguida, quem estourou perde por tempo.
+    for (let i = 0; i < 4; i++) fire('turn:');
+    expect(room.game!.outcome).toEqual({ reason: 'timeout', loser: first });
+    expect(room.turnDeadline).toBeNull();
+  });
+
+  it('jogar zera o contador de estouros', () => {
+    const { code } = svc.create('s1', 'A', deck);
+    svc.join('s2', code, 'B', deck);
+    const room = repo.get(code)!;
+    const first = room.game!.active;
+    fire('turn:');
+    fire('turn:');
+    expect(room.timeouts[first]).toBe(1);
+    room.noteAction(first);
+    expect(room.timeouts[first]).toBe(0);
+  });
+
+  it('quem cai no meio do duelo perde por W.O. se não voltar; voltar cancela', () => {
+    const { code, token } = svc.create('s1', 'A', deck);
+    svc.join('s2', code, 'B', deck);
+    const room = repo.get(code)!;
+    svc.disconnect(code, 's1');
+    expect(room.players[0].reconnectDeadline).toBe(now + 60000);
+    svc.rejoin('s9', code, token);
+    expect(room.players[0].reconnectDeadline).toBeNull();
+    expect([...tasks.keys()].some((k) => k.startsWith('gone:'))).toBe(false);
+
+    svc.disconnect(code, 's9');
+    fire('gone:');
+    expect(room.game!.outcome).toEqual({ reason: 'abandon', loser: 0 });
+  });
+
+  it('se os dois caem, ninguém ganha por W.O.', () => {
+    const { code } = svc.create('s1', 'A', deck);
+    svc.join('s2', code, 'B', deck);
+    svc.disconnect(code, 's1');
+    svc.disconnect(code, 's2');
+    fire('gone:');
+    expect(repo.get(code)!.game!.winner).toBeNull();
+  });
+
+  it('lista só salas públicas esperando oponente', () => {
+    codes = ['AAAAA', 'BBBBB', 'CCCCC'];
+    svc.create('s1', 'Ana', deck);
+    svc.create('s2', 'Bia', deck, true);
+    expect(svc.listOpen()).toEqual([{ code: 'AAAAA', host: 'Ana', waitingMs: 0 }]);
+    svc.join('s3', 'AAAAA', 'Caio', deck);
+    expect(svc.listOpen()).toEqual([]);
   });
 });

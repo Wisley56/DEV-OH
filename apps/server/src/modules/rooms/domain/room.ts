@@ -1,6 +1,9 @@
-import { createGame, type GameState, type Seat } from '@devoh/engine';
+import { applyAction, createGame, forfeit, other, type GameState, type Seat } from '@devoh/engine';
 import { randomInt, timingSafeEqual } from 'node:crypto';
 import { DomainError } from '../../../common/domain-error.js';
+
+/** Estouros de tempo seguidos que dão derrota. */
+export const MAX_TIMEOUTS = 3;
 
 export interface Seatholder {
   name: string;
@@ -8,6 +11,8 @@ export interface Seatholder {
   token: string;
   /** null = desconectado (pode voltar pelo token). */
   socketId: string | null;
+  /** Caiu no meio do duelo: perde por W.O. se não voltar até aqui (ms). */
+  reconnectDeadline: number | null;
 }
 
 function sameToken(a: string, b: string) {
@@ -16,16 +21,24 @@ function sameToken(a: string, b: string) {
   return x.length === y.length && timingSafeEqual(x, y);
 }
 
-/** Sala de duelo: dois assentos, o estado do jogo e os pedidos de revanche. */
+/** Sala de duelo: dois assentos, o estado do jogo, o relógio do turno e os pedidos de revanche. */
 export class Room {
   readonly players: [Seatholder, Seatholder | null];
   game: GameState | null = null;
   rematch: [boolean, boolean] = [false, false];
+  /** Turno que o relógio está contando ("turno:jogador"); muda a cada troca de vez. */
+  turnKey: string | null = null;
+  turnDeadline: number | null = null;
+  /** Estouros de tempo seguidos de cada assento (zera quando a pessoa joga). */
+  timeouts: [number, number] = [0, 0];
 
   constructor(
     readonly code: string,
     host: Seatholder,
     public touched: number,
+    /** Sala privada: entra só quem tem o código/convite (não aparece na lista do lobby). */
+    readonly isPrivate = false,
+    readonly createdAt = touched,
   ) {
     this.players = [host, null];
   }
@@ -36,6 +49,11 @@ export class Room {
 
   get isEmpty() {
     return this.players.every((p) => !p?.socketId);
+  }
+
+  /** Duelo em andamento (começou e ninguém venceu ainda). */
+  get playing() {
+    return !!this.game && this.game.winner === null;
   }
 
   join(guest: Seatholder) {
@@ -57,6 +75,9 @@ export class Room {
       ],
     });
     this.rematch = [false, false];
+    this.timeouts = [0, 0];
+    this.turnKey = null;
+    this.turnDeadline = null;
   }
 
   seatOfSocket(socketId: string): Seat | null {
@@ -68,10 +89,19 @@ export class Room {
     return this.players.find((p): p is Seatholder => !!p && sameToken(p.token, token)) ?? null;
   }
 
-  /** Marca o assento do socket como desconectado. */
-  release(socketId: string) {
+  /** Marca o assento do socket como desconectado; no meio do duelo, começa a contagem do W.O. */
+  release(socketId: string, now: number, reconnectMs: number) {
     const seat = this.seatOfSocket(socketId);
-    if (seat !== null) this.players[seat]!.socketId = null;
+    if (seat === null) return;
+    const p = this.players[seat]!;
+    p.socketId = null;
+    if (this.playing) p.reconnectDeadline = now + reconnectMs;
+  }
+
+  /** Voltou pelo token: cancela a contagem do W.O. */
+  reconnect(p: Seatholder, socketId: string) {
+    p.socketId = socketId;
+    p.reconnectDeadline = null;
   }
 
   /** Pede revanche; quando os dois pedem, começa um duelo novo. */
@@ -79,6 +109,50 @@ export class Room {
     if (!this.game || this.game.winner === null) return;
     this.rematch[seat] = true;
     if (this.rematch[0] && this.rematch[1]) this.startMatch();
+  }
+
+  /** O jogador agiu: o contador de estouros dele volta a zero. */
+  noteAction(seat: Seat) {
+    this.timeouts[seat] = 0;
+  }
+
+  /** Acerta o relógio: turno novo arma o prazo; fora de duelo, desliga. Retorna true se armou. */
+  syncTurn(now: number, turnMs: number): boolean {
+    const g = this.game;
+    if (!g || g.winner !== null) {
+      this.turnKey = null;
+      this.turnDeadline = null;
+      return false;
+    }
+    const key = `${g.turn}:${g.active}`;
+    if (key === this.turnKey) return false;
+    this.turnKey = key;
+    this.turnDeadline = now + turnMs;
+    return true;
+  }
+
+  /** O tempo do turno acabou: passa a vez; no estouro número MAX_TIMEOUTS seguido, derrota. */
+  expireTurn() {
+    const g = this.game;
+    if (!g || g.winner !== null) return;
+    const seat = g.active;
+    this.timeouts[seat]++;
+    if (this.timeouts[seat] >= MAX_TIMEOUTS) {
+      this.game = forfeit(g, seat, 'timeout');
+      return;
+    }
+    const r = applyAction(g, seat, { type: 'endTurn' });
+    if (r.ok) this.game = r.state;
+  }
+
+  /** Prazo de volta acabou: perde por W.O. — só se o oponente ainda estiver na sala. */
+  expireReconnect(seat: Seat) {
+    const p = this.players[seat];
+    if (!p) return;
+    p.reconnectDeadline = null;
+    if (!this.game || !this.playing || p.socketId) return;
+    if (!this.players[other(seat)]?.socketId) return;
+    this.game = forfeit(this.game, seat, 'abandon');
   }
 
   isStale(now: number, ttlMs: number, idleTtlMs: number) {
