@@ -100,7 +100,8 @@ export const STARTER_DECKS: DeckList[] = [
   {
     id: 'bombeiros',
     name: 'Bombeiros & Carecas',
-    description: 'Juju apagando incêndio, Moisés e a Mão, Diegão, Brunão e o Pirulito no som. Anula efeitos e quebra defesas.',
+    description:
+      'Juju apagando incêndio, Moisés, a Mão e o Moisés Bombado, Diegão, Brunão e o Pirulito no som. Anula efeitos e quebra defesas.',
     cards: [
       'juju',
       'moises',
@@ -118,6 +119,7 @@ export const STARTER_DECKS: DeckList[] = [
       'teclado_rgb',
       'careca_pensante',
       ...x('mao_moises', 2),
+      'moises_bombado',
       ...x('code_review', 2),
       'cafe',
       'home_office',

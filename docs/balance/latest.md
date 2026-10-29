@@ -2,81 +2,82 @@
 
 ## normal × normal — 300 partidas por confronto (3600 no total)
 
-- Vitórias de quem começa: **48%**
-- Duração média: **11.2 turnos**
+- Vitórias de quem começa: **47%**
+- Duração média: **11.3 turnos**
 
 | Deck (linha) × oponente | Squad do Tech Lead | Força Bruta Douglas | Fofoca & Caos | Bombeiros & Carecas | **Total** |
 | ----------------------- | ------------------ | ------------------- | ------------- | ------------------- | --------- |
-| Squad do Tech Lead      | —                  | 44%                 | 47%           | 45%                 | **45%**   |
-| Força Bruta Douglas     | 56%                | —                   | 49%           | 56%                 | **54%**   |
-| Fofoca & Caos           | 53%                | 51%                 | —             | 46%                 | **50%**   |
-| Bombeiros & Carecas     | 55%                | 44%                 | 54%           | —                   | **51%**   |
+| Squad do Tech Lead      | —                  | 44%                 | 47%           | 41%                 | **44%**   |
+| Força Bruta Douglas     | 56%                | —                   | 49%           | 52%                 | **52%**   |
+| Fofoca & Caos           | 53%                | 51%                 | —             | 49%                 | **51%**   |
+| Bombeiros & Carecas     | 59%                | 48%                 | 51%           | —                   | **53%**   |
 
 ### Cards (só os que foram jogados)
 
 | Card                                  | Partidas jogado | Win rate quando jogado | Jogadas | Dano causado | Vezes destruído |
 | ------------------------------------- | --------------- | ---------------------- | ------- | ------------ | --------------- |
-| Diegão ⚠️                             | 35              | 94%                    | 35      | 98500        | 1               |
-| Careca Pensante ⚠️                    | 160             | 87%                    | 160     | 0            | 0               |
-| Thy Gonzaguinha (Tech Lead) ⚠️        | 122             | 82%                    | 125     | 278500       | 13              |
-| Douglas (No Limite) ⚠️                | 181             | 81%                    | 184     | 268800       | 49              |
-| Juju ⚠️                               | 359             | 79%                    | 367     | 539900       | 103             |
-| Danilo (DEV Raiz) ⚠️                  | 322             | 77%                    | 326     | 531400       | 111             |
-| Moisés do Jiu-Jitsu ⚠️                | 495             | 77%                    | 503     | 533200       | 182             |
-| Thy Gonzaguinha ⚠️                    | 45              | 76%                    | 45      | 86500        | 11              |
-| Cliente que Mudou de Ideia ⚠️         | 375             | 75%                    | 380     | 760600       | 103             |
-| Gerente de Planilha ⚠️                | 454             | 71%                    | 459     | 573500       | 172             |
-| Arquiteta de Software ⚠️              | 575             | 70%                    | 608     | 1167600      | 165             |
-| Wisley (Não Tá Fácil) ⚠️              | 648             | 69%                    | 659     | 1159900      | 417             |
-| Dev Fullstack ⚠️                      | 1077            | 68%                    | 1101    | 946200       | 441             |
-| Brunão                                | 304             | 64%                    | 313     | 183800       | 142             |
+| Diegão ⚠️                             | 34              | 94%                    | 34      | 107200       | 2               |
+| Careca Pensante ⚠️                    | 189             | 84%                    | 189     | 0            | 0               |
+| Douglas (No Limite) ⚠️                | 174             | 80%                    | 177     | 247800       | 51              |
+| Juju ⚠️                               | 372             | 79%                    | 377     | 661100       | 90              |
+| Thy Gonzaguinha (Tech Lead) ⚠️        | 121             | 78%                    | 124     | 266800       | 17              |
+| Moisés do Jiu-Jitsu ⚠️                | 539             | 78%                    | 546     | 639700       | 183             |
+| Thy Gonzaguinha ⚠️                    | 43              | 77%                    | 43      | 79300        | 10              |
+| Danilo (DEV Raiz) ⚠️                  | 313             | 75%                    | 317     | 517600       | 115             |
+| Cliente que Mudou de Ideia ⚠️         | 369             | 74%                    | 374     | 758200       | 103             |
+| Wisley (Não Tá Fácil) ⚠️              | 634             | 70%                    | 645     | 1153900      | 430             |
+| Gerente de Planilha ⚠️                | 466             | 68%                    | 472     | 587500       | 172             |
+| Arquiteta de Software ⚠️              | 595             | 67%                    | 628     | 1177700      | 187             |
+| Dev Fullstack ⚠️                      | 1071            | 67%                    | 1101    | 925000       | 437             |
+| Brunão                                | 314             | 64%                    | 320     | 217700       | 147             |
+| Moisés Bombado                        | 281             | 63%                    | 281     | 0            | 0               |
 | Douglas (Modo de Ataque)              | 8               | 63%                    | 8       | 15700        | 4               |
-| Sandro Ilusionista                    | 313             | 62%                    | 314     | 278500       | 114             |
-| Teclado Mecânico RGB                  | 1068            | 62%                    | 1068    | 0            | 0               |
-| SRE de Plantão                        | 205             | 61%                    | 206     | 92100        | 338             |
-| Stack Overflow Ancestral              | 540             | 60%                    | 610     | 239600       | 635             |
-| Revert do PR                          | 300             | 60%                    | 300     | 0            | 0               |
-| Contemplai… o Gato Gordo da Squad!    | 506             | 60%                    | 506     | 0            | 0               |
-| Douglas (Dois Tipos de Problemas)     | 501             | 59%                    | 501     | 263100       | 285             |
-| Ctrl+Z                                | 296             | 59%                    | 296     | 0            | 0               |
-| Dev Back-end Noturno                  | 2605            | 59%                    | 3020    | 2377600      | 1402            |
-| A Mão do Moisés                       | 356             | 57%                    | 402     | 0            | 0               |
-| Kelly (CUIDADO…)                      | 1198            | 56%                    | 1224    | 634200       | 666             |
-| Dívida Técnica                        | 636             | 56%                    | 636     | 0            | 0               |
-| Docker que Não Sobe                   | 615             | 56%                    | 633     | 167300       | 1082            |
-| Claude Alucinando                     | 671             | 55%                    | 681     | 555100       | 416             |
-| Daily de 1 Hora                       | 539             | 55%                    | 539     | 0            | 0               |
-| Code Review Aprovado                  | 2646            | 55%                    | 3399    | 0            | 0               |
-| QA Implacável                         | 2578            | 55%                    | 2924    | 1873100      | 1589            |
-| Pirulito Atordoado                    | 500             | 55%                    | 505     | 349100       | 224             |
-| Thy Gonzaguinha (O Filósofo do Prazo) | 766             | 54%                    | 794     | 706400       | 342             |
-| Refatoração Holística                 | 1159            | 54%                    | 1191    | 0            | 0               |
-| Patrícia (Tô Passada!)                | 437             | 54%                    | 440     | 296100       | 445             |
-| PO do "Só um Botãozinho"              | 2483            | 53%                    | 2804    | 2082400      | 1529            |
-| Mudança de Escopo                     | 329             | 52%                    | 329     | 0            | 0               |
-| Paquito Erótico                       | 825             | 51%                    | 831     | 367800       | 541             |
-| Merge Conflict                        | 987             | 50%                    | 987     | 0            | 0               |
-| Hotfix                                | 516             | 50%                    | 516     | 0            | 0               |
-| Estoque de Leite                      | 323             | 49%                    | 323     | 0            | 0               |
-| Reunião que Podia Ser um E-mail       | 1581            | 49%                    | 1709    | 0            | 0               |
-| Vitor (O Mochileiro)                  | 689             | 48%                    | 706     | 319700       | 389             |
-| Deploy na Sexta-Feira                 | 1103            | 48%                    | 1103    | 0            | 0               |
-| A IA Fez Cagada                       | 1209            | 48%                    | 1209    | 0            | 0               |
-| Gama (Tô Passado!)                    | 676             | 48%                    | 683     | 424700       | 478             |
-| Juju Sério                            | 627             | 48%                    | 627     | 0            | 0               |
-| A Curiosa Caótica                     | 1369            | 46%                    | 1554    | 767700       | 972             |
-| Chama o Thy na DM!                    | 1101            | 45%                    | 1433    | 0            | 0               |
-| Fone com Cancelamento de Ruído        | 716             | 45%                    | 742     | 0            | 0               |
-| Dev Júnior                            | 625             | 43%                    | 637     | 354100       | 445             |
-| Douglas (Modo Defensivo)              | 7               | 43%                    | 7       | 0            | 1               |
-| Copilot Autocomplete                  | 1496            | 43%                    | 1770    | 679200       | 1275            |
-| Café Extra Forte                      | 1662            | 42%                    | 1763    | 0            | 0               |
-| Home Office                           | 1830            | 42%                    | 1868    | 0            | 0               |
-| Impedimento de Última Hora            | 1471            | 41%                    | 1471    | 0            | 0               |
-| Estagiário Entusiasmado               | 1811            | 38%                    | 2012    | 408900       | 1467            |
-| Prod Caiu                             | 545             | 35%                    | 545     | 0            | 0               |
-| Na Minha Máquina Funciona             | 970             | 28%                    | 970     | 0            | 0               |
-| Erro 404                              | 491             | 25%                    | 491     | 0            | 0               |
+| SRE de Plantão                        | 204             | 62%                    | 205     | 85600        | 347             |
+| Revert do PR                          | 294             | 61%                    | 294     | 0            | 0               |
+| Teclado Mecânico RGB                  | 1013            | 61%                    | 1013    | 0            | 0               |
+| Pirulito Atordoado                    | 497             | 60%                    | 503     | 349100       | 186             |
+| Sandro Ilusionista                    | 315             | 59%                    | 316     | 259100       | 120             |
+| Stack Overflow Ancestral              | 546             | 59%                    | 613     | 255300       | 666             |
+| Douglas (Dois Tipos de Problemas)     | 502             | 59%                    | 502     | 260800       | 288             |
+| Ctrl+Z                                | 282             | 58%                    | 282     | 0            | 0               |
+| Claude Alucinando                     | 674             | 58%                    | 684     | 602300       | 410             |
+| Contemplai… o Gato Gordo da Squad!    | 504             | 58%                    | 504     | 0            | 0               |
+| Dev Back-end Noturno                  | 2584            | 57%                    | 2980    | 2343900      | 1407            |
+| Dívida Técnica                        | 620             | 56%                    | 620     | 0            | 0               |
+| Daily de 1 Hora                       | 548             | 56%                    | 548     | 0            | 0               |
+| Kelly (CUIDADO…)                      | 1221            | 56%                    | 1247    | 651000       | 674             |
+| QA Implacável                         | 2508            | 55%                    | 2832    | 1764400      | 1544            |
+| A Mão do Moisés                       | 357             | 55%                    | 388     | 0            | 0               |
+| Code Review Aprovado                  | 2580            | 55%                    | 3343    | 0            | 0               |
+| Docker que Não Sobe                   | 610             | 54%                    | 625     | 169200       | 1052            |
+| Refatoração Holística                 | 1154            | 54%                    | 1187    | 0            | 0               |
+| Juju Sério                            | 597             | 53%                    | 597     | 0            | 0               |
+| Patrícia (Tô Passada!)                | 448             | 53%                    | 451     | 292700       | 462             |
+| PO do "Só um Botãozinho"              | 2433            | 53%                    | 2745    | 1917500      | 1493            |
+| Thy Gonzaguinha (O Filósofo do Prazo) | 759             | 53%                    | 787     | 712600       | 335             |
+| Merge Conflict                        | 947             | 52%                    | 947     | 0            | 0               |
+| Mudança de Escopo                     | 325             | 51%                    | 325     | 0            | 0               |
+| A IA Fez Cagada                       | 1221            | 50%                    | 1221    | 0            | 0               |
+| Douglas (Modo Defensivo)              | 6               | 50%                    | 6       | 0            | 1               |
+| Hotfix                                | 544             | 50%                    | 544     | 0            | 0               |
+| Gama (Tô Passado!)                    | 685             | 50%                    | 692     | 436200       | 481             |
+| Paquito Erótico                       | 815             | 50%                    | 821     | 363800       | 526             |
+| Estoque de Leite                      | 326             | 49%                    | 326     | 0            | 0               |
+| Deploy na Sexta-Feira                 | 1106            | 49%                    | 1106    | 0            | 0               |
+| Reunião que Podia Ser um E-mail       | 1569            | 48%                    | 1691    | 0            | 0               |
+| Vitor (O Mochileiro)                  | 695             | 47%                    | 712     | 309200       | 395             |
+| A Curiosa Caótica                     | 1396            | 47%                    | 1582    | 785900       | 986             |
+| Dev Júnior                            | 622             | 45%                    | 634     | 351800       | 451             |
+| Fone com Cancelamento de Ruído        | 728             | 44%                    | 759     | 0            | 0               |
+| Chama o Thy na DM!                    | 1100            | 44%                    | 1412    | 0            | 0               |
+| Café Extra Forte                      | 1645            | 43%                    | 1746    | 0            | 0               |
+| Copilot Autocomplete                  | 1525            | 42%                    | 1814    | 722700       | 1313            |
+| Home Office                           | 1834            | 42%                    | 1870    | 0            | 0               |
+| Impedimento de Última Hora            | 1468            | 41%                    | 1468    | 0            | 0               |
+| Estagiário Entusiasmado               | 1840            | 38%                    | 2045    | 401200       | 1481            |
+| Prod Caiu                             | 528             | 34%                    | 528     | 0            | 0               |
+| Na Minha Máquina Funciona             | 978             | 29%                    | 978     | 0            | 0               |
+| Erro 404                              | 488             | 28%                    | 488     | 0            | 0               |
 
 Nunca jogados: Férias Aprovadas, Pair Programming.
 
