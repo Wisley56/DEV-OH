@@ -30,7 +30,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.13.0",
     "prettier": "^3.9.10",
-    "sharp": "^0.34.1",
+    "sharp": "^0.35.5",
     "tsx": "^4.19.3",
     "turbo": "^2.11.10",
     "typescript": "~6.0.3",
