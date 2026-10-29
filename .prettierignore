@@ -6,3 +6,4 @@ package-lock.json
 apps/web/public
 assets
 docs/*.webp
+.claude
