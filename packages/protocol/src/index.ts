@@ -59,5 +59,4 @@ export interface RoomSession {
 
 export const ROOM_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 export const ROOM_CODE_LENGTH = 5;
-export const NAME_MAX = 20;
-export const DEFAULT_NAME = 'Dev Anônimo';
+export { DEFAULT_NAME, NAME_MAX, sanitizeName } from './name';

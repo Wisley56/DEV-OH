@@ -1,5 +1,6 @@
 import type { BotLevel } from '@devoh/ai';
 import { STARTER_DECKS } from '@devoh/engine';
+import { DEFAULT_NAME, sanitizeName } from '@devoh/protocol';
 import { create } from 'zustand';
 import { readJson, STORAGE_KEYS, writeJson } from '../../../shared/lib/storage';
 
@@ -33,7 +34,7 @@ export const useProfile = create<ProfileState>((set) => ({
   },
 }));
 
-export const DEFAULT_NICK = 'Dev Anônimo';
+export const DEFAULT_NICK = DEFAULT_NAME;
 
-/** Apelido para exibir/enviar: o salvo ou o padrão. */
-export const nickOf = (name: string) => name.trim() || DEFAULT_NICK;
+/** Apelido para exibir/enviar: o salvo, limpo, ou o padrão (a mesma regra do servidor). */
+export const nickOf = (name: string) => sanitizeName(name, DEFAULT_NICK);
