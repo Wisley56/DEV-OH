@@ -11,7 +11,9 @@ npm install
 npm run dev        # servidor (porta 3001) + web (porta 5173); o engine é lido do código-fonte, sem rebuild
 ```
 
-Abra http://localhost:5173. Para testar o online, crie uma sala numa aba e abra o link de convite em outra.
+Abra http://localhost:5173. O Vite repassa `/api` e `/socket.io` para o servidor (como o `server.mjs` faz em produção), então o site e a API ficam na mesma origem e o cookie de sessão funciona.
+
+O banco em dev é o **PGlite** (Postgres embutido, sem Docker), gravado em `apps/server/.data/dev` (ignorado pelo git). Para começar do zero, apague essa pasta com o server parado. O cadastro usa as chaves de teste do Turnstile, que sempre passam. Para testar o online, crie duas contas: uma numa janela normal e outra numa janela anônima (cada uma tem o seu cookie).
 
 Nenhuma variável de ambiente é obrigatória em dev. Para mudar alguma, copie `apps/server/.env.example` ou `apps/web/.env.example` para `.env` na mesma pasta: o server lê o arquivo com `--env-file-if-exists` e o Vite lê o dele sozinho. Os `.env` são ignorados pelo git.
 
@@ -24,7 +26,12 @@ npm run build:all  # build de todos os workspaces (o CI roda tudo isso)
 npm run e2e        # Playwright: sobe server + web com prazos curtos e joga no navegador (usa o Chrome instalado; PW_CHANNEL=msedge para o Edge)
 npm run crop-art   # regera as artes a partir de assets/source
 npm run balance    # round-robin dos decks iniciais com os bots e relatório de balanceamento (--games N, --hard, --out arquivo)
+npm run db:generate -w @devoh/server   # mudou o schema? gera a migration SQL em apps/server/drizzle (versione o arquivo)
+npm run admin -w @devoh/server -- users                        # lista as contas do banco da DATABASE_URL
+npm run admin -w @devoh/server -- reset-password <usuário>     # senha esquecida: gera uma nova e derruba as sessões
 ```
+
+Para o `admin` em produção, rode no seu computador com `DATABASE_URL` igual à **DATABASE_PUBLIC_URL** do Postgres no Railway (Variables do serviço Postgres).
 
 ## Arquitetura
 
@@ -74,10 +81,15 @@ index.ts   instala o catálogo no kernel e define a API pública
 ### Servidor (`apps/server/src`) — NestJS em módulos e camadas
 
 ```
-config/     AppConfig (env validado com zod: porta, CORS, proxy, TTL das salas, limites; ver SECURITY.md)
-common/     DomainError, ZodValidationPipe, WsAckFilter (erro → ack {ok:false}), adapter do Socket.IO (origem, conexões por IP)
-  security/ limite de taxa (@Throttle), contagem de conexões, log de segurança
+config/     AppConfig (env validado com zod: porta, CORS, proxy, banco, sessão, Turnstile, limites; ver SECURITY.md)
+common/     DomainError (com status HTTP), ZodValidationPipe, WsAckFilter (erro → ack {ok:false}), HttpDomainFilter (erro → {statusCode, message}),
+            adapter do Socket.IO (origem, conexões por IP, conta pelo cookie no handshake)
+  security/ limite de taxa (@Throttle), OriginGuard (CSRF), contagem de conexões, log de segurança
 modules/
+  db/       Drizzle sobre pg (produção) ou PGlite (dev/testes); schema.ts, migrations em apps/server/drizzle aplicadas na subida
+  accounts/ cadastro (Turnstile), login (argon2id, bloqueio), sessão em cookie HttpOnly, AuthGuard · rotas /api/auth/*
+  decks/    decks da conta · rotas /api/decks
+  ranking/  Elo e V/D/E gravados no fim de cada partida online (MATCH_RECORDER) · rotas /api/ranking
   rooms/    domain (Room) · application (RoomsService + portas) · infrastructure (repositório em memória, ids, limpeza) · presentation (gateway, notifier)
   duel/     application (DuelService: aplica a jogada no engine) · presentation (gateway do evento "action")
   health/   GET /health e GET /
@@ -87,6 +99,8 @@ modules/
 - A injeção é sempre explícita (`@Inject(Token)`), para não depender de metadata de decorators. Por isso o mesmo código roda com `tsx` (dev), Vitest (testes) e `tsc` (build).
 - Todo payload que chega passa por um schema do `@devoh/protocol`. Erros viram `{ ok: false, error }` no ack.
 - Todo evento de socket novo precisa de `@Throttle('<balde>')`. Os baldes ficam em `config/app-config.ts`.
+- As rotas HTTP ficam em `/api` (o `/health` fica fora, para o healthcheck do Railway). Rota que altera dados passa pelo `OriginGuard`; rota que exige conta usa `@UseGuards(AuthGuard)` e `@CurrentUser()`.
+- O assento da sala é da **conta**: a reconexão (`room:rejoin {code}`) acha o lugar pelo `userId` do socket, sem token no navegador. O resultado vai para o ranking uma vez por partida (`Room.matchId` + `recorded`), em `RoomsService.publish`.
 
 ### Web (`apps/web/src`) — páginas burras, componentes inteligentes
 
@@ -105,7 +119,7 @@ shared/
   lib/      storage seguro, useMediaQuery, env
 ```
 
-Módulos: `cards` (renderização do card), `profile` (apelido, deck, dificuldade e som salvos), `decks` (biblioteca e deck builder), `collection`, `lobby` (inclui a lista de salas abertas), `training` (duelo contra o bot), `online` (salas, timer e queda), `duel` (o tabuleiro, usado pelo treino e pelo online através da porta `DuelController`), `sound` (efeitos sonoros) e `tutorial` (tour guiado).
+Módulos: `cards` (renderização do card), `auth` (conta: login, cadastro com Turnstile, `RequireAccount`), `profile` (apelido do visitante, deck, dificuldade e som salvos), `decks` (decks da conta, importação dos antigos e deck builder), `ranking`, `collection`, `lobby` (inclui a lista de salas abertas), `training` (duelo contra o bot), `online` (salas, timer e queda), `duel` (o tabuleiro, usado pelo treino e pelo online através da porta `DuelController`), `sound` (efeitos sonoros) e `tutorial` (tour guiado).
 
 **Animações e sons do duelo** (`modules/duel/services/boardEvents.ts` → `components/fx/FxLayer.tsx`):
 
@@ -124,16 +138,20 @@ Módulos: `cards` (renderização do card), `profile` (apelido, deck, dificuldad
 
 **Rotas:**
 
-| Rota           | Página                                 |
-| -------------- | -------------------------------------- |
-| `/`            | início e lobby                         |
-| `/colecao`     | coleção de cards                       |
-| `/decks`       | deck builder                           |
-| `/treino`      | duelo contra o bot                     |
-| `/sala/nova`   | cria uma sala                          |
-| `/sala/CODIGO` | sala; o F5 reconecta pelo token da aba |
+| Rota           | Página                                   |
+| -------------- | ---------------------------------------- |
+| `/`            | início e lobby                           |
+| `/colecao`     | coleção de cards                         |
+| `/decks`       | deck builder (pede conta)                |
+| `/entrar`      | login e cadastro (`?next=` volta)        |
+| `/ranking`     | ranking online e suas partidas           |
+| `/treino`      | duelo contra o bot                       |
+| `/sala/nova`   | cria uma sala                            |
+| `/sala/CODIGO` | sala (pede conta); o F5 volta pela conta |
 
-Convite: `/sala/CODIGO`. Sem sessão na aba, o convite abre o lobby em `/?sala=CODIGO` para a pessoa escolher apelido e deck.
+Convite: `/sala/CODIGO`. Se a conta ainda não estiver na sala, o convite abre o lobby em `/?sala=CODIGO` para a pessoa escolher o deck.
+
+O web nunca guarda segredo no navegador: a sessão é um cookie HttpOnly e o `authStore` só sabe "quem sou eu" por `GET /api/auth/me`. No `sessionStorage` fica só o código da sala da aba (para o botão "voltar para o duelo").
 
 ## Criar um card novo
 
@@ -157,27 +175,36 @@ Convite: `/sala/CODIGO`. Sem sessão na aba, o convite abre o lobby em `/?sala=C
 
 ## Deploy
 
-Tudo no Railway, em dois serviços do mesmo repositório, configurados pelo painel. Os arquivos `railway.*.json` servem só de referência dos comandos.
+Tudo no Railway, no mesmo projeto: o banco **PostgreSQL** e dois serviços do mesmo repositório, configurados pelo painel. Os arquivos `railway.*.json` servem só de referência dos comandos.
+
+### Banco
+
+No projeto: **+ New → Database → PostgreSQL**. Ele fica na rede privada e o server lê a URL por referência (abaixo). As migrations rodam sozinhas quando o server sobe.
 
 ### Serviço `@devoh/server`
 
 1. Settings → Build → Custom Build Command: `npm run build:server`.
 2. Settings → Deploy → Custom Start Command: `npm run start:server`. Healthcheck Path: `/health`. O Railway injeta a `PORT`.
 3. Variables:
-   - `CORS_ORIGIN=https://<url-do-web>`: **obrigatória**. Em produção, o server não sobe sem ela.
-   - `TRUST_PROXY=true`: lê o IP real do proxy do Railway para os limites por IP.
-   - `NODE_ENV=production`: costuma vir do Railway. Liga o log em JSON e a exigência do `CORS_ORIGIN`.
+   - Todas **obrigatórias** em produção: sem qualquer uma, o server não sobe e o log diz qual falta.
+     - `CORS_ORIGIN=https://<url-do-web>`, sem barra no final.
+     - `DATABASE_URL=${{Postgres.DATABASE_URL}}` (referência ao serviço do banco, pela rede privada).
+     - `DB_POOL_MAX=10`: conexões abertas com o banco.
+     - `SESSION_TTL_DAYS=30`: validade da sessão (renovada no uso).
+     - `TRUST_PROXY_HOPS=2`: proxies na frente do server (borda do Railway + `server.mjs` do web), para achar o IP real no `x-forwarded-for`.
+     - `TURNSTILE_SITE_KEY` e `TURNSTILE_SECRET_KEY`: grátis no painel da Cloudflare, em **Turnstile → Add widget**, com o domínio do web.
+   - `NODE_ENV=production`: costuma vir do Railway. Liga o log em JSON e as exigências acima.
    - Opcionais: `TURN_TIMEOUT_MS` (tempo do turno no online, padrão 90000) e `RECONNECT_TIMEOUT_MS` (prazo para voltar antes do W.O., padrão 60000). Limites contra abuso: ver [SECURITY.md](SECURITY.md).
 4. Settings → Networking → Generate Domain, apontando para a porta do log (`DEV-OH! server ouvindo na porta ...`).
 
 ### Serviço `@devoh/web`
 
 1. Settings → Build → Custom Build Command: `npm run build`.
-2. Settings → Deploy → Custom Start Command: `npx --yes serve@14 -s apps/web/dist -l tcp://0.0.0.0:$PORT`. O `-s` devolve o `index.html` em qualquer rota (`/sala/X`, `/treino`). Healthcheck Path: `/`.
-3. Variables: `VITE_SERVER_URL=https://<url-do-server>`, sem barra no final. Ela é lida no build: se mudar, faça redeploy. Ela também entra na CSP (`connect-src`) do `serve.json` que o build gera, junto com os outros cabeçalhos de segurança (`apps/web/security-headers.ts`).
-4. Settings → Networking → Generate Domain, apontando para a porta do log (`Accepting connections at http://0.0.0.0:8080`).
+2. Settings → Deploy → Custom Start Command: `node apps/web/server.mjs`. Ele serve o `dist` (devolve o `index.html` em qualquer rota) com os cabeçalhos de segurança que o build gera em `dist/.headers.json` (`apps/web/security-headers.ts`) e repassa `/api` e `/socket.io` (inclusive o WebSocket) para o server. Healthcheck Path: `/`.
+3. Variables: `SERVER_INTERNAL_URL=http://${{server.RAILWAY_PRIVATE_DOMAIN}}:${{server.PORT}}` (troque `server` pelo nome do serviço). **Obrigatória**: sem ela o `server.mjs` não sobe. É lida na subida, sem rebuild.
+4. Settings → Networking → Generate Domain, apontando para a porta do log (`web ouvindo na porta ...`).
 
-Publique o servidor primeiro. O protocolo de rede é compatível nos dois sentidos.
+Publique o servidor primeiro. Com o proxy, o navegador só fala com o domínio do web: o server pode até ficar sem domínio público.
 
 Se o domínio mostrar "Application failed to respond" com o app rodando, a porta do domínio não bate com a do log.
 
