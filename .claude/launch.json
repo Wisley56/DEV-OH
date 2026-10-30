@@ -15,8 +15,9 @@
     },
     {
       "name": "web-dist",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["--yes", "serve@14", "-s", "apps/web/dist", "-l", "4173"],
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["apps/web/server.mjs"],
+      "env": { "SERVER_INTERNAL_URL": "http://localhost:3001", "PORT": "4173" },
       "port": 4173
     }
   ]
