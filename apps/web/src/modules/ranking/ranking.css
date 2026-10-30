@@ -1,0 +1,101 @@
+/* ───────── Ranking online ───────── */
+.ranking-page {
+  max-width: 760px;
+}
+.ranking {
+  display: grid;
+  gap: 18px;
+}
+.ranking-empty {
+  text-align: center;
+}
+/* No celular a tabela rola dentro da caixa, nunca a página. */
+.ranking-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--panel-border);
+  border-radius: 14px;
+  background: var(--panel);
+}
+.ranking-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+.ranking-table th,
+.ranking-table td {
+  padding: 9px 10px;
+  text-align: center;
+  white-space: nowrap;
+}
+.ranking-table th {
+  color: var(--muted);
+  font-weight: 600;
+  border-bottom: 1px solid var(--panel-border);
+}
+.ranking-table .r-name {
+  text-align: left;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ranking-table .r-elo {
+  color: var(--gold2);
+  font-weight: 700;
+}
+.ranking-table tbody tr + tr td {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+.ranking-table tr.me td {
+  background: rgba(124, 255, 178, 0.1);
+}
+
+.history h2 {
+  margin: 0 0 10px;
+  font-size: 1.05rem;
+}
+.history ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.history li {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+.h-result {
+  width: 70px;
+  font-weight: 700;
+}
+.h-win .h-result,
+.h-win .h-elo {
+  color: var(--ok);
+}
+.h-loss .h-result,
+.h-loss .h-elo {
+  color: var(--danger);
+}
+.h-opp {
+  flex: 1;
+  min-width: 0;
+}
+.h-elo {
+  font-weight: 700;
+}
+
+/* Variação de Elo no fim do duelo online. */
+.victory-note {
+  margin: 0 0 10px;
+}
+.elo-delta {
+  font-weight: 800;
+  color: var(--muted);
+}
+.elo-delta.up {
+  color: var(--ok);
+}
+.elo-delta.down {
+  color: var(--danger);
+}

@@ -10,6 +10,8 @@ export function DeckPanel() {
   const editing = useDeckBuilder((s) => s.editing);
   const saved = useDeckBuilder((s) => s.saved);
   const preview = useDeckBuilder((s) => s.preview);
+  const busy = useDeckBuilder((s) => s.busy);
+  const error = useDeckBuilder((s) => s.error);
   const { rename, removeCard, setPreview, save, deleteDeck } = useDeckBuilder((s) => s);
   const isCustom = useDeckLibrary((s) => s.custom.some((d) => d.id === editing.id));
   const errors = validateDeck(editing.cards);
@@ -37,12 +39,17 @@ export function DeckPanel() {
           {e}
         </p>
       ))}
+      {error && (
+        <p className="warn" role="alert">
+          {error}
+        </p>
+      )}
       <div className="db-actions">
-        <Button variant="primary" disabled={errors.length > 0} onClick={save}>
-          {saved ? '✔ Salvo e selecionado' : isStarter ? 'Salvar como meu deck' : 'Salvar'}
+        <Button variant="primary" disabled={errors.length > 0 || busy} onClick={() => void save()}>
+          {busy ? 'Salvando…' : saved ? '✔ Salvo e selecionado' : isStarter ? 'Salvar como meu deck' : 'Salvar'}
         </Button>
         {!isStarter && isCustom && (
-          <Button variant="ghost" onClick={deleteDeck}>
+          <Button variant="ghost" disabled={busy} onClick={() => void deleteDeck()}>
             Excluir
           </Button>
         )}

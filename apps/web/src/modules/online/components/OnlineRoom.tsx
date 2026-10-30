@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router';
 import { Button, CenterScreen, Panel, Spinner } from '../../../shared/ui';
+import { RequireAccount } from '../../auth';
 import { useSelectedDeck } from '../../decks';
-import { nickOf, useProfile } from '../../profile';
 import { NEW_ROOM, useRoomStore } from '../store/roomStore';
 import { OnlineDuel } from './OnlineDuel';
 import { WaitingRoom } from './WaitingRoom';
@@ -15,24 +15,31 @@ export interface JoinRequest {
 }
 
 /**
- * Sala online da URL /sala/:code ("nova" cria uma sala). Conecta, reconecta pelo
- * token da aba e mostra a etapa certa: conectando, aguardando oponente ou o duelo.
+ * Sala online da URL /sala/:code ("nova" cria uma sala). Exige conta: conecta, volta para o
+ * assento da conta e mostra a etapa certa: conectando, aguardando oponente ou o duelo.
  */
 export function OnlineRoom() {
+  return (
+    <RequireAccount reason="Para jogar online e entrar no ranking, entre na sua conta (é rapidinho criar uma).">
+      <RoomScreen />
+    </RequireAccount>
+  );
+}
+
+function RoomScreen() {
   const code = useParams().code ?? NEW_ROOM;
   const navigate = useNavigate();
   const request = useLocation().state as JoinRequest | null;
   const join = request?.join ?? false;
-  const name = useProfile((s) => s.name);
   const deck = useSelectedDeck();
   const { status, room, error, activeCode, open, close, leave } = useRoomStore();
 
   useEffect(() => {
-    const joinAs = { name: nickOf(name), deck: deck.cards, private: request?.private };
+    const joinAs = { deck: deck.cards, private: request?.private };
     open(code, code === NEW_ROOM || join ? joinAs : undefined);
   }, [code]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Ao sair da página só desconecta: dá para voltar pelo token (F5, botão "voltar para o duelo").
+  // Ao sair da página só desconecta: dá para voltar pela conta (F5, botão "voltar para o duelo").
   useEffect(() => close, [close]);
 
   // Sala criada: troca /sala/nova pelo código definitivo.
@@ -45,7 +52,7 @@ export function OnlineRoom() {
     navigate('/');
   };
 
-  // Sem sessão para esta sala: é um convite, vai para o lobby escolher apelido e deck.
+  // A conta não está nesta sala: é um convite, vai para o lobby escolher o deck.
   if (status === 'needsJoin') return <Navigate to={`/?sala=${code.toUpperCase()}`} replace />;
 
   if (error && (status === 'error' || !room)) {

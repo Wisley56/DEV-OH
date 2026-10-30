@@ -15,8 +15,9 @@ function RouteLoading() {
 /**
  * Rotas do jogo. A home vem no pacote inicial; as outras são baixadas sob demanda
  * (o treino traz os bots, a sala traz o Socket.IO).
- * Convite: /sala/CODIGO (sem sessão na aba, abre o lobby em /?sala=CODIGO).
- * O servidor estático precisa devolver o index.html para qualquer rota (serve -s).
+ * Convite: /sala/CODIGO (se a conta não estiver na sala, abre o lobby em /?sala=CODIGO).
+ * Conta: /entrar?next=… (online e deck builder pedem login; treino, coleção e ranking não).
+ * O servidor do web (server.mjs) devolve o index.html para qualquer rota.
  */
 export const router = createBrowserRouter([
   {
@@ -26,6 +27,8 @@ export const router = createBrowserRouter([
       { path: '/', element: <HomePage /> },
       { path: '/colecao', lazy: () => import('../pages/CollectionPage').then((m) => ({ Component: m.CollectionPage })) },
       { path: '/decks', lazy: () => import('../pages/DeckBuilderPage').then((m) => ({ Component: m.DeckBuilderPage })) },
+      { path: '/entrar', lazy: () => import('../pages/LoginPage').then((m) => ({ Component: m.LoginPage })) },
+      { path: '/ranking', lazy: () => import('../pages/RankingPage').then((m) => ({ Component: m.RankingPage })) },
       { path: '/treino', lazy: () => import('../pages/TrainingPage').then((m) => ({ Component: m.TrainingPage })) },
       { path: '/sala/:code', lazy: () => import('../pages/RoomPage').then((m) => ({ Component: m.RoomPage })) },
       { path: '*', lazy: () => import('../pages/NotFoundPage').then((m) => ({ Component: m.NotFoundPage })) },

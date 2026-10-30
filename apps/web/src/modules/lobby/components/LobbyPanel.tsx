@@ -2,51 +2,69 @@ import { validateDeck } from '@devoh/engine';
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { Button, Panel } from '../../../shared/ui';
-import { useAllDecks } from '../../decks';
-import { getSession, NEW_ROOM, type JoinRequest } from '../../online';
+import { AccountBar, loginPath, useAccount } from '../../auth';
+import { ImportLocalDecks, useAllDecks } from '../../decks';
+import { getActiveRoom, NEW_ROOM, type JoinRequest } from '../../online';
 import { useProfile } from '../../profile';
 import { DifficultyPicker } from '../../training';
 import { OpenRooms } from './OpenRooms';
 
 const JOIN: JoinRequest = { join: true };
 
-/** Lobby: apelido, deck, dificuldade e os caminhos para jogar (bot, criar sala, entrar, voltar ao duelo). */
+/**
+ * Lobby: conta, deck, dificuldade e os caminhos para jogar. O treino é livre (visitante
+ * escolhe um apelido); criar ou entrar em sala online pede conta.
+ */
 export function LobbyPanel() {
   const navigate = useNavigate();
   const invite = useSearchParams()[0].get('sala')?.toUpperCase() ?? '';
+  const { status, account } = useAccount();
   const profile = useProfile();
   const decks = useAllDecks();
   const [name, setName] = useState(profile.name);
-  const [deckId, setDeckId] = useState(() => (decks.some((d) => d.id === profile.deckId) ? profile.deckId : decks[0].id));
+  const [deckId, setDeckId] = useState<string | null>(null);
   const [code, setCode] = useState(invite);
   const [privateRoom, setPrivateRoom] = useState(false);
-  const deck = decks.find((d) => d.id === deckId) ?? decks[0];
+  // Os decks da conta chegam depois do login: até a pessoa escolher, vale o do perfil.
+  const chosen = deckId ?? profile.deckId;
+  const deck = decks.find((d) => d.id === chosen) ?? decks[0];
   const deckErrors = validateDeck(deck.cards);
-  const resume = getSession();
+  const resume = account ? getActiveRoom() : null;
 
   /** Salva apelido e deck; só segue se o deck for válido. */
   const ready = () => {
-    profile.setName(name.trim());
+    if (!account) profile.setName(name.trim());
     profile.setDeckId(deck.id);
     return deckErrors.length === 0;
+  };
+  /** Online pede conta: sem login, vai para a tela de entrar e volta para cá. */
+  const online = (to: string, state?: JoinRequest) => {
+    if (!ready()) return;
+    if (account) navigate(to, { state });
+    else navigate(loginPath(invite ? `/?sala=${invite}` : '/'));
   };
 
   return (
     <Panel className="lobby">
+      <AccountBar />
+      <ImportLocalDecks />
       {invite && (
         <p className="invite">
-          Você foi convidado para a sala <b>{invite}</b>. Escolha apelido e deck e clique em Entrar.
+          Você foi convidado para a sala <b>{invite}</b>.{' '}
+          {account ? 'Escolha o deck e clique em Entrar.' : 'Entre na sua conta para aceitar o desafio.'}
         </p>
       )}
       {resume && !invite && (
-        <Button className="invite" onClick={() => navigate(`/sala/${resume.code}`, { state: JOIN })}>
-          ↩ Voltar para o duelo na sala <b>{resume.code}</b>
+        <Button className="invite" onClick={() => navigate(`/sala/${resume}`)}>
+          ↩ Voltar para o duelo na sala <b>{resume}</b>
         </Button>
       )}
-      <label className="field-label">
-        Seu apelido
-        <input value={name} maxLength={20} placeholder="Ex.: Wisley" onChange={(e) => setName(e.target.value)} />
-      </label>
+      {status === 'guest' && (
+        <label className="field-label">
+          Seu apelido no treino
+          <input value={name} maxLength={20} placeholder="Ex.: Wisley" onChange={(e) => setName(e.target.value)} />
+        </label>
+      )}
       <label className="field-label">
         Deck
         <select value={deck.id} onChange={(e) => setDeckId(e.target.value)}>
@@ -66,10 +84,7 @@ export function LobbyPanel() {
         <Button variant="primary" size="lg" onClick={() => ready() && navigate('/treino')}>
           🤖 Treinar contra o Bot
         </Button>
-        <Button
-          size="lg"
-          onClick={() => ready() && navigate(`/sala/${NEW_ROOM}`, { state: { private: privateRoom } satisfies JoinRequest })}
-        >
+        <Button size="lg" onClick={() => online(`/sala/${NEW_ROOM}`, { private: privateRoom })}>
           🌐 Criar sala online
         </Button>
         <label className="check-label">
@@ -78,11 +93,12 @@ export function LobbyPanel() {
         </label>
         <div className="join">
           <input value={code} maxLength={5} placeholder="CÓDIGO" onChange={(e) => setCode(e.target.value.toUpperCase())} />
-          <Button disabled={code.length < 4} onClick={() => ready() && navigate(`/sala/${code}`, { state: JOIN })}>
+          <Button disabled={code.length < 4} onClick={() => online(`/sala/${code}`, JOIN)}>
             Entrar
           </Button>
         </div>
-        <OpenRooms onJoin={(c) => ready() && navigate(`/sala/${c}`, { state: JOIN })} />
+        {!account && status !== 'unknown' && <p className="muted lobby-note">Jogar online pede uma conta (vale para o ranking).</p>}
+        <OpenRooms onJoin={(c) => online(`/sala/${c}`, JOIN)} />
       </div>
 
       <div className="lobby-links">

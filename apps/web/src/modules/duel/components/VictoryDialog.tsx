@@ -33,6 +33,7 @@ export function VictoryDialog() {
             <p className="victory-lp">
               LP final: <b>você {sum.lp.me}</b> · oponente {sum.lp.opp}
             </p>
+            {ctrl.resultNote && <p className="victory-note">{ctrl.resultNote}</p>}
             {sum.steps.length > 0 && (
               <div className="victory-story">
                 <h3>Como terminou</h3>

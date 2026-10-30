@@ -20,12 +20,23 @@ export function writeJson(key: string, value: unknown, store: Store = local) {
   }
 }
 
-/** Chaves usadas desde a primeira versão — mantidas para ninguém perder decks e apelido. */
+export function removeKey(key: string, store: Store = local) {
+  try {
+    store().removeItem(key);
+  } catch {
+    /* modo privado: nada para apagar */
+  }
+}
+
+/** Chaves usadas desde a primeira versão — mantidas para ninguém perder preferências (e decks até importá-los). */
 export const STORAGE_KEYS = {
   name: 'devoh.name',
   deck: 'devoh.deck',
   customDecks: 'devoh.customDecks',
-  session: 'devoh.session',
+  /** Sala online desta aba (só o código, que não é segredo: a volta é pela conta). */
+  room: 'devoh.room',
+  /** Token de assento das versões sem conta: só para apagar. */
+  legacySession: 'devoh.session',
   botLevel: 'devoh.botLevel',
   sound: 'devoh.sound',
   tutorialSeen: 'devoh.tutorialSeen',

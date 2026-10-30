@@ -28,3 +28,19 @@ export async function waitForBoard(page: Page) {
   await expect(page.locator('.duel')).toBeVisible();
   await expect(page.locator('.phase')).toContainText('T');
 }
+
+let accounts = 0;
+
+/**
+ * Cria uma conta nova (nome único por execução) direto pela API, no contexto da página:
+ * o cookie de sessão HttpOnly fica no navegador, como depois do cadastro pela tela.
+ * O formulário com o Turnstile fica de fora para o teste não depender da Cloudflare.
+ */
+export async function signUp(page: Page, displayName: string) {
+  const username = `${displayName.toLowerCase().replace(/[^a-z0-9]/g, '')}_${Date.now().toString(36)}${accounts++}`.slice(0, 20);
+  const res = await page.request.post('/api/auth/register', {
+    data: { username, displayName, password: 'senha-forte-1', turnstileToken: 'e2e' },
+  });
+  expect(res.status(), await res.text()).toBe(201);
+  return { username, password: 'senha-forte-1' };
+}
