@@ -10,7 +10,11 @@ export function DeckPanel() {
   const editing = useDeckBuilder((s) => s.editing);
   const saved = useDeckBuilder((s) => s.saved);
   const preview = useDeckBuilder((s) => s.preview);
-  const { rename, removeCard, setPreview, save, deleteDeck } = useDeckBuilder((s) => s);
+  const rename = useDeckBuilder((s) => s.rename);
+  const removeCard = useDeckBuilder((s) => s.removeCard);
+  const setPreview = useDeckBuilder((s) => s.setPreview);
+  const save = useDeckBuilder((s) => s.save);
+  const deleteDeck = useDeckBuilder((s) => s.deleteDeck);
   const isCustom = useDeckLibrary((s) => s.custom.some((d) => d.id === editing.id));
   const errors = validateDeck(editing.cards);
   const isStarter = isStarterDeck(editing.id);
