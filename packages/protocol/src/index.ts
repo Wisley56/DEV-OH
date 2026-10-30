@@ -17,8 +17,8 @@ export const EVENTS = {
   roomState: 'room:state',
 } as const;
 
+/** O nome na sala é o da conta (o servidor sabe quem é pelo cookie de sessão). */
 export interface CreateRoomPayload {
-  name?: string;
   deck: string[];
   /** Sala privada: não aparece na lista de salas abertas do lobby. */
   private?: boolean;
@@ -34,23 +34,24 @@ export interface OpenRoom {
 
 export interface JoinRoomPayload {
   code: string;
-  name?: string;
   deck: string[];
 }
 
+/** Volta para a sala depois de cair (F5, rede): o assento é reconhecido pela conta. */
 export interface RejoinRoomPayload {
   code: string;
-  token: string;
 }
 
 /** Resposta (ack) de toda chamada cliente → servidor. */
-export type Ack = { ok: true; code?: string; token?: string } | { ok: false; error: string };
+export type Ack = { ok: true; code?: string } | { ok: false; error: string };
 
 export interface RoomPlayer {
   name: string;
   connected: boolean;
   /** Caiu no meio do duelo: horário (relógio do servidor, ms) em que perde por W.O. se não voltar. */
   reconnectDeadline: number | null;
+  /** Variação de Elo da última partida (só depois que ela termina e é registrada). */
+  eloDelta: number | null;
 }
 
 /** Estado da sala enviado a cada jogador, com a visão do duelo filtrada para ele. */
@@ -67,12 +68,7 @@ export interface RoomState {
   serverNow: number;
 }
 
-/** Sessão guardada no navegador para reconectar (código da sala + token do assento). */
-export interface RoomSession {
-  code: string;
-  token: string;
-}
-
 export const ROOM_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 export const ROOM_CODE_LENGTH = 5;
 export { DEFAULT_NAME, NAME_MAX, sanitizeName } from './name';
+export * from './account';
