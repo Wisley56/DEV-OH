@@ -8,17 +8,23 @@
     "build": "tsc -p tsconfig.build.json",
     "start": "node --env-file-if-exists=.env dist/main.js",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "db:generate": "drizzle-kit generate",
+    "admin": "tsx --env-file-if-exists=.env --conditions=source src/admin.ts"
   },
   "dependencies": {
     "@devoh/engine": "*",
     "@devoh/protocol": "*",
+    "@electric-sql/pglite": "^0.5.13",
     "@nestjs/common": "^12.3.2",
     "@nestjs/core": "^12.3.2",
     "@nestjs/platform-express": "^12.3.2",
     "@nestjs/platform-socket.io": "^12.3.2",
     "@nestjs/websockets": "^12.3.2",
+    "@node-rs/argon2": "^2.2.2",
+    "drizzle-orm": "^0.45.4",
     "helmet": "^8.3.0",
+    "pg": "^8.23.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "socket.io": "^4.8.1",
@@ -27,7 +33,10 @@
   "devDependencies": {
     "@devoh/tsconfig": "*",
     "@nestjs/testing": "^12.3.2",
+    "@types/express": "^5.0.6",
     "@types/node": "^22.15.0",
+    "@types/pg": "^8.23.1",
+    "drizzle-kit": "^0.31.11",
     "socket.io-client": "^4.8.1",
     "tsx": "^4.19.3",
     "vitest": "^5.0.5"

@@ -47,8 +47,26 @@ describe('clientIp', () => {
   const hs = { address: '10.0.0.1', headers: { 'x-forwarded-for': '203.0.113.9, 10.0.0.1' } };
 
   it('usa o x-forwarded-for só atrás de proxy confiável', () => {
-    expect(clientIp(hs, true)).toBe('203.0.113.9');
-    expect(clientIp(hs, false)).toBe('10.0.0.1');
-    expect(clientIp({ address: '10.0.0.1', headers: {} }, true)).toBe('10.0.0.1');
+    expect(clientIp(hs, 2)).toBe('203.0.113.9');
+    expect(clientIp(hs, 0)).toBe('10.0.0.1');
+    expect(clientIp({ address: '10.0.0.1', headers: {} }, 2)).toBe('10.0.0.1');
+  });
+
+  const at = (fwd: string | undefined, hops: number) =>
+    clientIp({ address: '10.0.0.9', headers: fwd === undefined ? {} : { 'x-forwarded-for': fwd } }, hops);
+
+  it('sem proxy confiável, usa o IP da conexão (ignora o x-forwarded-for)', () => {
+    expect(at('1.2.3.4', 0)).toBe('10.0.0.9');
+  });
+
+  it('atrás da borda do Railway e do proxy do web, pega o item que a borda acrescentou', () => {
+    // O cliente mandou um x-forwarded-for falso; a borda acrescentou o IP real e o proxy do web, o da borda.
+    expect(at('6.6.6.6, 200.1.2.3, 10.1.0.1', 2)).toBe('200.1.2.3');
+    expect(at('200.1.2.3, 10.1.0.1', 2)).toBe('200.1.2.3');
+  });
+
+  it('cabeçalho curto demais: cai no IP da conexão', () => {
+    expect(at('10.1.0.1', 2)).toBe('10.0.0.9');
+    expect(at(undefined, 2)).toBe('10.0.0.9');
   });
 });
