@@ -13,7 +13,6 @@ export interface RoomRepository {
 
 export interface IdGenerator {
   roomCode(): string;
-  token(): string;
 }
 
 export interface Clock {
@@ -31,8 +30,29 @@ export interface RoomNotifier {
   publish(room: Room): void;
 }
 
+/** Quem ocupa o assento: a conta logada no socket. */
+export interface Player {
+  userId: string;
+  name: string;
+}
+
+/** Fim de uma partida online, para o ranking. `winner` null = empate. */
+export interface MatchResult {
+  matchId: string;
+  users: [string, string];
+  winner: 0 | 1 | null;
+  reason: string;
+  turns: number;
+}
+
+/** Grava o resultado e devolve a variação de Elo de cada assento. */
+export interface MatchRecorder {
+  record(result: MatchResult): Promise<[number, number]>;
+}
+
 export const ROOM_REPOSITORY = Symbol('RoomRepository');
 export const ID_GENERATOR = Symbol('IdGenerator');
 export const CLOCK = Symbol('Clock');
 export const SCHEDULER = Symbol('Scheduler');
 export const ROOM_NOTIFIER = Symbol('RoomNotifier');
+export const MATCH_RECORDER = Symbol('MatchRecorder');

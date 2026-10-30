@@ -1,10 +1,8 @@
 import { STARTER_DECKS } from '@devoh/engine';
-import { EVENTS, type Ack } from '@devoh/protocol';
-import type { INestApplication } from '@nestjs/common';
-import { io, type Socket } from 'socket.io-client';
+import { EVENTS } from '@devoh/protocol';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { bootstrap } from '../src/bootstrap.js';
 import { TOO_MANY } from '../src/common/security/throttle.js';
+import { call, connected, openSocket, signUp, startServer, type TestServer } from './support.js';
 
 const GOOD = 'http://good.test';
 const LIMITS = {
@@ -17,39 +15,25 @@ const LIMITS = {
 
 /** Limites de abuso com o servidor de verdade (todos os clientes saem do mesmo IP). */
 describe('segurança do servidor (e2e)', () => {
-  let app: INestApplication;
+  let server: TestServer;
   let url: string;
-  const sockets: Socket[] = [];
-  const saved = { ...process.env };
+  let ana: string;
+  let bia: string;
 
   beforeAll(async () => {
-    Object.assign(process.env, LIMITS);
-    app = await bootstrap(0, false);
-    const addr = app.getHttpServer().address() as { port: number };
-    url = `http://127.0.0.1:${addr.port}`;
+    server = await startServer(LIMITS);
+    url = server.url;
+    ana = await signUp(url, 'ana', GOOD);
+    bia = await signUp(url, 'bia', GOOD);
   });
-  afterAll(async () => {
-    sockets.forEach((s) => s.disconnect());
-    await app.close();
-    process.env = saved;
-  });
+  afterAll(() => server.close());
 
-  const open = (origin = GOOD) => {
-    const s = io(url, { transports: ['websocket'], forceNew: true, reconnection: false, extraHeaders: { origin } });
-    sockets.push(s);
-    return s;
-  };
-  const connected = (s: Socket) =>
-    new Promise<boolean>((r) => {
-      s.once('connect', () => r(true));
-      s.once('connect_error', () => r(false));
-    });
-  const client = async () => {
-    const s = open();
+  const open = (origin = GOOD, cookie = ana) => openSocket(server, cookie, origin);
+  const client = async (cookie = ana) => {
+    const s = open(GOOD, cookie);
     expect(await connected(s)).toBe(true);
     return s;
   };
-  const call = (s: Socket, ev: string, payload?: unknown) => new Promise<Ack>((r) => s.emit(ev, payload, r));
   const deck = STARTER_DECKS[0].cards;
 
   it('recusa conexão de outra origem', async () => {
@@ -66,13 +50,13 @@ describe('segurança do servidor (e2e)', () => {
 
   it('limita criação de salas por IP e libera a sala anterior da conexão', async () => {
     const a = await client();
-    const first = await call(a, EVENTS.createRoom, { name: 'A', deck });
-    const second = await call(a, EVENTS.createRoom, { name: 'A', deck });
+    const first = await call(a, EVENTS.createRoom, { deck });
+    const second = await call(a, EVENTS.createRoom, { deck });
     expect(first.ok && second.ok).toBe(true);
-    expect(await call(a, EVENTS.createRoom, { name: 'A', deck })).toEqual({ ok: false, error: TOO_MANY });
+    expect(await call(a, EVENTS.createRoom, { deck })).toEqual({ ok: false, error: TOO_MANY });
 
     // A primeira sala saiu quando a conexão criou a segunda.
-    const b = await client();
+    const b = await client(bia);
     const joinFirst = await call(b, EVENTS.joinRoom, { code: first.ok ? first.code : '', deck });
     expect(joinFirst).toEqual({ ok: false, error: 'Sala não encontrada. Confere o código?' });
   });
@@ -82,7 +66,7 @@ describe('segurança do servidor (e2e)', () => {
     // Já houve 1 tentativa no teste anterior: sobram 2 no balde de 3.
     for (const code of ['ZZZZ1', 'ZZZZ2']) expect(await call(c, EVENTS.joinRoom, { code, deck })).toMatchObject({ ok: false });
     expect(await call(c, EVENTS.joinRoom, { code: 'ZZZZ3', deck })).toEqual({ ok: false, error: TOO_MANY });
-    expect(await call(c, EVENTS.rejoinRoom, { code: 'ZZZZ3', token: 'x' })).toEqual({ ok: false, error: TOO_MANY });
+    expect(await call(c, EVENTS.rejoinRoom, { code: 'ZZZZ3' })).toEqual({ ok: false, error: TOO_MANY });
   });
 
   it('limita jogadas por conexão e derruba quem insiste', async () => {
@@ -98,7 +82,7 @@ describe('segurança do servidor (e2e)', () => {
   });
 
   it('limita conexões simultâneas por IP', async () => {
-    sockets.forEach((s) => s.disconnect());
+    server.sockets.forEach((s) => s.disconnect());
     await new Promise((r) => setTimeout(r, 100));
     for (let i = 0; i < 6; i++) await client();
     expect(await connected(open())).toBe(false);

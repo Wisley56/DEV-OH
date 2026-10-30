@@ -15,7 +15,7 @@ import { Throttle } from '../../../common/security/throttle.js';
 import { WsAckFilter } from '../../../common/ws-ack.filter.js';
 import { ZodValidationPipe } from '../../../common/zod-validation.pipe.js';
 import { RoomsService } from '../application/rooms.service.js';
-import { roomOf, setRoom } from './socket-session.js';
+import { playerOf, roomOf, setRoom } from './socket-session.js';
 import { SocketRoomNotifier } from './socket-room.notifier.js';
 
 /** Eventos de ciclo de vida da sala. */
@@ -40,7 +40,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     @MessageBody(new ZodValidationPipe(CreateRoomSchema, 'Deck inválido.')) msg: CreateRoomPayload,
   ): Ack {
     this.leaveCurrent(socket);
-    const session = this.rooms.create(socket.id, msg.name, msg.deck, msg.private);
+    const session = this.rooms.create(socket.id, playerOf(socket), msg.deck, msg.private);
     setRoom(socket, session.code);
     return { ok: true, ...session };
   }
@@ -49,7 +49,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   @Throttle('join')
   join(@ConnectedSocket() socket: Socket, @MessageBody(new ZodValidationPipe(JoinRoomSchema, 'Deck inválido.')) msg: JoinRoomPayload): Ack {
     this.leaveCurrent(socket, msg.code);
-    const session = this.rooms.join(socket.id, msg.code, msg.name, msg.deck);
+    const session = this.rooms.join(socket.id, msg.code, playerOf(socket), msg.deck);
     setRoom(socket, session.code);
     return { ok: true, ...session };
   }
@@ -58,10 +58,10 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   @Throttle('join')
   rejoin(
     @ConnectedSocket() socket: Socket,
-    @MessageBody(new ZodValidationPipe(RejoinRoomSchema, 'Sessão expirada.')) msg: RejoinRoomPayload,
+    @MessageBody(new ZodValidationPipe(RejoinRoomSchema, 'Essa sala não existe mais.')) msg: RejoinRoomPayload,
   ): Ack {
     this.leaveCurrent(socket, msg.code);
-    const session = this.rooms.rejoin(socket.id, msg.code, msg.token);
+    const session = this.rooms.rejoin(socket.id, msg.code, playerOf(socket).userId);
     setRoom(socket, session.code);
     return { ok: true, ...session };
   }

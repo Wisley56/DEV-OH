@@ -1,6 +1,6 @@
 import { validateDeck, type Seat } from '@devoh/engine';
-import { sanitizeName, type OpenRoom, type RoomSession } from '@devoh/protocol';
-import { Inject, Injectable } from '@nestjs/common';
+import type { OpenRoom } from '@devoh/protocol';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { DomainError } from '../../../common/domain-error.js';
 import { SecurityLog } from '../../../common/security/security-log.js';
 import { AppConfig } from '../../../config/app-config.js';
@@ -8,11 +8,14 @@ import { Room, type Seatholder } from '../domain/room.js';
 import {
   CLOCK,
   ID_GENERATOR,
+  MATCH_RECORDER,
   ROOM_NOTIFIER,
   ROOM_REPOSITORY,
   SCHEDULER,
   type Clock,
   type IdGenerator,
+  type MatchRecorder,
+  type Player,
   type RoomNotifier,
   type RoomRepository,
   type Scheduler,
@@ -24,6 +27,8 @@ const goneTask = (code: string, seat: number) => `gone:${code}:${seat}`;
 /** Casos de uso do ciclo de vida das salas (criar, entrar, reconectar, sair, revanche, relógio). */
 @Injectable()
 export class RoomsService {
+  private readonly logger = new Logger(RoomsService.name);
+
   constructor(
     @Inject(ROOM_REPOSITORY) private readonly rooms: RoomRepository,
     @Inject(ID_GENERATOR) private readonly ids: IdGenerator,
@@ -32,9 +37,10 @@ export class RoomsService {
     @Inject(AppConfig) private readonly config: AppConfig,
     @Inject(SecurityLog) private readonly security: SecurityLog,
     @Inject(SCHEDULER) private readonly scheduler: Scheduler,
+    @Inject(MATCH_RECORDER) private readonly recorder: MatchRecorder,
   ) {}
 
-  create(socketId: string, name: string | undefined, deck: string[], isPrivate = false): RoomSession {
+  create(socketId: string, player: Player, deck: string[], isPrivate = false): { code: string } {
     this.checkDeck(deck);
     if (this.rooms.count() >= this.config.maxRooms) {
       this.security.warn('room-limit', undefined, { rooms: this.rooms.count() });
@@ -42,30 +48,30 @@ export class RoomsService {
     }
     let code = this.ids.roomCode();
     while (this.rooms.has(code)) code = this.ids.roomCode();
-    const room = new Room(code, this.seat(socketId, name, deck), this.clock.now(), isPrivate);
+    const room = new Room(code, this.seat(socketId, player, deck), this.clock.now(), isPrivate);
     this.rooms.save(room);
     this.publish(room);
-    return { code, token: room.players[0].token };
+    return { code };
   }
 
-  join(socketId: string, code: string, name: string | undefined, deck: string[]): RoomSession {
+  join(socketId: string, code: string, player: Player, deck: string[]): { code: string } {
     const room = this.rooms.get(code.toUpperCase());
     if (!room) throw new DomainError('Sala não encontrada. Confere o código?');
     if (room.isFull) throw new DomainError('A sala já está cheia.');
     this.checkDeck(deck);
-    const guest = this.seat(socketId, name, deck);
-    room.join(guest);
+    room.join(this.seat(socketId, player, deck));
     this.publish(room);
-    return { code: room.code, token: guest.token };
+    return { code: room.code };
   }
 
-  rejoin(socketId: string, code: string, token: string): RoomSession {
+  /** Volta para o assento da própria conta (caiu, recarregou a página ou abriu em outra aba). */
+  rejoin(socketId: string, code: string, userId: string): { code: string } {
     const room = this.rooms.get(code.toUpperCase());
-    const p = room?.seatholderByToken(token);
-    if (!room || !p) throw new DomainError('Sessão expirada.');
+    const p = room?.seatholderByUser(userId);
+    if (!room || !p) throw new DomainError('Essa sala não existe mais.');
     room.reconnect(p, socketId);
     this.publish(room);
-    return { code: room.code, token: p.token };
+    return { code: room.code };
   }
 
   /** Salas públicas esperando oponente, das mais antigas para as mais novas. */
@@ -111,6 +117,7 @@ export class RoomsService {
   publish(room: Room) {
     room.touched = this.clock.now();
     this.armTimers(room);
+    if (room.needsRecord) void this.record(room);
     this.notifier.publish(room);
   }
 
@@ -159,14 +166,39 @@ export class RoomsService {
     this.publish(room);
   }
 
+  /**
+   * Fim de partida (vitória, empate, W.O., tempo): vai uma vez só para o ranking. Erro no
+   * banco não derruba a sala: o duelo já acabou, fica só no log.
+   */
+  private async record(room: Room) {
+    const g = room.game!;
+    const matchId = room.matchId!;
+    room.recorded = true;
+    try {
+      const delta = await this.recorder.record({
+        matchId,
+        users: [room.players[0].userId, room.players[1]!.userId],
+        winner: g.winner === 'draw' ? null : g.winner,
+        reason: g.outcome?.reason ?? 'lp',
+        turns: g.turn,
+      });
+      // Pode ter começado a revanche enquanto gravava: aí o delta é de outra partida.
+      if (room.matchId !== matchId || !this.rooms.has(room.code)) return;
+      room.eloDelta = delta;
+      this.notifier.publish(room);
+    } catch (err) {
+      this.logger.error(`Não gravei a partida ${matchId}: ${(err as Error).message}`);
+    }
+  }
+
   private remove(room: Room) {
     this.rooms.delete(room.code);
     this.scheduler.cancel(turnTask(room.code));
     [0, 1].forEach((seat) => this.scheduler.cancel(goneTask(room.code, seat)));
   }
 
-  private seat(socketId: string, name: string | undefined, deck: string[]): Seatholder {
-    return { name: sanitizeName(name), deck, token: this.ids.token(), socketId, reconnectDeadline: null };
+  private seat(socketId: string, player: Player, deck: string[]): Seatholder {
+    return { userId: player.userId, name: player.name, deck, socketId, reconnectDeadline: null };
   }
 
   private checkDeck(deck: string[]) {
