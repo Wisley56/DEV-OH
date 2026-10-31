@@ -59,4 +59,18 @@ describe('server.mjs', () => {
     s.disconnect();
     expect(reply).toBe('pong');
   });
+
+  it('API que não responde vira 502 no prazo, em vez de carregar para sempre', async () => {
+    // Aceita a conexão e nunca responde (como um server inalcançável pela rede privada).
+    const mute = createServer(() => {});
+    const mutePort = await listen(mute);
+    const dist = mkdtempSync(join(tmpdir(), 'devoh-web-'));
+    writeFileSync(join(dist, 'index.html'), '<!doctype html>');
+    const slow = createWebServer({ distDir: dist, target: `http://127.0.0.1:${mutePort}`, headers, apiTimeoutMs: 300 });
+    const res = await fetch(`http://127.0.0.1:${await listen(slow)}/api/ranking`);
+    expect(res.status).toBe(502);
+    slow.close();
+    mute.closeAllConnections();
+    mute.close();
+  });
 });

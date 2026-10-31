@@ -17,9 +17,9 @@ const PROXIED = /^\/(api|socket\.io)(\/|$)/;
 
 /**
  * Cria o servidor (sem escutar). `target` é a URL interna do servidor de duelos;
- * `headers`, os cabeçalhos de segurança das páginas.
+ * `headers`, os cabeçalhos de segurança das páginas; `apiTimeoutMs`, o prazo de cada chamada à API.
  */
-export function createWebServer({ distDir, target, headers }) {
+export function createWebServer({ distDir, target, headers, apiTimeoutMs = 15_000 }) {
   const proxy = createProxyServer({ target, xfwd: true });
   proxy.on('error', (err, _req, res) => {
     console.error(JSON.stringify({ level: 'error', msg: 'proxy', error: err.message }));
@@ -41,6 +41,9 @@ export function createWebServer({ distDir, target, headers }) {
   });
 
   const server = createServer((req, res) => {
+    // A API tem prazo: se o server não responder, o jogador vê erro em vez de carregar para sempre.
+    // O /socket.io fica sem prazo (o long-polling segura o pedido aberto de propósito).
+    if (req.url?.startsWith('/api')) return proxy.web(req, res, { proxyTimeout: apiTimeoutMs });
     if (PROXIED.test(req.url ?? '')) return proxy.web(req, res);
     assets(req, res, () => {
       res.writeHead(404).end();

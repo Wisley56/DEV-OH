@@ -21,7 +21,8 @@ export async function bootstrap(port?: number, logs = true) {
   app.useWebSocketAdapter(new AppSocketAdapter(app));
   app.enableCors({ origin: config.corsOrigin });
   app.enableShutdownHooks();
-  await app.listen(port ?? config.port, '0.0.0.0');
+  // '::' escuta em IPv6 e IPv4: a rede privada do Railway (*.railway.internal) é IPv6.
+  await app.listen(port ?? config.port, '::');
   Logger.log(`DEV-OH! server ouvindo na porta ${port ?? config.port}`, 'Bootstrap');
   return app;
 }
