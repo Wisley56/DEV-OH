@@ -25,7 +25,11 @@ async function playUntilPodium(pages: Page[]) {
     for (const p of pages) {
       const inDuel = (await p.locator('.duel').isVisible()) && !(await p.locator('.victory-box').isVisible());
       if (!inDuel) continue;
-      await p.getByRole('button', { name: /Sair/ }).click();
+      // O duelo pode acabar entre a checagem e o clique (o resultado aparece por cima): tenta de novo na próxima volta.
+      await p
+        .getByRole('button', { name: /Sair/ })
+        .click({ timeout: 3000 })
+        .catch(() => {});
       break;
     }
     await pages[0].waitForTimeout(400);
