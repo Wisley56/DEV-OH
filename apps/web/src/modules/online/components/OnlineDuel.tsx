@@ -12,6 +12,7 @@ export function OnlineDuel({ room, view, onExit }: { room: RoomState; view: Game
   const offset = useRoomStore((s) => s.clockOffset);
   const opp = room.players[room.seat === 0 ? 1 : 0];
   const iWantRematch = room.rematch[room.seat];
+  const elo = room.players[room.seat]?.eloDelta;
   // Prazos vêm no relógio do servidor; aqui viram horário deste navegador.
   const local = (t: number | null | undefined) => (t ? t - offset : null);
   const woAt = local(opp?.reconnectDeadline);
@@ -40,7 +41,19 @@ export function OnlineDuel({ room, view, onExit }: { room: RoomState; view: Game
         rematchLabel: room.rematch.some(Boolean) ? 'Aceitar revanche' : 'Pedir revanche',
         banner,
         turnDeadline: local(room.turnDeadline),
+        resultNote: elo == null ? null : <EloDelta delta={elo} />,
       }}
     />
+  );
+}
+
+/** Variação de Elo da partida que acabou de ser registrada no ranking. */
+function EloDelta({ delta }: { delta: number }) {
+  const cls = delta > 0 ? 'elo-delta up' : delta < 0 ? 'elo-delta down' : 'elo-delta';
+  return (
+    <span className={cls}>
+      🏆 {delta > 0 ? '+' : ''}
+      {delta} Elo
+    </span>
   );
 }

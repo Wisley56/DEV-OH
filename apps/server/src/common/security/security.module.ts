@@ -1,4 +1,6 @@
 import { Global, Inject, Injectable, Module, type OnModuleDestroy, type OnModuleInit } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { OriginGuard } from './origin.guard.js';
 import { ConnectionCounter, RateLimiter } from './rate-limiter.js';
 import { SecurityLog } from './security-log.js';
 import { ThrottleGuard } from './throttle.js';
@@ -28,6 +30,8 @@ class RateLimiterSweeper implements OnModuleInit, OnModuleDestroy {
     SecurityLog,
     ThrottleGuard,
     RateLimiterSweeper,
+    // Todo pedido HTTP que altera dados passa pela checagem de origem (CSRF).
+    { provide: APP_GUARD, useClass: OriginGuard },
   ],
   exports: [RateLimiter, ConnectionCounter, SecurityLog, ThrottleGuard],
 })

@@ -1,2 +1,5 @@
-/** URL do servidor de duelos. Em dev, o mesmo host na porta 3001. */
-export const SERVER_URL = import.meta.env.VITE_SERVER_URL || `${location.protocol}//${location.hostname}:3001`;
+/**
+ * O servidor de duelos fica na mesma origem do site: em produção o `server.mjs` repassa
+ * /api e /socket.io; em dev, o proxy do Vite. Por isso as chamadas usam caminhos relativos.
+ */
+export const API_BASE = '/api';

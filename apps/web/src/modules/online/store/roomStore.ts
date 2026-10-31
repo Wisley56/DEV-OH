@@ -2,12 +2,11 @@ import type { Action } from '@devoh/engine';
 import type { RoomState } from '@devoh/protocol';
 import { create } from 'zustand';
 import { RoomClient, type ConnectionStatus } from '../services/roomClient';
-import { getSession, NEW_ROOM } from '../services/session';
+import { NEW_ROOM } from '../services/session';
 
 export { NEW_ROOM };
 
 interface JoinAs {
-  name: string;
   deck: string[];
   private?: boolean;
 }
@@ -20,13 +19,13 @@ interface RoomStoreState {
   error: string | null;
   /** Sala a que este navegador está ligado (código definitivo, ou "nova" enquanto cria). */
   activeCode: string | null;
-  /** Liga-se à sala da URL. `joinAs` = entrar com apelido/deck se não houver sessão para reconectar. */
+  /** Liga-se à sala da URL. `joinAs` = entrar com este deck se a conta ainda não tiver lugar na sala. */
   open(code: string, joinAs?: JoinAs): void;
   send(action: Action): Promise<string | null>;
   rematch(): void;
   /** Sai da sala de vez e desconecta. */
   leave(): void;
-  /** Só desconecta (ao sair da página); dá para voltar pelo token. */
+  /** Só desconecta (ao sair da página); dá para voltar pela conta. */
   close(): void;
 }
 
@@ -42,10 +41,6 @@ export const useRoomStore = create<RoomStoreState>((set, get) => ({
     if (get().activeCode === target) return;
     client?.disconnect();
     set({ ...initial, status: 'connecting', activeCode: target });
-    if (target !== NEW_ROOM && !joinAs && getSession()?.code !== target) {
-      set({ status: 'needsJoin' });
-      return;
-    }
     client = new RoomClient({
       state: (room) => set({ room, clockOffset: room.serverNow ? room.serverNow - Date.now() : 0 }),
       status: (status) => set({ status }),

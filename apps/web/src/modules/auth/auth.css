@@ -1,0 +1,101 @@
+/* ───────── Conta: login, cadastro e faixa do lobby ───────── */
+.auth-page {
+  max-width: 460px;
+}
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.auth-tabs button {
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--panel-border);
+  background: transparent;
+  color: var(--muted);
+  font: 600 0.95rem var(--font-ui);
+  cursor: pointer;
+}
+.auth-tabs button[aria-selected='true'] {
+  background: rgba(233, 185, 73, 0.16);
+  border-color: var(--gold);
+  color: var(--gold2);
+}
+.auth-hint {
+  margin: -6px 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.auth-note {
+  margin-top: 14px;
+  font-size: 0.88rem;
+  text-align: center;
+}
+.turnstile {
+  min-height: 65px;
+  display: flex;
+  justify-content: center;
+}
+
+.account-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--panel-border);
+}
+.account-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.account-elo {
+  margin-left: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(124, 255, 178, 0.12);
+  color: var(--code);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.lobby-note {
+  margin: 0;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.require-account {
+  max-width: 420px;
+  text-align: center;
+}
+.require-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.import-decks {
+  padding: 10px 12px;
+  border: 1px dashed var(--gold);
+  border-radius: 12px;
+  background: rgba(233, 185, 73, 0.08);
+  font-size: 0.9rem;
+}
+.import-decks p {
+  margin: 0 0 8px;
+}
+.import-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}

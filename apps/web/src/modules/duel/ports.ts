@@ -20,6 +20,8 @@ export interface DuelController {
   onFxBusyChange?: (busy: boolean) => void;
   /** Fim do prazo do turno no relógio deste navegador (ms); sem prazo no treino. */
   turnDeadline?: number | null;
+  /** Linha extra no resultado do duelo (ex.: variação de Elo no online). */
+  resultNote?: ReactNode;
   /** Mostra o botão "?" (ex.: rever o tutorial). */
   onHelp?: () => void;
 }

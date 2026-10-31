@@ -8,9 +8,6 @@ export class CryptoIdGenerator implements IdGenerator {
   roomCode() {
     return Array.from(randomBytes(ROOM_CODE_LENGTH), (b) => ROOM_CODE_ALPHABET[b % ROOM_CODE_ALPHABET.length]).join('');
   }
-  token() {
-    return randomBytes(18).toString('base64url');
-  }
 }
 
 @Injectable()

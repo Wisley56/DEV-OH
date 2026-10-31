@@ -8,7 +8,9 @@ export function roomStateFor(room: Room, seat: Seat, now: number): RoomState {
     code: room.code,
     seat,
     status: room.game ? 'playing' : 'waiting',
-    players: room.players.map((x) => (x ? { name: x.name, connected: !!x.socketId, reconnectDeadline: x.reconnectDeadline } : null)),
+    players: room.players.map((x, i) =>
+      x ? { name: x.name, connected: !!x.socketId, reconnectDeadline: x.reconnectDeadline, eloDelta: room.eloDelta[i] ?? null } : null,
+    ),
     rematch: room.rematch,
     view: room.game ? getView(room.game, seat) : null,
     turnDeadline: room.turnDeadline,

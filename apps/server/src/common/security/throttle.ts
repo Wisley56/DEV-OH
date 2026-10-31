@@ -50,7 +50,7 @@ export class ThrottleGuard implements CanActivate {
 
     if (ctx.getType() === 'http') {
       const req = ctx.switchToHttp().getRequest<IncomingMessage>();
-      const ip = clientIp({ address: req.socket.remoteAddress ?? '', headers: req.headers }, this.config.trustProxy);
+      const ip = clientIp({ address: req.socket.remoteAddress ?? '', headers: req.headers }, this.config.trustProxyHops);
       if (this.limiter.take(`${bucket}:${ip}`, this.config.rates[bucket])) return true;
       this.log.warn('rate-limited', ip, { bucket });
       throw new HttpException(TOO_MANY, HttpStatus.TOO_MANY_REQUESTS);

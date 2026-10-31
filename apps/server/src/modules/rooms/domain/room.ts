@@ -1,24 +1,19 @@
 import { applyAction, createGame, forfeit, other, type GameState, type Seat } from '@devoh/engine';
-import { randomInt, timingSafeEqual } from 'node:crypto';
+import { randomInt, randomUUID } from 'node:crypto';
 import { DomainError } from '../../../common/domain-error.js';
 
 /** Estouros de tempo seguidos que dão derrota. */
 export const MAX_TIMEOUTS = 3;
 
 export interface Seatholder {
+  /** Conta dona do assento: é por ela que a pessoa volta depois de cair. */
+  userId: string;
   name: string;
   deck: string[];
-  token: string;
-  /** null = desconectado (pode voltar pelo token). */
+  /** null = desconectado (pode voltar entrando com a mesma conta). */
   socketId: string | null;
   /** Caiu no meio do duelo: perde por W.O. se não voltar até aqui (ms). */
   reconnectDeadline: number | null;
-}
-
-function sameToken(a: string, b: string) {
-  const x = Buffer.from(a);
-  const y = Buffer.from(b);
-  return x.length === y.length && timingSafeEqual(x, y);
 }
 
 /** Sala de duelo: dois assentos, o estado do jogo, o relógio do turno e os pedidos de revanche. */
@@ -31,6 +26,11 @@ export class Room {
   turnDeadline: number | null = null;
   /** Estouros de tempo seguidos de cada assento (zera quando a pessoa joga). */
   timeouts: [number, number] = [0, 0];
+  /** Partida atual (muda a cada revanche) e se o resultado dela já foi para o ranking. */
+  matchId: string | null = null;
+  recorded = false;
+  /** Variação de Elo de cada assento na última partida registrada. */
+  eloDelta: [number | null, number | null] = [null, null];
 
   constructor(
     readonly code: string,
@@ -58,6 +58,7 @@ export class Room {
 
   join(guest: Seatholder) {
     if (this.isFull) throw new DomainError('A sala já está cheia.');
+    if (guest.userId === this.players[0].userId) throw new DomainError('Você já está nessa sala. Chame outra pessoa para duelar.');
     this.players[1] = guest;
     this.startMatch();
   }
@@ -74,6 +75,9 @@ export class Room {
         { name: b.name, deck: b.deck },
       ],
     });
+    this.matchId = randomUUID();
+    this.recorded = false;
+    this.eloDelta = [null, null];
     this.rematch = [false, false];
     this.timeouts = [0, 0];
     this.turnKey = null;
@@ -85,8 +89,13 @@ export class Room {
     return i < 0 ? null : (i as Seat);
   }
 
-  seatholderByToken(token: string): Seatholder | null {
-    return this.players.find((p): p is Seatholder => !!p && sameToken(p.token, token)) ?? null;
+  seatholderByUser(userId: string): Seatholder | null {
+    return this.players.find((p): p is Seatholder => p?.userId === userId) ?? null;
+  }
+
+  /** Acabou e o resultado ainda não foi para o ranking. */
+  get needsRecord() {
+    return !!this.game && this.game.winner !== null && !this.recorded;
   }
 
   /** Marca o assento do socket como desconectado; no meio do duelo, começa a contagem do W.O. */
@@ -98,7 +107,7 @@ export class Room {
     if (this.playing) p.reconnectDeadline = now + reconnectMs;
   }
 
-  /** Voltou pelo token: cancela a contagem do W.O. */
+  /** Voltou com a mesma conta: cancela a contagem do W.O. */
   reconnect(p: Seatholder, socketId: string) {
     p.socketId = socketId;
     p.reconnectDeadline = null;

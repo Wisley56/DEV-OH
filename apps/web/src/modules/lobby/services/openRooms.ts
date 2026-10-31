@@ -1,9 +1,9 @@
 import type { OpenRoom } from '@devoh/protocol';
-import { SERVER_URL } from '../../../shared/lib/env';
+import { API_BASE } from '../../../shared/lib/env';
 
-/** Salas públicas esperando oponente (GET /rooms no servidor de duelos). */
+/** Salas públicas esperando oponente (GET /api/rooms no servidor de duelos). */
 export async function fetchOpenRooms(signal?: AbortSignal): Promise<OpenRoom[]> {
-  const res = await fetch(`${SERVER_URL}/rooms`, { signal });
+  const res = await fetch(`${API_BASE}/rooms`, { signal });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return (await res.json()) as OpenRoom[];
 }

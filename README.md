@@ -27,16 +27,17 @@ Os monstros aqui são **Profissionais**: as pessoas reais da squad, com as caras
 
 Feito **pela squad, para a squad**: um jeito de rir junto da rotina de quem vive no modo sobrevivência do desenvolvimento de software, num jogo que dá pra jogar no intervalo, no fim da daily ou depois daquele deploy que deu certo (por milagre).
 
-Sem instalar nada, sem cadastro: abre o link, escolhe um apelido e duela.
+Sem instalar nada: abre o link e treina contra o bot na hora. Para o online e para guardar seus decks, é só criar uma conta (usuário e senha, de graça).
 
 ## ✨ Destaques
 
 - ⚔️ **PvP online em tempo real**: crie uma sala e mande o link `?sala=CODIGO` pro colega.
+- 🏆 **Ranking online** com Elo, vitórias, derrotas, empates e % de cada conta, mais o histórico das suas últimas partidas.
 - 🤖 **Treino contra o bot** em duas dificuldades: **Com IA** (normal, aceita a primeira sugestão do autocomplete) e **Sem IA** (difícil, pensa cada jogada na raça).
 - 😤 **Mecânica de Estresse**: quanto mais caos, mais ATK… até alguém pedir demissão.
 - 🂠 **Blefe e FLIP**: baixe Profissionais virados, faça a Invocação-Virar e dispare efeitos FLIP quando o oponente atacar o card errado.
 - 💎 **Raridades**: Comum, Rara, Super, Ultra e Secreta, com brilho holográfico e limite de cópias no deck.
-- 🛠️ **Deck builder**: monte o seu time ou use um dos 4 decks prontos.
+- 🛠️ **Deck builder**: monte o seu time ou use um dos 4 decks prontos. Os decks ficam salvos na sua conta, em qualquer aparelho.
 - 📖 **Coleção completa** com filtros por raridade, tipo, atributo e nível.
 - 📱 **Funciona no celular**, na tela da firma e na TV da sala de reunião.
 - 🔌 **Caiu da call?** Volte para o duelo de onde parou.
@@ -80,8 +81,8 @@ Sem instalar nada, sem cadastro: abre o link, escolhe um apelido e duela.
 
 ## 🎮 Como jogar
 
-1. **Abra o jogo**, escolha um apelido e um deck.
-2. **Treine contra o bot** ou **crie uma sala** e mande o link pro colega.
+1. **Abra o jogo** e escolha um deck. Para o treino basta um apelido; para jogar online, **entre na sua conta** (ou crie uma).
+2. **Treine contra o bot** ou **crie uma sala** e mande o link pro colega. Cada partida online conta para o ranking.
 3. No seu turno, **invoque um Profissional** (ou baixe ele virado para blefar), ative **Tasks** e baixe **Bugs** virados.
 4. Clique em **⚔ Batalha**, escolha quem ataca e o alvo.
 5. **Zere os 4000 LP** do oponente (ou deixe o backlog dele acabar) para entregar a Sprint.

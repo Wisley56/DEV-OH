@@ -3,6 +3,8 @@
 @import './base.css';
 @import '../../modules/cards/cards.css';
 @import '../../modules/lobby/lobby.css';
+@import '../../modules/auth/auth.css';
+@import '../../modules/ranking/ranking.css';
 @import '../../modules/training/training.css';
 @import '../../modules/collection/collection.css';
 @import '../../modules/online/online.css';

@@ -1,5 +1,6 @@
 import { validateDeck } from '@devoh/engine';
 import { Navigate, useNavigate } from 'react-router';
+import { useAccount } from '../../auth';
 import { useSelectedDeck } from '../../decks';
 import { DuelBoard } from '../../duel';
 import { nickOf, useProfile } from '../../profile';
@@ -8,14 +9,15 @@ import { useBotDuel } from '../hooks/useBotDuel';
 import { LEVEL_LABEL } from '../services/localGame';
 import type { BotLevel } from '@devoh/ai';
 
-/** Treino contra o bot com o apelido, o deck e a dificuldade do perfil. */
+/** Treino contra o bot com o nome da conta (ou o apelido do visitante), o deck e a dificuldade do perfil. */
 export function BotDuel() {
-  const name = useProfile((s) => s.name);
+  const nick = useProfile((s) => s.name);
+  const name = useAccount().account?.displayName ?? nickOf(nick);
   const level = useProfile((s) => s.botLevel);
   const deck = useSelectedDeck();
   // Deck inválido (ex.: editado em outra aba): volta para o lobby escolher outro.
   if (validateDeck(deck.cards).length) return <Navigate to="/" replace />;
-  return <BotDuelBoard deck={deck.cards} playerName={nickOf(name)} level={level} />;
+  return <BotDuelBoard deck={deck.cards} playerName={name} level={level} />;
 }
 
 function BotDuelBoard({ deck, playerName, level }: { deck: string[]; playerName: string; level: BotLevel }) {

@@ -7,3 +7,5 @@ apps/web/public
 assets
 docs/*.webp
 .claude
+apps/server/drizzle
+.data

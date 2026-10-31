@@ -3,6 +3,7 @@ import { ConsoleLogger, Logger, type LogLevel } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import helmet from 'helmet';
 import { AppModule } from './app.module.js';
+import { HttpDomainFilter } from './common/http-domain.filter.js';
 import { AppSocketAdapter } from './common/socket-adapter.js';
 import { AppConfig } from './config/app-config.js';
 
@@ -13,7 +14,10 @@ export async function bootstrap(port?: number, logs = true) {
   const logger = new AppConfig().production ? new ConsoleLogger({ json: true, logLevels: levels }) : levels;
   const app = await NestFactory.create(AppModule, { logger });
   const config = app.get(AppConfig);
+  // Rotas HTTP em /api (o web repassa /api e /socket.io); o health check do Railway fica na raiz.
+  app.setGlobalPrefix('api', { exclude: ['health', '/'] });
   app.use(helmet());
+  app.useGlobalFilters(new HttpDomainFilter());
   app.useWebSocketAdapter(new AppSocketAdapter(app));
   app.enableCors({ origin: config.corsOrigin });
   app.enableShutdownHooks();

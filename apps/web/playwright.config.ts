@@ -1,8 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Testes de ponta a ponta no navegador: sobem o servidor de duelos (porta 3101) e o
- * front em modo dev (porta 5174) com prazos curtos e limites folgados para o teste.
+ * Testes de ponta a ponta no navegador: sobem o servidor de duelos (porta 3101, banco PGlite
+ * em memória) e o front em modo dev (porta 5174, que repassa /api e /socket.io ao servidor,
+ * como o server.mjs em produção), com prazos curtos e limites folgados para o teste.
  * Local: usa o Chrome instalado (PW_CHANNEL=msedge para o Edge). No CI: o Chromium do Playwright.
  */
 const SERVER_PORT = 3101;
@@ -34,13 +35,15 @@ export default defineConfig({
         RECONNECT_TIMEOUT_MS: '3000',
         RATE_CREATE_PER_MIN: '200',
         RATE_JOIN_PER_MIN: '200',
+        RATE_AUTH_PER_MIN: '200',
+        DATABASE_URL: 'pglite://memory',
       },
     },
     {
       command: `npx vite --port ${WEB_PORT} --strictPort`,
       url: `http://localhost:${WEB_PORT}`,
       reuseExistingServer: false,
-      env: { VITE_SERVER_URL: SERVER_URL },
+      env: { SERVER_INTERNAL_URL: SERVER_URL },
     },
   ],
 });

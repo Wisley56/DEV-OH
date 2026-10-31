@@ -1,25 +1,22 @@
 import type { Plugin } from 'vite';
 
-/** Origens do servidor de duelos que o navegador pode chamar (HTTP do polling + WebSocket). */
-function serverOrigins(serverUrl: string | undefined): string[] {
-  if (!serverUrl) {
-    // Build local sem VITE_SERVER_URL: o front fala com o server na porta 3001 do mesmo host.
-    return ['http://localhost:3001', 'ws://localhost:3001', 'http://127.0.0.1:3001', 'ws://127.0.0.1:3001'];
-  }
-  const url = new URL(serverUrl);
-  const ws = url.protocol === 'https:' ? 'wss:' : 'ws:';
-  return [url.origin, `${ws}//${url.host}`];
-}
+/** Widget anti-robô do cadastro (Cloudflare Turnstile): script e iframe vêm daqui. */
+const TURNSTILE = 'https://challenges.cloudflare.com';
 
-export function contentSecurityPolicy(serverUrl: string | undefined) {
+/**
+ * O site e o servidor de duelos ficam na mesma origem (o `server.mjs` repassa `/api` e
+ * `/socket.io`), então `connect-src 'self'` cobre o HTTP e o WebSocket.
+ */
+export function contentSecurityPolicy() {
   return [
     "default-src 'self'",
-    "script-src 'self'",
+    `script-src 'self' ${TURNSTILE}`,
     // Os componentes usam style={{...}} (cores das cartas, posições de animação).
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob:",
     "font-src 'self'",
-    `connect-src 'self' ${serverOrigins(serverUrl).join(' ')}`,
+    "connect-src 'self'",
+    `frame-src ${TURNSTILE}`,
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
@@ -27,37 +24,29 @@ export function contentSecurityPolicy(serverUrl: string | undefined) {
   ].join('; ');
 }
 
+/** Cabeçalhos de segurança de toda página servida pelo web. */
+export function pageHeaders(): Record<string, string> {
+  return {
+    'Content-Security-Policy': contentSecurityPolicy(),
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=(), usb=()',
+    'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+    'Cross-Origin-Opener-Policy': 'same-origin',
+  };
+}
+
 /**
- * Gera o `serve.json` no build: cabeçalhos de segurança e cache que o `serve`
- * aplica em produção (Railway). O rewrite de SPA continua vindo do `serve -s`.
+ * Gera o `.headers.json` no build: o `server.mjs` aplica esses cabeçalhos em produção
+ * (Railway). Arquivo com ponto no nome: o `sirv` não o serve.
  */
-export function securityHeaders(serverUrl: string | undefined): Plugin {
+export function securityHeaders(): Plugin {
   return {
     name: 'devoh-security-headers',
     apply: 'build',
     generateBundle() {
-      const config = {
-        headers: [
-          {
-            source: '**',
-            headers: [
-              { key: 'Content-Security-Policy', value: contentSecurityPolicy(serverUrl) },
-              { key: 'X-Content-Type-Options', value: 'nosniff' },
-              { key: 'X-Frame-Options', value: 'DENY' },
-              { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-              { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), payment=(), usb=()' },
-              { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
-              { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
-            ],
-          },
-          {
-            // Arquivos com hash no nome: podem ficar em cache para sempre.
-            source: 'assets/**',
-            headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
-          },
-        ],
-      };
-      this.emitFile({ type: 'asset', fileName: 'serve.json', source: `${JSON.stringify(config, null, 2)}\n` });
+      this.emitFile({ type: 'asset', fileName: '.headers.json', source: `${JSON.stringify(pageHeaders(), null, 2)}\n` });
     },
   };
 }

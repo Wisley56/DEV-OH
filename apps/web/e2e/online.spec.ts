@@ -1,11 +1,12 @@
 import { expect, test, type Browser, type Page } from '@playwright/test';
-import { waitForBoard, withProfile } from './helpers';
+import { signUp, waitForBoard, withProfile } from './helpers';
 
-/** Uma pessoa = um contexto do navegador (storage separado). */
+/** Uma pessoa = um contexto do navegador (cookies e storage separados), já com conta. */
 async function player(browser: Browser, name: string): Promise<Page> {
   const ctx = await browser.newContext();
   const page = await ctx.newPage();
   await withProfile(page, name);
+  await signUp(page, name);
   return page;
 }
 
@@ -41,6 +42,20 @@ test('sala pública: aparece na lista, entra, joga, reconecta e desistência exp
   const box = bia.locator('.victory-box');
   await expect(box).toContainText('SPRINT ENTREGUE!');
   await expect(box).toContainText('Ana desistiu do duelo.');
+  // A partida foi para o ranking: a Bia ganhou Elo.
+  await expect(box.locator('.elo-delta')).toHaveText(/\+16 Elo/);
+  await bia.goto('/ranking');
+  await expect(bia.locator('.ranking-table tr.me')).toContainText('1016');
+});
+
+test('online pede conta; sem login, o lobby leva para a tela de entrar', async ({ page }) => {
+  await withProfile(page, 'Visitante');
+  await page.goto('/');
+  await expect(page.getByText('Jogando como visitante')).toBeVisible();
+  await page.getByRole('button', { name: /Criar sala online/ }).click();
+  await expect(page).toHaveURL(/\/entrar\?next=/);
+  await page.goto('/sala/ABCDE');
+  await expect(page.getByRole('heading', { name: 'Entre na sua conta' })).toBeVisible();
 });
 
 test('sala privada fica fora da lista; quem cai perde por W.O.', async ({ browser }) => {
