@@ -1,18 +1,18 @@
 /* ───────── Dificuldade do bot ───────── */
 .difficulty {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
 }
 .diff-option {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 4px;
-  padding: 10px 12px;
+  gap: 6px;
+  padding: 12px;
   border-radius: 10px;
-  border: 1px solid #2c3a6b;
-  background: #0b1228;
+  border: 1px solid var(--border);
+  background: var(--sunken);
   cursor: pointer;
   text-align: left;
   transition:
@@ -22,37 +22,40 @@
 .diff-option:hover {
   border-color: #4b5b95;
 }
-.diff-option.on.diff-normal {
-  border-color: var(--code);
-  background: rgba(124, 255, 178, 0.08);
-}
-.diff-option.on.diff-hard {
-  border-color: var(--danger);
-  background: rgba(255, 77, 109, 0.1);
+.diff-option.on {
+  border-color: var(--gold);
+  background: rgba(233, 185, 73, 0.08);
 }
 .diff-title {
-  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
   color: var(--text);
-  font-size: 0.95rem;
+  font-size: 0.875rem;
+}
+.diff-normal .diff-icon {
+  color: var(--code);
+}
+.diff-hard .diff-icon {
+  color: #ff8fa3;
 }
 .diff-tag {
-  margin-left: 4px;
+  font-family: var(--font-mono);
   font-size: 0.7rem;
-  font-weight: 700;
-  padding: 1px 6px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--muted);
-  vertical-align: middle;
+  text-transform: uppercase;
 }
-.diff-option.on .diff-tag {
-  color: var(--text);
+.diff-normal .diff-tag {
+  color: var(--code);
+}
+.diff-hard .diff-tag {
+  color: #ff8fa3;
 }
 .diff-desc {
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   font-weight: 500;
   color: var(--muted);
-  line-height: 1.3;
+  line-height: 1.45;
 }
 .level-chip {
   padding: 4px 10px;

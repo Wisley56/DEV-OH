@@ -20,6 +20,9 @@
   left: 50%;
   transform: translateX(-50%);
   z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 6px 12px;
   border-radius: 8px;
   background: rgba(127, 80, 10, 0.92);
@@ -34,6 +37,11 @@
   justify-content: center;
   align-items: flex-start;
   padding: 24px 16px;
+}
+.tournament .panel,
+.waiting {
+  position: relative;
+  z-index: 1;
 }
 .tournament .panel {
   width: 100%;
@@ -130,7 +138,26 @@
   order: 3;
 }
 .tour-podium .medal {
-  font-size: 2rem;
+  display: inline-flex;
+}
+.medal.place-1 {
+  color: var(--gold2);
+}
+.medal.place-2 {
+  color: #c9d2f5;
+}
+.medal.place-3 {
+  color: #d9925b;
+}
+.tournament h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.host-icon {
+  margin-right: 6px;
+  color: var(--gold2);
+  vertical-align: -2px;
 }
 .tour-table-wrap {
   overflow-x: auto;

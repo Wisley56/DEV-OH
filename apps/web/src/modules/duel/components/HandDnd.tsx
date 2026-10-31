@@ -10,6 +10,7 @@ import {
   type DragEndEvent,
 } from '@dnd-kit/core';
 import type { HandCardView } from '@devoh/engine';
+import { EyeOff, Shield, Swords } from 'lucide-react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Button } from '../../../shared/ui';
 import { CardMini } from '../../cards';
@@ -118,13 +119,16 @@ function DropMenu() {
   return (
     <div ref={ref} className="drop-menu" style={{ left, top }} role="menu" aria-label="Invocar em">
       <Button variant="primary" size="sm" onClick={() => pick('atk')}>
-        ⚔ Ataque
+        <Swords size={14} aria-hidden />
+        Ataque
       </Button>
       <Button size="sm" onClick={() => pick('def')}>
-        🛡 Defesa
+        <Shield size={14} aria-hidden />
+        Defesa
       </Button>
       <Button size="sm" onClick={() => pick('set')}>
-        🂠 Virado
+        <EyeOff size={14} aria-hidden />
+        Virado
       </Button>
       <Button variant="ghost" size="sm" onClick={() => setDropChoice(null)}>
         Cancelar

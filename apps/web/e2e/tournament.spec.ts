@@ -47,7 +47,7 @@ test('torneio com 3 contas: inscrição pela lista, fase de pontos, final e pód
 
   // Bia entra pela lista do lobby; Caio pelo código.
   await bia.goto('/');
-  const row = bia.getByRole('region', { name: 'Salas abertas' }).locator('li', { hasText: code });
+  const row = bia.getByRole('region', { name: 'Salas abertas' }).locator('tr', { hasText: code });
   await expect(row).toContainText('Torneio');
   await expect(row).toContainText('1/10');
   await row.getByRole('button', { name: 'Entrar' }).click();

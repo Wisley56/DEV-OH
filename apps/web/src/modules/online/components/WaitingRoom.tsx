@@ -1,5 +1,6 @@
+import { Check, Link2 } from 'lucide-react';
 import { useState } from 'react';
-import { Button, CenterScreen, Spinner } from '../../../shared/ui';
+import { Button, CenterScreen, PixelBackground, Spinner } from '../../../shared/ui';
 
 /** Link de convite da sala (abre o lobby com o convite, se a pessoa ainda não estiver nela). */
 export const inviteLink = (code: string) => `${location.origin}/sala/${code}`;
@@ -9,6 +10,7 @@ export function WaitingRoom({ code, onCancel }: { code: string; onCancel: () => 
   const [copied, setCopied] = useState(false);
   return (
     <CenterScreen>
+      <PixelBackground />
       <div className="panel waiting">
         <p className="muted">Sala criada! Mande o código ou o link para o oponente:</p>
         <div className="room-code">{code}</div>
@@ -18,7 +20,8 @@ export function WaitingRoom({ code, onCancel }: { code: string; onCancel: () => 
             setCopied(true);
           }}
         >
-          {copied ? '✔ Link copiado' : '🔗 Copiar link de convite'}
+          {copied ? <Check size={16} aria-hidden /> : <Link2 size={16} aria-hidden />}
+          {copied ? 'Link copiado' : 'Copiar link de convite'}
         </Button>
         <p className="muted">
           <Spinner /> Aguardando oponente…

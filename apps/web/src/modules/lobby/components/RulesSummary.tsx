@@ -1,30 +1,34 @@
-import { MAX_STRESS } from '@devoh/engine';
-import { Panel } from '../../../shared/ui';
+import { MAX_STRESS, START_LP } from '@devoh/engine';
 
-/** Resumo das regras na tela inicial. */
+const RULES = [
+  { title: `${START_LP} LP`, text: 'Pontos de Sprint. Zere os do oponente ou deixe o backlog (deck) dele acabar.' },
+  { title: 'Uma invocação por turno', text: 'Nível 5–6 sacrifica 1 Profissional; nível 7+ sacrifica 2.' },
+  {
+    title: 'Virado',
+    text: 'Baixe o Profissional virado em Defesa. No turno seguinte, a Invocação-Virar o põe em Ataque. Atacado virado, ele é revelado e o efeito FLIP resolve.',
+  },
+  { title: 'Tasks e Bugs', text: 'Tasks (verdes) são ativadas da mão. Bugs (rosa) ficam virados e disparam sozinhos quando a condição acontece.' },
+  {
+    title: `Estresse 0–${MAX_STRESS}`,
+    text: `Cada ponto dá +100 ATK; tomar dano de batalha dá +1. No ${MAX_STRESS}, o seu Profissional de maior nível pede demissão.`,
+  },
+  { title: 'Primeiro turno', text: 'Não tem batalha. Profissionais podem atacar no turno em que entram.' },
+];
+
+/** Resumo das regras na tela inicial, em cartões numerados. */
 export function RulesSummary() {
   return (
-    <Panel className="rules">
-      <h2>Como jogar</h2>
-      <ul>
-        <li>
-          <b>4000 LP</b> (Pontos de Sprint). Zere os do oponente ou deixe o backlog (deck) dele acabar.
-        </li>
-        <li>Uma invocação por turno. Nível 5–6 sacrifica 1 Profissional; nível 7+ sacrifica 2.</li>
-        <li>
-          <b>Virado:</b> a invocação do turno pode baixar o Profissional virado em Defesa (efeitos desligados, o oponente não sabe quem é).
-          A partir do turno seguinte, a <b>Invocação-Virar</b> o coloca em Ataque. Atacado virado, ele é revelado — e o efeito <b>FLIP</b>{' '}
-          resolve mesmo se for destruído.
-        </li>
-        <li>
-          <b>Tasks</b> (verdes) são ativadas da mão. <b>Bugs</b> (rosa) ficam virados e disparam sozinhos quando a condição acontece.
-        </li>
-        <li>
-          <b>Estresse</b> (0–{MAX_STRESS}): cada ponto dá +100 ATK aos seus Profissionais (Modo Desespero). Tomar dano de batalha dá +1. No{' '}
-          {MAX_STRESS}, o seu Profissional de maior nível pede demissão e o Estresse zera.
-        </li>
-        <li>Não tem batalha no primeiro turno. Profissionais podem atacar no turno em que entram.</li>
-      </ul>
-    </Panel>
+    <section className="rules" aria-labelledby="rules-title">
+      <h2 id="rules-title">Como jogar</h2>
+      <ol className="rules-grid">
+        {RULES.map((r, i) => (
+          <li key={r.title}>
+            <span className="mono rules-n">{String(i + 1).padStart(2, '0')}</span>
+            <b>{r.title}</b>
+            <span>{r.text}</span>
+          </li>
+        ))}
+      </ol>
+    </section>
   );
 }

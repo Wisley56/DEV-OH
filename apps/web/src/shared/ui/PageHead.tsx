@@ -1,15 +1,9 @@
 import type { ReactNode } from 'react';
-import { useNavigate } from 'react-router';
-import { Button } from './Button';
 
-/** Cabeçalho das páginas internas: voltar ao início, título e controles extras. */
+/** Cabeçalho das páginas internas: título e controles extras (a barra superior leva de volta ao início). */
 export function PageHead({ title, children }: { title: string; children?: ReactNode }) {
-  const navigate = useNavigate();
   return (
     <div className="page-head">
-      <Button variant="ghost" onClick={() => navigate('/')}>
-        ← Voltar
-      </Button>
       <h1>{title}</h1>
       {children}
     </div>

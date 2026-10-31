@@ -1,5 +1,6 @@
 import { MAX_STRESS, START_LP } from '@devoh/engine';
 import { AnimatePresence, m } from 'framer-motion';
+import { Archive, Hand, Layers, Zap } from 'lucide-react';
 import { useDuel } from '../hooks/useDuel';
 import { useLpDelta } from '../hooks/useLpDelta';
 
@@ -17,7 +18,9 @@ export function PlayerHud({ side, active }: { side: 'me' | 'opp'; active: boolea
     >
       <div className="pbar-name">
         {p.name}
-        {p.shocked && <span className="chip chip-shock">😱 Chocado</span>}
+        {p.shocked && <span className="chip chip-shock">
+            <Zap size={12} aria-hidden /> Chocado
+          </span>}
       </div>
       <div className="lp">
         <div className="lp-label">
@@ -53,9 +56,15 @@ export function PlayerHud({ side, active }: { side: 'me' | 'opp'; active: boolea
         </div>
       </div>
       <div className="pbar-counts">
-        <span title="Cards no deck">🂠 {p.deckCount}</span>
-        <span title="Cards na mão">✋ {p.handCount}</span>
-        <span title="Desligados (cemitério)">🪦 {p.grave.length}</span>
+        <span title="Cards no deck">
+          <Layers size={14} aria-hidden /> {p.deckCount}
+        </span>
+        <span title="Cards na mão">
+          <Hand size={14} aria-hidden /> {p.handCount}
+        </span>
+        <span title="Desligados (cemitério)">
+          <Archive size={14} aria-hidden /> {p.grave.length}
+        </span>
       </div>
     </div>
   );

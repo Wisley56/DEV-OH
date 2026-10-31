@@ -22,12 +22,12 @@ export const DUEL_TOUR: TourStep[] = [
   {
     target: 'inspector',
     title: 'Painel do card',
-    text: 'Mostra o card grande, o texto completo e os botões: invocar, ativar, atacar, usar a habilidade ⚡… Nada acontece sem você confirmar.',
+    text: 'Mostra o card grande, o texto completo e os botões: invocar, ativar, atacar, usar a habilidade (o raio)… Nada acontece sem você confirmar.',
   },
   {
     target: 'phase',
     title: 'Fases do turno',
-    text: 'Na Fase Principal você invoca e ativa Tasks. Depois clique em ⚔ Batalha para atacar e em Encerrar turno para passar a vez.',
+    text: 'Na Fase Principal você invoca e ativa Tasks. Depois clique em Batalha para atacar e em Encerrar turno para passar a vez.',
   },
   {
     target: 'hud',
