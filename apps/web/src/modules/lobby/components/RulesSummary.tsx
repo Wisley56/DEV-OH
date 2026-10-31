@@ -7,7 +7,10 @@ const RULES = [
     title: 'Virado',
     text: 'Baixe o Profissional virado em Defesa. No turno seguinte, a Invocação-Virar o põe em Ataque. Atacado virado, ele é revelado e o efeito FLIP resolve.',
   },
-  { title: 'Tasks e Bugs', text: 'Tasks (verdes) são ativadas da mão. Bugs (rosa) ficam virados e disparam sozinhos quando a condição acontece.' },
+  {
+    title: 'Tasks e Bugs',
+    text: 'Tasks (verdes) são ativadas da mão. Bugs (rosa) ficam virados e disparam sozinhos quando a condição acontece.',
+  },
   {
     title: `Estresse 0–${MAX_STRESS}`,
     text: `Cada ponto dá +100 ATK; tomar dano de batalha dá +1. No ${MAX_STRESS}, o seu Profissional de maior nível pede demissão.`,

@@ -18,9 +18,11 @@ export function PlayerHud({ side, active }: { side: 'me' | 'opp'; active: boolea
     >
       <div className="pbar-name">
         {p.name}
-        {p.shocked && <span className="chip chip-shock">
+        {p.shocked && (
+          <span className="chip chip-shock">
             <Zap size={12} aria-hidden /> Chocado
-          </span>}
+          </span>
+        )}
       </div>
       <div className="lp">
         <div className="lp-label">
