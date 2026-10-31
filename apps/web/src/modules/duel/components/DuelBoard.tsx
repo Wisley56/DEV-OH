@@ -35,7 +35,8 @@ function BoardLayout() {
 
   return (
     <HandDnd>
-      <div className="duel">
+      {/* data-over: o duelo já acabou, mesmo antes de o resultado aparecer (ele espera as animações). */}
+      <div className="duel" data-over={view.winner !== null}>
         <aside className={`side ${sel ? 'has-sel' : ''} ${showLog ? 'show-log' : ''}`}>
           <CardInspector />
           <DuelLog />

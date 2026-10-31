@@ -36,7 +36,8 @@ export function TournamentRoom({ tournament: t, onExit }: { tournament: Tourname
   const room = viewing ? matches[viewing] : undefined;
   if (room?.view) {
     const back = () => setViewing(t.myMatch && t.myMatch !== viewing ? t.myMatch : null);
-    return <OnlineDuel room={room} view={room.view} onExit={back} inTournament />;
+    // key: cada duelo do torneio monta um tabuleiro novo (sem herdar seleção, histórico lido etc. do anterior).
+    return <OnlineDuel key={room.code} room={room} view={room.view} onExit={back} inTournament />;
   }
   return t.phase === 'inscricao' ? <Signup t={t} onExit={onExit} /> : <Board t={t} onExit={onExit} onOpen={setViewing} />;
 }
