@@ -15,6 +15,12 @@ export const EVENTS = {
   leaveRoom: 'room:leave',
   action: 'action',
   roomState: 'room:state',
+  createTournament: 'tournament:create',
+  joinTournament: 'tournament:join',
+  rejoinTournament: 'tournament:rejoin',
+  startTournament: 'tournament:start',
+  leaveTournament: 'tournament:leave',
+  tournamentState: 'tournament:state',
 } as const;
 
 /** O nome na sala é o da conta (o servidor sabe quem é pelo cookie de sessão). */
@@ -24,12 +30,16 @@ export interface CreateRoomPayload {
   private?: boolean;
 }
 
-/** Sala pública esperando oponente (GET /rooms). */
+/** Sala pública esperando oponente, ou torneio com inscrição aberta (GET /rooms). */
 export interface OpenRoom {
   code: string;
   host: string;
   /** Há quanto tempo a sala espera (ms). */
   waitingMs: number;
+  mode: 'vs' | 'torneio';
+  /** Inscritos e vagas (no VS, 1 de 2). */
+  players: number;
+  max: number;
 }
 
 export interface JoinRoomPayload {
@@ -68,7 +78,7 @@ export interface RoomState {
   serverNow: number;
 }
 
-export const ROOM_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-export const ROOM_CODE_LENGTH = 5;
+export { ROOM_CODE_ALPHABET, ROOM_CODE_LENGTH } from './room-code';
+export * from './tournament';
 export { DEFAULT_NAME, NAME_MAX, sanitizeName } from './name';
 export * from './account';
