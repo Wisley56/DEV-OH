@@ -44,9 +44,13 @@ export function OpenRooms({ onJoin }: { onJoin: (code: string) => void }) {
         <ul>
           {rooms.map((r) => (
             <li key={r.code}>
-              <span className="or-host">{r.host}</span>
+              <span className="or-host">
+                {r.mode === 'torneio' && <span className="or-mode">🏆 Torneio</span>}
+                {r.host}
+              </span>
               <span className="or-meta">
-                {r.code} · {waitingLabel(r.waitingMs)}
+                {r.code} · {r.mode === 'torneio' ? `${r.players}/${r.max} · ` : ''}
+                {waitingLabel(r.waitingMs)}
               </span>
               <Button size="sm" variant="primary" onClick={() => onJoin(r.code)}>
                 Entrar

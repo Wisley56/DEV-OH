@@ -10,6 +10,8 @@ export interface DuelController {
   /** Envia a jogada; resolve com a mensagem de erro, ou null se deu certo. */
   send(action: Action): Promise<string | null> | string | null;
   exit(): void;
+  /** Texto do botão de saída no resultado (padrão: "Voltar ao menu"). */
+  exitLabel?: string;
   rematch?: () => void;
   rematchLabel?: string;
   /** Aviso no topo da arena (ex.: conexão caiu). */

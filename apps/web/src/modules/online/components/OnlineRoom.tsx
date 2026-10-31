@@ -3,8 +3,10 @@ import { Navigate, useLocation, useNavigate, useParams } from 'react-router';
 import { Button, CenterScreen, Panel, Spinner } from '../../../shared/ui';
 import { RequireAccount } from '../../auth';
 import { useSelectedDeck } from '../../decks';
+import type { RoomMode } from '../services/roomClient';
 import { NEW_ROOM, useRoomStore } from '../store/roomStore';
 import { OnlineDuel } from './OnlineDuel';
+import { TournamentRoom } from './TournamentRoom';
 import { WaitingRoom } from './WaitingRoom';
 
 /** Estado de navegação que pede para entrar na sala com o perfil atual (botões do lobby). */
@@ -12,6 +14,8 @@ export interface JoinRequest {
   join?: boolean;
   /** Ao criar: sala privada (não aparece na lista do lobby). */
   private?: boolean;
+  /** Ao criar: VS (1x1, padrão) ou torneio. */
+  mode?: RoomMode;
 }
 
 /**
@@ -32,10 +36,10 @@ function RoomScreen() {
   const request = useLocation().state as JoinRequest | null;
   const join = request?.join ?? false;
   const deck = useSelectedDeck();
-  const { status, room, error, activeCode, open, close, leave } = useRoomStore();
+  const { status, room, tournament, error, activeCode, open, close, leave } = useRoomStore();
 
   useEffect(() => {
-    const joinAs = { deck: deck.cards, private: request?.private };
+    const joinAs = { deck: deck.cards, private: request?.private, mode: request?.mode };
     open(code, code === NEW_ROOM || join ? joinAs : undefined);
   }, [code]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -55,7 +59,7 @@ function RoomScreen() {
   // A conta não está nesta sala: é um convite, vai para o lobby escolher o deck.
   if (status === 'needsJoin') return <Navigate to={`/?sala=${code.toUpperCase()}`} replace />;
 
-  if (error && (status === 'error' || !room)) {
+  if (error && (status === 'error' || (!room && !tournament))) {
     return (
       <CenterScreen>
         <Panel>
@@ -68,6 +72,7 @@ function RoomScreen() {
       </CenterScreen>
     );
   }
+  if (tournament) return <TournamentRoom tournament={tournament} onExit={exit} />;
   if (!room)
     return (
       <CenterScreen>

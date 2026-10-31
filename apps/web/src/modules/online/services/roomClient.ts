@@ -1,16 +1,21 @@
 import type { Action } from '@devoh/engine';
-import { EVENTS, type Ack, type RoomState } from '@devoh/protocol';
+import { EVENTS, isTournamentCode, type Ack, type RoomState, type TournamentState } from '@devoh/protocol';
 import { io, type Socket } from 'socket.io-client';
 import { setActiveRoom } from './session';
 
 /** Como entrar na sala: criar, entrar com um deck ou só voltar para o próprio assento. */
 export type RoomIntent =
-  { kind: 'create'; deck: string[]; private?: boolean } | { kind: 'join'; code: string; deck: string[] } | { kind: 'rejoin'; code: string };
+  | { kind: 'create'; deck: string[]; private?: boolean; mode?: RoomMode }
+  | { kind: 'join'; code: string; deck: string[] }
+  | { kind: 'rejoin'; code: string };
+
+export type RoomMode = 'vs' | 'torneio';
 
 export type ConnectionStatus = 'connecting' | 'ready' | 'offline' | 'error';
 
 export interface RoomClientEvents {
   state(room: RoomState): void;
+  tournament(t: TournamentState): void;
   status(status: ConnectionStatus): void;
   error(message: string): void;
   /** Entrou na sala (código definitivo, ex.: depois de criar). */
@@ -43,13 +48,14 @@ export class RoomClient {
       );
     });
     s.on(EVENTS.roomState, (r: RoomState) => this.on.state(r));
+    s.on(EVENTS.tournamentState, (t: TournamentState) => this.on.tournament(t));
   }
 
   /** Ao (re)conectar: tenta voltar para o próprio assento; se não houver, cria ou entra. */
   private enter(intent: RoomIntent) {
     const code = this.code ?? (intent.kind === 'create' ? null : intent.code.toUpperCase());
     if (!code) return this.enterFresh(intent);
-    this.socket?.emit(EVENTS.rejoinRoom, { code }, (ack: Ack) => {
+    this.socket?.emit(isTournamentCode(code) ? EVENTS.rejoinTournament : EVENTS.rejoinRoom, { code }, (ack: Ack) => {
       if (ack.ok) return this.entered(code);
       if (!this.code) return this.enterFresh(intent);
       this.on.status('error');
@@ -61,8 +67,8 @@ export class RoomClient {
     if (intent.kind === 'rejoin') return this.on.needsJoin();
     const [event, payload] =
       intent.kind === 'create'
-        ? [EVENTS.createRoom, { deck: intent.deck, private: intent.private }]
-        : [EVENTS.joinRoom, { code: intent.code.toUpperCase(), deck: intent.deck }];
+        ? [intent.mode === 'torneio' ? EVENTS.createTournament : EVENTS.createRoom, { deck: intent.deck, private: intent.private }]
+        : [isTournamentCode(intent.code) ? EVENTS.joinTournament : EVENTS.joinRoom, { code: intent.code.toUpperCase(), deck: intent.deck }];
     this.socket?.emit(event, payload, (ack: Ack) => {
       if (ack.ok && ack.code) this.entered(ack.code);
       else if (!ack.ok) {
@@ -90,9 +96,17 @@ export class RoomClient {
     this.socket?.emit(EVENTS.rematch);
   }
 
-  /** Sai da sala de vez (o assento fica livre). */
+  /** O anfitrião fecha a inscrição do torneio; resolve com a mensagem de erro, ou null. */
+  startTournament() {
+    return new Promise<string | null>((resolve) => {
+      if (!this.socket?.connected) return resolve('Sem conexão com o servidor.');
+      this.socket.emit(EVENTS.startTournament, undefined, (ack: Ack) => resolve(ack.ok ? null : ack.error));
+    });
+  }
+
+  /** Sai da sala (o assento fica livre) ou do torneio (o que faltar vira W.O.) de vez. */
   leave() {
-    this.socket?.emit(EVENTS.leaveRoom);
+    this.socket?.emit(this.code && isTournamentCode(this.code) ? EVENTS.leaveTournament : EVENTS.leaveRoom);
     setActiveRoom(null);
   }
 

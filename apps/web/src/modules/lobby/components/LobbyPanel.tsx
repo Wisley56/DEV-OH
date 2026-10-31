@@ -1,4 +1,5 @@
 import { validateDeck } from '@devoh/engine';
+import { isTournamentCode, ROOM_CODE_LENGTH } from '@devoh/protocol';
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { Button, Panel } from '../../../shared/ui';
@@ -25,6 +26,7 @@ export function LobbyPanel() {
   const [deckId, setDeckId] = useState<string | null>(null);
   const [code, setCode] = useState(invite);
   const [privateRoom, setPrivateRoom] = useState(false);
+  const [mode, setMode] = useState<'vs' | 'torneio'>('vs');
   // Os decks da conta chegam depois do login: até a pessoa escolher, vale o do perfil.
   const chosen = deckId ?? profile.deckId;
   const deck = decks.find((d) => d.id === chosen) ?? decks[0];
@@ -56,7 +58,7 @@ export function LobbyPanel() {
       )}
       {resume && !invite && (
         <Button className="invite" onClick={() => navigate(`/sala/${resume}`)}>
-          ↩ Voltar para o duelo na sala <b>{resume}</b>
+          ↩ Voltar para {isTournamentCode(resume) ? 'o torneio' : 'o duelo na sala'} <b>{resume}</b>
         </Button>
       )}
       {status === 'guest' && (
@@ -84,15 +86,40 @@ export function LobbyPanel() {
         <Button variant="primary" size="lg" onClick={() => ready() && navigate('/treino')}>
           🤖 Treinar contra o Bot
         </Button>
-        <Button size="lg" onClick={() => online(`/sala/${NEW_ROOM}`, { private: privateRoom })}>
-          🌐 Criar sala online
+        <div className="mode-picker" role="radiogroup" aria-label="Modo da sala">
+          {(
+            [
+              ['vs', '⚔ VS', 'Duelo 1x1'],
+              ['torneio', '🏆 Torneio', '2 a 10 jogadores'],
+            ] as const
+          ).map(([value, label, hint]) => (
+            <button
+              key={value}
+              type="button"
+              role="radio"
+              aria-checked={mode === value}
+              className={`mode-option ${mode === value ? 'active' : ''}`}
+              onClick={() => setMode(value)}
+            >
+              <b>{label}</b>
+              <span>{hint}</span>
+            </button>
+          ))}
+        </div>
+        <Button size="lg" onClick={() => online(`/sala/${NEW_ROOM}`, { private: privateRoom, mode })}>
+          {mode === 'torneio' ? '🏆 Criar torneio online' : '🌐 Criar sala online'}
         </Button>
         <label className="check-label">
           <input type="checkbox" checked={privateRoom} onChange={(e) => setPrivateRoom(e.target.checked)} />
-          Sala privada (só por convite, fora da lista)
+          {mode === 'torneio' ? 'Torneio privado' : 'Sala privada'} (só por convite, fora da lista)
         </label>
         <div className="join">
-          <input value={code} maxLength={5} placeholder="CÓDIGO" onChange={(e) => setCode(e.target.value.toUpperCase())} />
+          <input
+            value={code}
+            maxLength={ROOM_CODE_LENGTH + 1}
+            placeholder="CÓDIGO"
+            onChange={(e) => setCode(e.target.value.toUpperCase())}
+          />
           <Button disabled={code.length < 4} onClick={() => online(`/sala/${code}`, JOIN)}>
             Entrar
           </Button>

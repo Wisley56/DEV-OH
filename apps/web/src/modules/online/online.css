@@ -26,3 +26,179 @@
   font-size: 0.85rem;
   font-weight: 600;
 }
+
+/* ───────── Torneio ───────── */
+.tournament {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 24px 16px;
+}
+.tournament .panel {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.tournament h2,
+.tournament h3 {
+  margin: 0;
+}
+.tournament h3 {
+  font-size: 1rem;
+  color: var(--gold2);
+  margin-bottom: 6px;
+}
+.tour-signup {
+  align-items: center;
+  text-align: center;
+}
+.tour-entrants {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.tour-entrants li {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--panel-border);
+  background: rgba(255, 255, 255, 0.04);
+}
+.tour-entrants li.me,
+.tour-table tr.me td {
+  color: var(--gold2);
+  font-weight: 700;
+}
+.tour-rules {
+  max-width: 460px;
+  font-size: 0.9rem;
+}
+.tour-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.tour-phase {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--code);
+}
+.tour-status {
+  margin: 0;
+}
+.tour-podium {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 10px;
+}
+.tour-podium li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+  max-width: 160px;
+  padding: 10px 6px;
+  border-radius: 10px;
+  background: rgba(233, 185, 73, 0.08);
+  border: 1px solid var(--panel-border);
+  overflow-wrap: anywhere;
+}
+.tour-podium .place-1 {
+  order: 2;
+  padding-top: 26px;
+  background: rgba(233, 185, 73, 0.18);
+}
+.tour-podium .place-2 {
+  order: 1;
+  padding-top: 16px;
+}
+.tour-podium .place-3 {
+  order: 3;
+}
+.tour-podium .medal {
+  font-size: 2rem;
+}
+.tour-table-wrap {
+  overflow-x: auto;
+}
+.tour-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.tour-table th,
+.tour-table td {
+  padding: 6px 8px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.tour-table th:nth-child(2),
+.tour-table td:nth-child(2) {
+  text-align: left;
+}
+.tour-table th {
+  color: var(--muted);
+  font-weight: 600;
+}
+.tour-matches {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tour-match {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid transparent;
+}
+.tour-match.mine {
+  border-color: var(--panel-border);
+}
+.tour-match.jogando .tm-note {
+  color: var(--ok);
+}
+.tm-side {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.tm-side.won {
+  color: var(--gold2);
+  font-weight: 700;
+}
+.tm-lp {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.tm-vs {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.tm-note {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
