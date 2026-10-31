@@ -1,8 +1,15 @@
 :root {
   --bg: #0a0f1f;
   --bg2: #111a35;
-  --panel: rgba(18, 26, 54, 0.88);
-  --panel-border: rgba(233, 185, 73, 0.22);
+  --panel: #0f1630;
+  --panel-border: #1f2a52;
+  /* Superfícies e bordas do layout (painéis, campos, linhas de tabela). */
+  --surface: #0f1630;
+  --surface2: #16214a;
+  --sunken: #0a1024;
+  --border: #24305c;
+  --border-strong: #34437a;
+  --text-soft: #b4bcdf;
   --gold: #e9b949;
   --gold2: #ffd978;
   --text: #eef1ff;
@@ -16,5 +23,6 @@
   --pro-normal: #c9a227;
   --font-title: 'Cinzel', Georgia, serif;
   --font-ui: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
   color-scheme: dark;
 }

@@ -1,4 +1,5 @@
 import { card } from '@devoh/engine';
+import { Crosshair, Lock, Zap } from 'lucide-react';
 import { Button } from '../../../shared/ui';
 import { CardFull } from '../../cards';
 import { useDuel, useDuelUi } from '../hooks/useDuel';
@@ -27,13 +28,18 @@ export function CardInspector() {
               <div className="side-actions">
                 {actions.map((a) => (
                   <Button key={a.label} variant={a.primary ? 'primary' : 'default'} onClick={() => run(a.intent)}>
-                    {a.intent.kind === 'ignition' ? `⚡ ${a.label}` : a.label}
+                    {a.intent.kind === 'ignition' && <Zap size={16} aria-hidden />}
+                    {a.label}
                   </Button>
                 ))}
               </div>
             )
           )}
-          {hint && <p className="side-hint">🔒 {hint}</p>}
+          {hint && (
+            <p className="side-hint">
+              <Lock size={14} aria-hidden /> {hint}
+            </p>
+          )}
           <Button variant="ghost" className="side-close" onClick={() => select(null)}>
             Fechar
           </Button>
@@ -56,9 +62,15 @@ function IgnitionConfirm({ cardId }: { cardId: string }) {
   const target = d.ignition?.target;
   return (
     <div className="ability-confirm" role="dialog" aria-label={`Habilidade ${d.ignition?.label}`}>
-      <p className="ability-title">⚡ {d.ignition?.label}</p>
+      <p className="ability-title">
+        <Zap size={16} aria-hidden /> {d.ignition?.label}
+      </p>
       <p className="ability-text">{d.text}</p>
-      {target && <p className="ability-target">🎯 Alvo: {TARGET_PROMPTS[target].replace('Escolha ', '')}</p>}
+      {target && (
+        <p className="ability-target">
+          <Crosshair size={14} aria-hidden /> Alvo: {TARGET_PROMPTS[target].replace('Escolha ', '')}
+        </p>
+      )}
       <p className="ability-note">Pode ser usada 1x por turno.</p>
       <div className="side-actions">
         <Button variant="primary" onClick={confirmIgnition}>

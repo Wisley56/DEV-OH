@@ -1,3 +1,4 @@
+import { CircleHelp, Crosshair, SkipForward, Swords, X } from 'lucide-react';
 import { Button } from '../../../shared/ui';
 import { SoundToggle } from '../../sound';
 import { TurnTimer } from './TurnTimer';
@@ -23,24 +24,27 @@ export function PhaseBar() {
       <div className="phase-actions" data-tour="phase">
         {myTurn && view.phase === 'main' && view.turn > 1 && (
           <Button variant="battle" onClick={() => dispatch({ type: 'goBattle' })}>
-            ⚔ Batalha
+            <Swords size={16} aria-hidden />
+            Batalha
           </Button>
         )}
         {myTurn && (
           <Button variant="end" onClick={() => dispatch({ type: 'endTurn' })}>
-            Encerrar turno ⏭
+            Encerrar turno
+            <SkipForward size={16} aria-hidden />
           </Button>
         )}
       </div>
       <div className="phase-tools">
         {ctrl.onHelp && (
           <Button variant="ghost" size="sm" title="Como jogar (tour)" aria-label="Como jogar" onClick={ctrl.onHelp}>
-            ?
+            <CircleHelp size={18} aria-hidden />
           </Button>
         )}
         <SoundToggle />
         <Button variant="ghost" className="exit-btn" title="Sair do duelo" aria-label="Sair do duelo" onClick={exit}>
-          ✕<span className="btn-text"> Sair</span>
+          <X size={18} aria-hidden />
+          <span className="btn-text">Sair</span>
         </Button>
       </div>
     </div>
@@ -56,7 +60,9 @@ function ModeHint() {
   if (!mode) return null;
   return (
     <div className="mode-hint">
-      <span>🎯 {modeText(mode)}</span>
+      <span className="mode-hint-text">
+        <Crosshair size={16} aria-hidden /> {modeText(mode)}
+      </span>
       {mode.kind === 'attack' && !opp.pros.some(Boolean) && (
         <Button variant="primary" size="sm" onClick={() => dispatch({ type: 'attack', iid: mode.iid })}>
           Ataque direto

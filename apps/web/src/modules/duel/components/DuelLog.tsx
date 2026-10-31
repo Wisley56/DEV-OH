@@ -1,3 +1,4 @@
+import { ChevronDown, ChevronRight, ScrollText } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { Button } from '../../../shared/ui';
 import { useDuel, useDuelUi } from '../hooks/useDuel';
@@ -15,7 +16,8 @@ export function DuelLog() {
   return (
     <div className={`log ${open ? 'open' : ''}`} data-tour="log">
       <button className="log-head" onClick={toggleLog}>
-        📜 Histórico do duelo <span>{open ? '▾' : '▸'}</span>
+        <ScrollText size={16} aria-hidden /> Histórico do duelo{' '}
+        {open ? <ChevronDown size={16} aria-hidden /> : <ChevronRight size={16} aria-hidden />}
       </button>
       <div className="log-body" ref={ref}>
         {log.map((l) => (
@@ -45,7 +47,8 @@ export function LogFab() {
       }}
       aria-label="Histórico do duelo"
     >
-      📜{unread > 0 && !showLog && <span className="log-fab-badge">{unread > 99 ? '99+' : unread}</span>}
+      <ScrollText size={20} aria-hidden />
+      {unread > 0 && !showLog && <span className="log-fab-badge">{unread > 99 ? '99+' : unread}</span>}
     </Button>
   );
 }

@@ -6,8 +6,9 @@ import {
   type TournamentRound,
   type TournamentState,
 } from '@devoh/protocol';
+import { Check, Crown, Link2, Medal, Play, Swords, Trophy } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Button, Spinner } from '../../../shared/ui';
+import { Button, PixelBackground, Spinner } from '../../../shared/ui';
 import { useRoomStore } from '../store/roomStore';
 import { OnlineDuel } from './OnlineDuel';
 import { inviteLink } from './WaitingRoom';
@@ -47,8 +48,11 @@ function Signup({ t, onExit }: { t: TournamentState; onExit: () => void }) {
   const enough = t.entrants.length >= TOURNAMENT_MIN;
   return (
     <div className="tournament">
+      <PixelBackground />
       <div className="panel tour-signup">
-        <h2>🏆 Torneio</h2>
+        <h2>
+          <Trophy size={22} aria-hidden /> Torneio
+        </h2>
         <p className="muted">
           Mande o código ou o link para o time (de {TOURNAMENT_MIN} a {TOURNAMENT_MAX} jogadores):
         </p>
@@ -59,7 +63,8 @@ function Signup({ t, onExit }: { t: TournamentState; onExit: () => void }) {
             setCopied(true);
           }}
         >
-          {copied ? '✔ Link copiado' : '🔗 Copiar link de convite'}
+          {copied ? <Check size={16} aria-hidden /> : <Link2 size={16} aria-hidden />}
+          {copied ? 'Link copiado' : 'Copiar link de convite'}
         </Button>
         <h3>
           Inscritos ({t.entrants.length}/{TOURNAMENT_MAX})
@@ -67,7 +72,7 @@ function Signup({ t, onExit }: { t: TournamentState; onExit: () => void }) {
         <ul className="tour-entrants">
           {t.entrants.map((e) => (
             <li key={e.name} className={e.isMe ? 'me' : ''}>
-              {e.isHost ? '👑 ' : ''}
+              {e.isHost && <Crown size={14} className="host-icon" aria-label="Anfitrião" />}
               {e.name}
               {!e.connected && <span className="muted"> · offline</span>}
             </li>
@@ -76,7 +81,8 @@ function Signup({ t, onExit }: { t: TournamentState; onExit: () => void }) {
         <p className="muted tour-rules">{formatHint(t.entrants.length)}</p>
         {t.hostIsMe ? (
           <Button variant="primary" size="lg" disabled={!enough} onClick={() => start().then(setError)}>
-            ▶ Iniciar torneio
+            <Play size={16} fill="currentColor" aria-hidden />
+            Iniciar torneio
           </Button>
         ) : (
           <p className="muted">
@@ -108,15 +114,19 @@ function Board({ t, onExit, onOpen }: { t: TournamentState; onExit: () => void; 
   };
   return (
     <div className="tournament">
+      <PixelBackground />
       <div className="panel tour-board">
         <header className="tour-head">
-          <h2>🏆 Torneio {t.code}</h2>
+          <h2>
+            <Trophy size={22} aria-hidden /> Torneio <span className="mono">{t.code}</span>
+          </h2>
           <span className="tour-phase">{PHASE_LABEL[t.phase]}</span>
         </header>
         {over && <Podium podium={t.podium} />}
         {!over && t.myMatch && (
           <Button variant="primary" onClick={() => onOpen(t.myMatch!)}>
-            ⚔ Ir para o seu duelo
+            <Swords size={18} aria-hidden />
+            Ir para o seu duelo
           </Button>
         )}
         {!over && !t.myMatch && me && <p className="muted tour-status">{statusLine(me.status)}</p>}
@@ -139,13 +149,14 @@ function statusLine(status: string) {
 }
 
 function Podium({ podium }: { podium: TournamentState['podium'] }) {
-  const medals = ['🥇', '🥈', '🥉'];
   return (
     <ol className="tour-podium">
       {podium.map((name, i) =>
         name ? (
           <li key={i} className={`place-${i + 1}`}>
-            <span className="medal">{medals[i]}</span>
+            <span className={`medal place-${i + 1}`}>
+              <Medal size={30} aria-hidden />
+            </span>
             <b>{name}</b>
           </li>
         ) : null,

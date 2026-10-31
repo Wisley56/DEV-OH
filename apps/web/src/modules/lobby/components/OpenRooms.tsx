@@ -33,7 +33,13 @@ export function OpenRooms({ onJoin }: { onJoin: (code: string) => void }) {
 
   return (
     <section className="open-rooms" aria-label="Salas abertas">
-      <h3>🟢 Salas abertas</h3>
+      <div className="open-rooms-head">
+        <h2>
+          <span className={`live-dot ${offline ? 'off' : ''}`} aria-hidden />
+          Salas abertas
+        </h2>
+        <span className="mono muted">atualiza sozinho</span>
+      </div>
       {offline ? (
         <p className="open-rooms-empty">Servidor de duelos fora do ar agora.</p>
       ) : !rooms ? (
@@ -41,23 +47,42 @@ export function OpenRooms({ onJoin }: { onJoin: (code: string) => void }) {
       ) : rooms.length === 0 ? (
         <p className="open-rooms-empty">Nenhuma sala esperando. Crie uma e chame o time!</p>
       ) : (
-        <ul>
-          {rooms.map((r) => (
-            <li key={r.code}>
-              <span className="or-host">
-                {r.mode === 'torneio' && <span className="or-mode">🏆 Torneio</span>}
-                {r.host}
-              </span>
-              <span className="or-meta">
-                {r.code} · {r.mode === 'torneio' ? `${r.players}/${r.max} · ` : ''}
-                {waitingLabel(r.waitingMs)}
-              </span>
-              <Button size="sm" variant="primary" onClick={() => onJoin(r.code)}>
-                Entrar
-              </Button>
-            </li>
-          ))}
-        </ul>
+        <div className="open-rooms-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Anfitrião</th>
+                <th scope="col">Modo</th>
+                <th scope="col">Jogadores</th>
+                <th scope="col">Esperando</th>
+                <th scope="col">
+                  <span className="sr-only">Ação</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {rooms.map((r) => (
+                <tr key={r.code}>
+                  <td className="or-host">
+                    {r.host} <span className="mono or-code">{r.code}</span>
+                  </td>
+                  <td>
+                    <span className={`or-mode ${r.mode}`}>{r.mode === 'torneio' ? 'Torneio' : 'VS'}</span>
+                  </td>
+                  <td className="mono">
+                    {r.players}/{r.max}
+                  </td>
+                  <td className="mono muted">{waitingLabel(r.waitingMs)}</td>
+                  <td className="or-action">
+                    <Button size="sm" onClick={() => onJoin(r.code)}>
+                      Entrar
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </section>
   );

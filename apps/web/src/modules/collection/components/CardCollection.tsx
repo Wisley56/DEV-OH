@@ -30,9 +30,15 @@ export function CardCollection() {
   return (
     <>
       <PageHead title="Coleção">
-        <div className="tabs">
+        <div className="tabs" role="tablist" aria-label="Tipo de card">
           {TABS.map((t) => (
-            <button key={t.id} className={`tab ${f.kind === t.id ? 'on' : ''}`} onClick={() => set('kind', t.id)}>
+            <button
+              key={t.id}
+              role="tab"
+              aria-selected={f.kind === t.id}
+              className={`tab ${f.kind === t.id ? 'on' : ''}`}
+              onClick={() => set('kind', t.id)}
+            >
               {t.label}
             </button>
           ))}
@@ -78,7 +84,7 @@ export function CardCollection() {
             <option value="all">Todos</option>
             {OPTIONS.levels.map((l) => (
               <option key={l} value={l}>
-                ⭐ {l}
+                Nível {l}
               </option>
             ))}
           </select>
@@ -93,11 +99,13 @@ export function CardCollection() {
             ))}
           </select>
         </label>
-        <span className="muted collection-count">
-          {list.length} de {CARD_LIST.length} cards
+        <span className="collection-count">
+          <span className="mono">
+            {list.length} de {CARD_LIST.length} cards
+          </span>
           {list.length !== CARD_LIST.length && (
             <button className="link-btn" onClick={() => setF(EMPTY_FILTER)}>
-              limpar
+              Limpar
             </button>
           )}
         </span>

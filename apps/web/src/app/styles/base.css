@@ -8,11 +8,12 @@ body,
   min-height: 100%;
 }
 body {
-  background:
-    radial-gradient(ellipse at 50% 0%, rgba(124, 92, 255, 0.18), transparent 55%),
-    radial-gradient(ellipse at 50% 100%, rgba(233, 185, 73, 0.1), transparent 60%),
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 32px),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 32px), var(--bg);
+  /* Grade discreta de 32px; o PixelBackground acende as células por cima dela. */
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px);
+  background-size: 32px 32px;
   background-attachment: fixed;
   color: var(--text);
   font-family: var(--font-ui);
@@ -26,11 +27,22 @@ input,
 select {
   font: inherit;
   color: var(--text);
-  background: #0b1228;
+  background: var(--sunken);
   border: 1px solid #2c3a6b;
   border-radius: 8px;
   padding: 10px 12px;
+  min-height: 44px;
   width: 100%;
+}
+a {
+  color: var(--gold2);
+  text-decoration: none;
+}
+a:hover {
+  color: #fff1c2;
+}
+svg.lucide {
+  flex: none;
 }
 input:focus,
 select:focus {
@@ -45,9 +57,10 @@ select:focus {
   justify-content: center;
   gap: 6px;
   padding: 10px 16px;
+  min-height: 40px;
   border-radius: 10px;
-  border: 1px solid #34437a;
-  background: linear-gradient(#1c2750, #141d3d);
+  border: 1px solid var(--border-strong);
+  background: #111a35;
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -57,8 +70,11 @@ select:focus {
   white-space: nowrap;
 }
 .btn:hover:not(:disabled) {
-  filter: brightness(1.2);
   border-color: var(--gold);
+}
+.btn:focus-visible {
+  outline: 2px solid var(--gold2);
+  outline-offset: 2px;
 }
 .btn:active:not(:disabled) {
   transform: translateY(1px);
@@ -68,10 +84,15 @@ select:focus {
   cursor: not-allowed;
 }
 .btn-primary {
-  background: linear-gradient(#f2c45a, #c98f1c);
-  color: #24170a;
-  border-color: #ffe39a;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+  background: var(--gold);
+  color: #1d1405;
+  border-color: var(--gold);
+  font-weight: 700;
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.18);
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--gold2);
+  border-color: var(--gold2);
 }
 .btn-ghost {
   background: transparent;
@@ -82,28 +103,32 @@ select:focus {
   color: var(--text);
 }
 .btn-lg {
-  padding: 14px 20px;
-  font-size: 1.05rem;
+  min-height: 48px;
+  padding: 0 22px;
+  font-size: 0.95rem;
+  gap: 10px;
 }
 .btn-sm {
-  padding: 5px 10px;
+  min-height: 32px;
+  padding: 0 10px;
   font-size: 0.82rem;
 }
 .btn-battle {
-  background: linear-gradient(#e2464a, #9b1b2a);
-  border-color: #ff8a8a;
+  background: #c8323f;
+  border-color: #e35d68;
+}
+.btn-battle:hover:not(:disabled) {
+  border-color: #ffb1b8;
 }
 .btn-end {
-  background: linear-gradient(#2a3a72, #1a2550);
+  background: var(--surface2);
 }
 
 .panel {
   background: var(--panel);
   border: 1px solid var(--panel-border);
-  border-radius: 16px;
+  border-radius: 14px;
   padding: 20px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(6px);
 }
 .muted {
   color: var(--muted);
@@ -122,9 +147,14 @@ select:focus {
 
 /* ───────── Páginas ───────── */
 .page {
-  max-width: 1280px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 16px 16px 60px;
+  padding: 32px 24px 72px;
+}
+@media (max-width: 640px) {
+  .page {
+    padding: 20px 16px 40px;
+  }
 }
 .page-head {
   display: flex;
@@ -135,37 +165,52 @@ select:focus {
 }
 .page-head h1 {
   font-family: var(--font-title);
+  font-size: 2rem;
   margin: 0;
-  color: var(--gold);
+  color: var(--gold2);
 }
 .page-head select {
   width: auto;
   margin-left: auto;
 }
+/* Abas segmentadas (Coleção, conta). */
 .tabs {
   display: flex;
-  gap: 6px;
+  gap: 4px;
   margin-left: auto;
   flex-wrap: wrap;
+  padding: 4px;
+  border-radius: 10px;
+  background: var(--sunken);
+  border: 1px solid var(--panel-border);
 }
 .tab {
-  padding: 8px 14px;
-  border-radius: 999px;
-  border: 1px solid #34437a;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 7px;
+  border: 0;
   background: transparent;
+  color: var(--text-soft);
   cursor: pointer;
   font-weight: 600;
+  font-size: 0.88rem;
+}
+.tab:hover {
+  color: var(--text);
 }
 .tab.on {
   background: var(--gold);
-  color: #24170a;
-  border-color: var(--gold);
+  color: #1d1405;
+}
+.mono {
+  font-family: var(--font-mono);
 }
 
 .center-screen {
   min-height: 100vh;
   display: grid;
   place-items: center;
+  align-content: center;
   padding: 16px;
   text-align: center;
   gap: 10px;

@@ -1,4 +1,5 @@
 import { AnimatePresence, m } from 'framer-motion';
+import { Archive, Ban, Copy, Eye, HeartHandshake, Link2, Mountain, RefreshCw, User, Zap, type LucideIcon } from 'lucide-react';
 import { CardMini } from '../../cards';
 import { useDuel, useDuelUi } from '../hooks/useDuel';
 import { useDuelActions } from '../hooks/useDuelActions';
@@ -42,21 +43,23 @@ export function ProRow({ side }: { side: Side }) {
                   badge={
                     mine && x.canFlip ? (
                       <span className="badge badge-ability" title="Pode fazer a Invocação-Virar">
-                        🔄
+                        <RefreshCw size={12} strokeWidth={2.5} aria-hidden />
                       </span>
                     ) : x.negated ? (
                       <span className="badge" title="Efeitos anulados neste turno">
-                        🚫
+                        <Ban size={12} strokeWidth={2.5} aria-hidden />
                       </span>
                     ) : x.locked ? (
-                      <span className="badge">💘</span>
+                      <span className="badge" title="Preso a outro Profissional">
+                        <HeartHandshake size={12} strokeWidth={2.5} aria-hidden />
+                      </span>
                     ) : mine && x.canIgnite ? (
                       <span className="badge badge-ability" title="Habilidade disponível">
-                        ⚡
+                        <Zap size={12} strokeWidth={2.5} aria-hidden />
                       </span>
                     ) : equipped.has(x.iid) ? (
                       <span className="badge" title="Equipado">
-                        🔗
+                        <Link2 size={12} strokeWidth={2.5} aria-hidden />
                       </span>
                     ) : undefined
                   }
@@ -64,9 +67,20 @@ export function ProRow({ side }: { side: Side }) {
               </m.button>
             )}
           </AnimatePresence>
+          {!x && <EmptySlot Icon={User} label="Profissional" />}
         </DropZone>
       ))}
     </div>
+  );
+}
+
+/** Slot vazio: ícone e rótulo, para dar para ver onde cada card cai. */
+function EmptySlot({ Icon, label }: { Icon: LucideIcon; label: string }) {
+  return (
+    <span className="zone-label">
+      <Icon size={16} strokeWidth={1.75} className="zone-label-icon" aria-hidden />
+      <span className="zone-label-text">{label}</span>
+    </span>
   );
 }
 
@@ -91,7 +105,7 @@ export function SpellRow({ side }: { side: Side }) {
             <CardMini cardId={p.field.cardId} />
           </button>
         ) : (
-          <span className="zone-label">Campo</span>
+          <EmptySlot Icon={Mountain} label="Campo" />
         )}
       </DropZone>
       {p.spells.map((x, i) => (
@@ -112,34 +126,40 @@ export function SpellRow({ side }: { side: Side }) {
                   badge={
                     x.equippedTo ? (
                       <span className="badge" title="Equipamento: preso a um Profissional">
-                        🔗
+                        <Link2 size={12} strokeWidth={2.5} aria-hidden />
                       </span>
                     ) : mine && x.canActivate ? (
                       <span className="badge badge-ability" title="Pode ser ativada">
-                        ⚡
+                        <Zap size={12} strokeWidth={2.5} aria-hidden />
                       </span>
                     ) : !mine && x.revealed && x.faceDown ? (
-                      <span className="badge">👁</span>
+                      <span className="badge" title="Revelado">
+                        <Eye size={12} strokeWidth={2.5} aria-hidden />
+                      </span>
                     ) : undefined
                   }
                 />
               </m.button>
             )}
           </AnimatePresence>
+          {!x && <EmptySlot Icon={Copy} label="Task / Bug" />}
         </DropZone>
       ))}
       <div className="zone zone-grave" title="Desligados (cemitério)" data-grave={side}>
         {p.grave.length ? (
-          <button className="zone-card" onClick={() => clickZone('grave', `grave-${mine}`, p.grave[p.grave.length - 1])}>
+          <button
+            className="zone-card"
+            aria-label={`Desligados: ${p.grave.length}`}
+            onClick={() => clickZone('grave', `grave-${mine}`, p.grave[p.grave.length - 1])}
+          >
             <CardMini cardId={p.grave[p.grave.length - 1]} className="grave-top" />
+            <span className="grave-count" aria-hidden>
+              <Archive size={11} strokeWidth={2.5} />
+              {p.grave.length}
+            </span>
           </button>
         ) : (
-          <span className="zone-label">
-            <span className="zone-label-icon" aria-hidden>
-              🪦
-            </span>
-            <span className="zone-label-text">Desligados</span>
-          </span>
+          <EmptySlot Icon={Archive} label="Desligados" />
         )}
       </div>
     </div>

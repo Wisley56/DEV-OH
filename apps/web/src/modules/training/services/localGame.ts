@@ -14,8 +14,8 @@ const BOT_NAMES: Record<BotLevel, string[]> = {
 };
 
 export const LEVEL_LABEL: Record<BotLevel, string> = {
-  normal: '🤖 Com IA · Normal',
-  hard: '🧠 Sem IA · Difícil',
+  normal: 'Com IA · Normal',
+  hard: 'Sem IA · Difícil',
 };
 
 const pick = <T>(list: T[]) => list[Math.floor(Math.random() * list.length)];
