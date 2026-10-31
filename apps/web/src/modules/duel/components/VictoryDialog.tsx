@@ -58,7 +58,9 @@ export function VictoryDialog() {
                   {ctrl.rematchLabel ?? 'Revanche'}
                 </Button>
               )}
-              <Button onClick={ctrl.exit}>Voltar ao menu</Button>
+              <Button variant={ctrl.rematch ? undefined : 'primary'} onClick={ctrl.exit}>
+                {ctrl.exitLabel ?? 'Voltar ao menu'}
+              </Button>
             </div>
           </m.div>
         </m.div>

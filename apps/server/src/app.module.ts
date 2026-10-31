@@ -8,8 +8,20 @@ import { DuelModule } from './modules/duel/duel.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { RankingModule } from './modules/ranking/ranking.module.js';
 import { RoomsModule } from './modules/rooms/rooms.module.js';
+import { TournamentsModule } from './modules/tournaments/tournaments.module.js';
 
 @Module({
-  imports: [ConfigModule, DbModule, SecurityModule, AccountsModule, RankingModule, DecksModule, RoomsModule, DuelModule, HealthModule],
+  imports: [
+    ConfigModule,
+    DbModule,
+    SecurityModule,
+    AccountsModule,
+    RankingModule,
+    DecksModule,
+    RoomsModule,
+    TournamentsModule,
+    DuelModule,
+    HealthModule,
+  ],
 })
 export class AppModule {}

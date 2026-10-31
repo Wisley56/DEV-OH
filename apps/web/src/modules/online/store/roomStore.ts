@@ -1,7 +1,7 @@
 import type { Action } from '@devoh/engine';
-import type { RoomState } from '@devoh/protocol';
+import { isTournamentCode, type RoomState, type TournamentState } from '@devoh/protocol';
 import { create } from 'zustand';
-import { RoomClient, type ConnectionStatus } from '../services/roomClient';
+import { RoomClient, type ConnectionStatus, type RoomMode } from '../services/roomClient';
 import { NEW_ROOM } from '../services/session';
 
 export { NEW_ROOM };
@@ -9,11 +9,16 @@ export { NEW_ROOM };
 interface JoinAs {
   deck: string[];
   private?: boolean;
+  /** Ao criar: VS (1x1) ou torneio. */
+  mode?: RoomMode;
 }
 
 interface RoomStoreState {
   status: ConnectionStatus | 'idle' | 'needsJoin';
   room: RoomState | null;
+  /** Torneio em que está (os duelos dele chegam em `matches`, por código da sala). */
+  tournament: TournamentState | null;
+  matches: Record<string, RoomState>;
   /** Diferença entre o relógio do servidor e o deste navegador (ms). */
   clockOffset: number;
   error: string | null;
@@ -23,6 +28,8 @@ interface RoomStoreState {
   open(code: string, joinAs?: JoinAs): void;
   send(action: Action): Promise<string | null>;
   rematch(): void;
+  /** Anfitrião inicia o torneio; resolve com a mensagem de erro, ou null. */
+  startTournament(): Promise<string | null>;
   /** Sai da sala de vez e desconecta. */
   leave(): void;
   /** Só desconecta (ao sair da página); dá para voltar pela conta. */
@@ -31,7 +38,8 @@ interface RoomStoreState {
 
 let client: RoomClient | null = null;
 
-const initial = { status: 'idle' as const, room: null, error: null, activeCode: null, clockOffset: 0 };
+const initial = { status: 'idle' as const, room: null, tournament: null, matches: {}, error: null, activeCode: null, clockOffset: 0 };
+const offsetOf = (serverNow: number) => (serverNow ? serverNow - Date.now() : 0);
 
 /** Conexão com a sala online (uma por aba). */
 export const useRoomStore = create<RoomStoreState>((set, get) => ({
@@ -42,7 +50,12 @@ export const useRoomStore = create<RoomStoreState>((set, get) => ({
     client?.disconnect();
     set({ ...initial, status: 'connecting', activeCode: target });
     client = new RoomClient({
-      state: (room) => set({ room, clockOffset: room.serverNow ? room.serverNow - Date.now() : 0 }),
+      // No torneio, cada duelo é uma sala própria: guarda o último estado de cada uma.
+      state: (room) =>
+        get().tournament || isTournamentCode(target)
+          ? set((s) => ({ matches: { ...s.matches, [room.code]: room }, clockOffset: offsetOf(room.serverNow) }))
+          : set({ room, clockOffset: offsetOf(room.serverNow) }),
+      tournament: (tournament) => set({ tournament, clockOffset: offsetOf(tournament.serverNow) }),
       status: (status) => set({ status }),
       error: (error) => set({ error }),
       entered: (activeCode) => set({ activeCode }),
@@ -54,6 +67,7 @@ export const useRoomStore = create<RoomStoreState>((set, get) => ({
   },
   send: (action) => client?.send(action) ?? Promise.resolve('Sem conexão com o servidor.'),
   rematch: () => client?.rematch(),
+  startTournament: () => client?.startTournament() ?? Promise.resolve('Sem conexão com o servidor.'),
   leave() {
     client?.leave();
     get().close();

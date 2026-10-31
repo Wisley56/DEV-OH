@@ -103,6 +103,37 @@
   width: auto;
   accent-color: var(--gold);
 }
+.mode-picker {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.mode-option {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+.mode-option span {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.mode-option.active {
+  border-color: var(--gold);
+  background: rgba(233, 185, 73, 0.12);
+}
+.or-mode {
+  margin-right: 6px;
+  font-size: 0.78rem;
+  color: var(--gold2);
+}
 .open-rooms {
   padding: 10px 12px;
   border-radius: 12px;

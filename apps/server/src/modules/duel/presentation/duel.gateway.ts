@@ -7,19 +7,24 @@ import type { Socket } from 'socket.io';
 import { Throttle } from '../../../common/security/throttle.js';
 import { WsAckFilter } from '../../../common/ws-ack.filter.js';
 import { ZodValidationPipe } from '../../../common/zod-validation.pipe.js';
-import { roomOf } from '../../rooms/presentation/socket-session.js';
+import { roomOf, tournamentOf } from '../../rooms/presentation/socket-session.js';
+import { TournamentsService } from '../../tournaments/application/tournaments.service.js';
 import { DuelService } from '../application/duel.service.js';
 
-/** Jogadas do duelo. */
+/** Jogadas do duelo (da sala VS ou do duelo atual do torneio). */
 @WebSocketGateway()
 @UseFilters(WsAckFilter)
 export class DuelGateway {
-  constructor(@Inject(DuelService) private readonly duel: DuelService) {}
+  constructor(
+    @Inject(DuelService) private readonly duel: DuelService,
+    @Inject(TournamentsService) private readonly tournaments: TournamentsService,
+  ) {}
 
   @SubscribeMessage(EVENTS.action)
   @Throttle('action')
   act(@ConnectedSocket() socket: Socket, @MessageBody(new ZodValidationPipe(ActionSchema, 'Ação inválida.')) action: Action): Ack {
-    this.duel.play(roomOf(socket), socket.id, action);
+    const code = roomOf(socket) ?? this.tournaments.matchCodeFor(tournamentOf(socket), socket.id);
+    this.duel.play(code, socket.id, action);
     return { ok: true };
   }
 }

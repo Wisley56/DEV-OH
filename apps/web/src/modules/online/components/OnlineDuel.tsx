@@ -5,7 +5,18 @@ import { DuelBoard } from '../../duel';
 import { useRoomStore } from '../store/roomStore';
 
 /** Duelo online: o tabuleiro ligado à sala, com timer de turno, avisos de conexão e revanche. */
-export function OnlineDuel({ room, view, onExit }: { room: RoomState; view: GameView; onExit: () => void }) {
+export function OnlineDuel({
+  room,
+  view,
+  onExit,
+  inTournament = false,
+}: {
+  room: RoomState;
+  view: GameView;
+  onExit: () => void;
+  /** Duelo de torneio: sem revanche, e a saída volta para o painel do torneio. */
+  inTournament?: boolean;
+}) {
   const status = useRoomStore((s) => s.status);
   const send = useRoomStore((s) => s.send);
   const rematch = useRoomStore((s) => s.rematch);
@@ -37,7 +48,8 @@ export function OnlineDuel({ room, view, onExit }: { room: RoomState; view: Game
           if (view.winner === null) send({ type: 'surrender' });
           onExit();
         },
-        rematch: iWantRematch ? undefined : rematch,
+        exitLabel: inTournament ? 'Voltar ao torneio' : undefined,
+        rematch: iWantRematch || inTournament ? undefined : rematch,
         rematchLabel: room.rematch.some(Boolean) ? 'Aceitar revanche' : 'Pedir revanche',
         banner,
         turnDeadline: local(room.turnDeadline),

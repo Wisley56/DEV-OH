@@ -31,6 +31,8 @@ export class Room {
   recorded = false;
   /** Variação de Elo de cada assento na última partida registrada. */
   eloDelta: [number | null, number | null] = [null, null];
+  /** Duelo de um torneio: sem revanche, e o torneio é avisado de cada mudança. */
+  tournament: { code: string; matchId: string } | null = null;
 
   constructor(
     readonly code: string,
@@ -115,7 +117,7 @@ export class Room {
 
   /** Pede revanche; quando os dois pedem, começa um duelo novo. */
   requestRematch(seat: Seat) {
-    if (!this.game || this.game.winner === null) return;
+    if (!this.game || this.game.winner === null || this.tournament) return;
     this.rematch[seat] = true;
     if (this.rematch[0] && this.rematch[1]) this.startMatch();
   }
@@ -162,6 +164,13 @@ export class Room {
     if (!this.game || !this.playing || p.socketId) return;
     if (!this.players[other(seat)]?.socketId) return;
     this.game = forfeit(this.game, seat, 'abandon');
+  }
+
+  /** A conta desiste do duelo em andamento (saiu do torneio no meio dele). */
+  concede(userId: string) {
+    const seat = this.players.findIndex((p) => p?.userId === userId);
+    if (seat < 0 || !this.game || !this.playing) return;
+    this.game = forfeit(this.game, seat as Seat, 'abandon');
   }
 
   isStale(now: number, ttlMs: number, idleTtlMs: number) {
