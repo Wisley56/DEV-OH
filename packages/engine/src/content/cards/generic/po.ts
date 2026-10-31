@@ -11,7 +11,7 @@ export default defineCard({
     level: 4,
     atk: 1700,
     def: 1000,
-    art: 'icon:🔘|#7a1c1c|#ff6b6b',
+    art: '/art/po.webp',
     text: 'É rapidinho: ao ser invocado, o oponente ganha +2 de Estresse.',
     flavor: '"É só um botão, faz em 5 minutos?"',
   },

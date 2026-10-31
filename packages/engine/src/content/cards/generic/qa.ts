@@ -11,7 +11,7 @@ export default defineCard({
     level: 4,
     atk: 1600,
     def: 1400,
-    art: 'icon:🔍|#03045e|#00b4d8',
+    art: '/art/qa.webp',
     text:
       'Reabriu o ticket: quando destrói um Profissional em batalha, o oponente ganha +1 de Estresse. ' +
       'FLIP — Achei um bug!: destrói 1 Task/Bug virado aleatório do oponente.',

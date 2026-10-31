@@ -11,7 +11,7 @@ export default defineCard({
     level: 4,
     atk: 1900,
     def: 1300,
-    art: 'icon:🧑‍💻|#22223b|#4ea8de',
+    art: '/art/dev_fullstack.webp',
     text: 'Faz o front, o back, o banco, o deploy e ainda arruma a impressora. Ninguém sabe quando ele dorme — nem ele.',
   },
 });

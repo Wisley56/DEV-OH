@@ -13,7 +13,7 @@ export default defineCard({
     atk: 2300,
     def: 1900,
     target: 'oppPro',
-    art: 'icon:🔄|#3d0c45|#b5179e',
+    art: '/art/cliente.webp',
     text: 'Na verdade eu queria…: ao ser invocado, devolva 1 Profissional do oponente para a mão do dono.',
   },
   effects: {

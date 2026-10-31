@@ -11,7 +11,7 @@ export default defineCard({
     level: 3,
     atk: 800,
     def: 1600,
-    art: 'icon:📟|#1b4332|#52b788',
+    art: '/art/sre.webp',
     text: 'Plantão das 3h: ao ser invocado, recupere 800 LP. FLIP — Rollback: o Profissional mais forte do oponente volta para a mão do dono.',
   },
   effects: {

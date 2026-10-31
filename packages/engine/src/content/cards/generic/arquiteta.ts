@@ -11,7 +11,7 @@ export default defineCard({
     level: 6,
     atk: 2600,
     def: 1900,
-    art: 'icon:🏛️|#3c096c|#c77dff',
+    art: '/art/arquiteta.webp',
     text: 'Desenhou os microsserviços num guardanapo e acertou de primeira. Responde toda pergunta com "depende" — e sempre depende mesmo.',
   },
 });

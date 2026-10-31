@@ -11,7 +11,7 @@ export default defineCard({
     level: 5,
     atk: 2000,
     def: 1300,
-    art: 'icon:📊|#14213d|#fca311',
+    art: '/art/gerente.webp',
     text: 'Cobrança de status: no início do seu turno, o oponente ganha +1 de Estresse.',
     flavor: '"Qual o status disso?"',
   },

@@ -13,7 +13,7 @@ export default defineCard({
     atk: 1200,
     def: 1000,
     tags: ['ia'],
-    art: 'icon:✨|#0d3b66|#3fa7d6',
+    art: '/art/copilot.webp',
     text: 'Autocomplete (1x por turno): 1 Profissional seu ganha +600 ATK até o fim do turno. 25% de chance de completar errado: −600 ATK.',
     ignition: { label: 'Autocompletar', target: 'ownPro' },
   },

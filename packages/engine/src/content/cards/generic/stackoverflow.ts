@@ -11,7 +11,7 @@ export default defineCard({
     level: 4,
     atk: 1000,
     def: 2100,
-    art: 'icon:📚|#5a2d0c|#f48024',
+    art: '/art/stackoverflow.webp',
     text: 'Pergunta duplicada: ao ser invocado, adicione 1 Task aleatória dos seus Desligados à mão. FLIP — Resposta aceita: compre 1 card.',
     flavor: 'Marked as duplicate. Closed.',
   },

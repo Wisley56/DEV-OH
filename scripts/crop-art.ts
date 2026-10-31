@@ -48,6 +48,21 @@ const CROPS: Record<string, { src: string; box?: Box }> = {
   // Terceira leva (765×1024).
   sandro: { src: 'sandro', box: { left: 98, top: 198, width: 570, height: 492 } },
   moises_bombado: { src: 'moises_bombado', box: { left: 92, top: 230, width: 574, height: 463 } },
+  // Quarta leva (765×1024): as cartas genéricas que eram emoji.
+  claude_alucinando: { src: 'claude_alucinando', box: { left: 114, top: 196, width: 552, height: 536 } },
+  copilot: { src: 'copilot', box: { left: 90, top: 196, width: 574, height: 516 } },
+  stackoverflow: { src: 'stackoverflow', box: { left: 90, top: 194, width: 606, height: 530 } },
+  docker: { src: 'docker', box: { left: 84, top: 190, width: 616, height: 536 } },
+  estagiario: { src: 'estagiario', box: { left: 86, top: 188, width: 606, height: 512 } },
+  po: { src: 'po', box: { left: 86, top: 190, width: 604, height: 518 } },
+  cliente: { src: 'cliente', box: { left: 86, top: 190, width: 606, height: 514 } },
+  sre: { src: 'sre', box: { left: 106, top: 222, width: 556, height: 460 } },
+  gerente: { src: 'gerente', box: { left: 86, top: 196, width: 608, height: 496 } },
+  backend_noturno: { src: 'backend_noturno', box: { left: 108, top: 230, width: 546, height: 448 } },
+  qa: { src: 'qa', box: { left: 90, top: 206, width: 606, height: 474 } },
+  dev_junior: { src: 'dev_junior', box: { left: 112, top: 228, width: 542, height: 446 } },
+  dev_fullstack: { src: 'dev_fullstack', box: { left: 90, top: 194, width: 606, height: 498 } },
+  arquiteta: { src: 'arquiteta', box: { left: 86, top: 194, width: 608, height: 490 } },
 };
 
 const only = process.argv.slice(2);

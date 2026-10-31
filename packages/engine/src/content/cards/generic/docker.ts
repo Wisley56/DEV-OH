@@ -11,7 +11,7 @@ export default defineCard({
     level: 2,
     atk: 500,
     def: 1400,
-    art: 'icon:🐳|#0b3d5c|#2496ed',
+    art: '/art/docker.webp',
     text:
       'Na minha máquina sobe: quando destruído, o oponente ganha +1 de Estresse. ' +
       'FLIP — Container isolado: destrói o Profissional mais forte do oponente com ATK ≤ 1500.',

@@ -11,7 +11,7 @@ export default defineCard({
     level: 2,
     atk: 900,
     def: 500,
-    art: 'icon:🧑‍🎓|#2d6a4f|#95d5b2',
+    art: '/art/estagiario.webp',
     text:
       'Trouxe café pra todo mundo: ao ser invocado, seu Estresse −1. ' +
       'FLIP — Pegou a task errada: o Profissional em Ataque mais forte do oponente vai para Defesa (sem nenhum em Ataque, o de maior DEF vai para Ataque).',

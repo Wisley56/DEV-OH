@@ -12,7 +12,7 @@ export default defineCard({
     atk: 1800,
     def: 600,
     tags: ['ia'],
-    art: 'icon:🤖|#3b2a8f|#c86bff',
+    art: '/art/claude_alucinando.webp',
     text: 'Mil linhas por segundo: ao ser invocado, compre 1 card e ganhe +1 de Estresse (alguém vai ter que revisar).',
     flavor: '"Você está absolutamente certo!"',
   },
