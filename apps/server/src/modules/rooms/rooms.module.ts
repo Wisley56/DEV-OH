@@ -22,6 +22,6 @@ import { SocketRoomNotifier } from './presentation/socket-room.notifier.js';
     { provide: SCHEDULER, useClass: TimeoutScheduler },
     { provide: ROOM_NOTIFIER, useExisting: SocketRoomNotifier },
   ],
-  exports: [RoomsService],
+  exports: [RoomsService, ID_GENERATOR, CLOCK],
 })
 export class RoomsModule {}

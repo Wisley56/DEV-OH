@@ -1,3 +1,4 @@
+import type { OpenRoom } from '@devoh/protocol';
 import type { Room } from '../domain/room.js';
 
 /** Portas da aplicação de salas: implementadas na infraestrutura/apresentação. */
@@ -48,6 +49,16 @@ export interface MatchResult {
 /** Grava o resultado e devolve a variação de Elo de cada assento. */
 export interface MatchRecorder {
   record(result: MatchResult): Promise<[number, number]>;
+}
+
+/** Quem acompanha os duelos de torneio (o módulo de torneios se registra no serviço de salas). */
+export interface TournamentWatcher {
+  /** A sala de um duelo de torneio mudou (jogada, fim, W.O.). */
+  matchUpdated(room: Room): void;
+  /** A sala saiu da memória (parada demais) antes de o duelo acabar. */
+  matchRemoved(room: Room): void;
+  /** Torneios com inscrição aberta, para a lista do lobby. */
+  listOpen(now: number): OpenRoom[];
 }
 
 export const ROOM_REPOSITORY = Symbol('RoomRepository');

@@ -179,7 +179,7 @@ describe('RoomsService', () => {
     codes = ['AAAAA', 'BBBBB', 'CCCCC'];
     svc.create('s1', p('Ana'), deck);
     svc.create('s2', p('Bia'), deck, true);
-    expect(svc.listOpen()).toEqual([{ code: 'AAAAA', host: 'Ana', waitingMs: 0 }]);
+    expect(svc.listOpen()).toEqual([{ code: 'AAAAA', host: 'Ana', waitingMs: 0, mode: 'vs', players: 1, max: 2 }]);
     svc.join('s3', 'AAAAA', p('Caio'), deck);
     expect(svc.listOpen()).toEqual([]);
   });

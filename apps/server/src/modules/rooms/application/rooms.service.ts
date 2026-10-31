@@ -19,7 +19,15 @@ import {
   type RoomNotifier,
   type RoomRepository,
   type Scheduler,
+  type TournamentWatcher,
 } from './ports.js';
+
+/** Um lado de um duelo de torneio: a conta, o socket (null = desconectado) e o deck. */
+export interface MatchSeat {
+  player: Player;
+  socketId: string | null;
+  deck: string[];
+}
 
 const turnTask = (code: string) => `turn:${code}`;
 const goneTask = (code: string, seat: number) => `gone:${code}:${seat}`;
@@ -28,6 +36,7 @@ const goneTask = (code: string, seat: number) => `gone:${code}:${seat}`;
 @Injectable()
 export class RoomsService {
   private readonly logger = new Logger(RoomsService.name);
+  private watcher: TournamentWatcher | null = null;
 
   constructor(
     @Inject(ROOM_REPOSITORY) private readonly rooms: RoomRepository,
@@ -54,6 +63,45 @@ export class RoomsService {
     return { code };
   }
 
+  /** O módulo de torneios passa a ser avisado dos duelos dele. */
+  watch(watcher: TournamentWatcher) {
+    this.watcher = watcher;
+  }
+
+  /**
+   * Duelo de torneio: sala privada com os dois assentos já ocupados. Quem está desconectado
+   * começa com o prazo de volta correndo (perde por W.O. se não aparecer).
+   */
+  createMatch(tournament: { code: string; matchId: string }, a: MatchSeat, b: MatchSeat): string {
+    if (this.rooms.count() >= this.config.maxRooms) {
+      this.security.warn('room-limit', undefined, { rooms: this.rooms.count() });
+      throw new DomainError('Servidor lotado agora. Tenta de novo daqui a pouco.');
+    }
+    let code = this.ids.roomCode();
+    while (this.rooms.has(code)) code = this.ids.roomCode();
+    const now = this.clock.now();
+    const room = new Room(code, this.seat(a.socketId, a.player, a.deck), now, true);
+    room.tournament = tournament;
+    room.join(this.seat(b.socketId, b.player, b.deck));
+    for (const p of room.players) if (p && !p.socketId) p.reconnectDeadline = now + this.config.reconnectTimeoutMs;
+    this.rooms.save(room);
+    this.publish(room);
+    return code;
+  }
+
+  /** Desistência de quem saiu do torneio no meio do duelo. */
+  concede(code: string, userId: string) {
+    const room = this.rooms.get(code);
+    if (!room) return;
+    room.concede(userId);
+    this.publish(room);
+  }
+
+  /** Sala pelo código (o torneio lê o LP ao vivo dos duelos dele). */
+  get(code: string) {
+    return this.rooms.get(code);
+  }
+
   join(socketId: string, code: string, player: Player, deck: string[]): { code: string } {
     const room = this.rooms.get(code.toUpperCase());
     if (!room) throw new DomainError('Sala não encontrada. Confere o código?');
@@ -77,11 +125,10 @@ export class RoomsService {
   /** Salas públicas esperando oponente, das mais antigas para as mais novas. */
   listOpen(): OpenRoom[] {
     const now = this.clock.now();
-    return [...this.rooms.all()]
+    const rooms = [...this.rooms.all()]
       .filter((r) => !r.isPrivate && !r.isFull && !!r.players[0].socketId)
-      .sort((a, b) => a.createdAt - b.createdAt)
-      .slice(0, 30)
-      .map((r) => ({ code: r.code, host: r.players[0].name, waitingMs: now - r.createdAt }));
+      .map((r): OpenRoom => ({ code: r.code, host: r.players[0].name, waitingMs: now - r.createdAt, mode: 'vs', players: 1, max: 2 }));
+    return [...rooms, ...(this.watcher?.listOpen(now) ?? [])].sort((a, b) => b.waitingMs - a.waitingMs).slice(0, 30);
   }
 
   /** Sala onde o socket está sentado, com o assento. */
@@ -119,6 +166,7 @@ export class RoomsService {
     this.armTimers(room);
     if (room.needsRecord) void this.record(room);
     this.notifier.publish(room);
+    if (room.tournament) this.watcher?.matchUpdated(room);
   }
 
   /** Remove salas paradas; retorna quantas saíram. */
@@ -191,13 +239,20 @@ export class RoomsService {
     }
   }
 
+  /** Tira a sala da memória (e desliga os relógios dela). */
+  close(code: string) {
+    const room = this.rooms.get(code);
+    if (room) this.remove(room);
+  }
+
   private remove(room: Room) {
     this.rooms.delete(room.code);
+    if (room.tournament && room.playing) this.watcher?.matchRemoved(room);
     this.scheduler.cancel(turnTask(room.code));
     [0, 1].forEach((seat) => this.scheduler.cancel(goneTask(room.code, seat)));
   }
 
-  private seat(socketId: string, player: Player, deck: string[]): Seatholder {
+  private seat(socketId: string | null, player: Player, deck: string[]): Seatholder {
     return { userId: player.userId, name: player.name, deck, socketId, reconnectDeadline: null };
   }
 
