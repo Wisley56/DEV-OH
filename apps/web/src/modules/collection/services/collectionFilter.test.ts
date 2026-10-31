@@ -9,8 +9,12 @@ describe('filtro da coleção', () => {
 
   it('combina tipo, raridade e nível', () => {
     const out = applyFilter(CARD_LIST, { ...EMPTY_FILTER, kind: 'pro', rarity: 'secreta' });
-    expect(out.map((c) => c.id).sort()).toEqual(['diegao', 'thy_techlead']);
-    expect(applyFilter(CARD_LIST, { ...EMPTY_FILTER, level: 9 }).map((c) => c.id)).toEqual(['diegao']);
+    expect(out.map((c) => c.id).sort()).toEqual(['ceo', 'diegao', 'thy_techlead']);
+    expect(
+      applyFilter(CARD_LIST, { ...EMPTY_FILTER, level: 9 })
+        .map((c) => c.id)
+        .sort(),
+    ).toEqual(['ceo', 'diegao']);
   });
 
   it('filtra por subtipo derivado', () => {

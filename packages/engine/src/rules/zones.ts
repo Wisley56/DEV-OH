@@ -1,4 +1,4 @@
-import { findPro, findSpell, isNegated } from '../core/board';
+import { findPro, findSpell, isNegated, prosOf } from '../core/board';
 import { effectsOf, nameOf, proLabel } from '../core/catalog';
 import { log } from '../core/log';
 import { shuffle } from '../core/rng';
@@ -82,6 +82,14 @@ export function destroyPro(s: GameState, iid: string, cause: DestroyCause): bool
     if (immune) {
       log(s, 'effect', immune, { seat: f.seat, cardId: id });
       return false;
+    }
+    for (const ally of prosOf(s, f.seat)) {
+      if (ally === f.slot) continue;
+      const by = proEffects(s, ally)?.protectAllyFromOppEffects?.(ctxFor(s, ally.card), f.slot);
+      if (by) {
+        log(s, 'effect', by, { seat: f.seat, cardId: ally.card.cardId, iid: ally.card.iid, target: iid });
+        return false;
+      }
     }
   }
   removePro(s, iid);

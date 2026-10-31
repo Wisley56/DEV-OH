@@ -63,6 +63,7 @@ const CROPS: Record<string, { src: string; box?: Box }> = {
   dev_junior: { src: 'dev_junior', box: { left: 112, top: 228, width: 542, height: 446 } },
   dev_fullstack: { src: 'dev_fullstack', box: { left: 90, top: 194, width: 606, height: 498 } },
   arquiteta: { src: 'arquiteta', box: { left: 86, top: 194, width: 608, height: 490 } },
+  ceo: { src: 'ceo', box: { left: 108, top: 204, width: 548, height: 502 } },
 };
 
 const only = process.argv.slice(2);

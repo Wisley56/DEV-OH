@@ -35,7 +35,7 @@ describe('catálogo', () => {
     expect(fullTypeLine(CARD_LIST.find((c) => c.id === 'merge_conflict')!)).toBe('Contra-Bug');
     expect(cardFrame(CARD_LIST.find((c) => c.id === 'backend_noturno')!)).toBe('normal');
     expect(setCode(CARD_LIST[0].id)).toBe('DVOH-001');
-    expect(setCode('moises_bombado')).toBe('DVOH-055');
+    expect(setCode('moises_bombado')).toBe('DVOH-056');
   });
 
   it('limite de cópias pela raridade', () => {

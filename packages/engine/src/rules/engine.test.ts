@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { applyAction, createGame, forfeit, fullTypeLine, getView, STARTER_DECKS, validateDeck, CARD_LIST } from '../index';
 import { newInstance, newProSlot } from '../core/board';
+import { destroyPro } from './zones';
 import type { Action, GameState, Seat } from '../core/types';
 
 const filler = Array(20)
@@ -363,6 +364,32 @@ describe('segunda leva: Juju, Diegão, Brunão, Pirulito e Tasks', () => {
     expect(s.players[0].lp).toBe(4000 - 900);
     s = act(s, 1, { type: 'attack', iid: b2, target: e });
     expect(s.players[0].pros.some((p) => p?.card.iid === e)).toBe(false);
+  });
+  it('CEO: os outros Profissionais seus não são destruídos por efeitos do oponente', () => {
+    const s = game();
+    const ceo = place(s, 0, 'ceo');
+    const e = place(s, 0, 'estagiario');
+    expect(destroyPro(s, e, { battle: false, bySeat: 1 })).toBe(false);
+    // Efeito do próprio dono e batalha não são barrados; o CEO não protege a si mesmo.
+    expect(destroyPro(s, ceo, { battle: false, bySeat: 1 })).toBe(true);
+    expect(destroyPro(s, e, { battle: false, bySeat: 1 })).toBe(true);
+  });
+  it('CEO anulado não protege ninguém', () => {
+    let s = game();
+    const ceo = place(s, 0, 'ceo');
+    const e = place(s, 0, 'estagiario');
+    const d = place(s, 1, 'diegao');
+    s = act(s, 0, { type: 'endTurn' });
+    s = act(s, 1, { type: 'ignition', iid: d, target: ceo });
+    expect(destroyPro(s, e, { battle: false, bySeat: 1 })).toBe(true);
+  });
+  it('Comandar: CEO ganha +100 ATK por Profissional nos seus Desligados', () => {
+    const s = game();
+    const ceo = place(s, 0, 'ceo');
+    expect(proView(s, 0, ceo).atk).toBe(2400);
+    s.players[0].grave.push(newInstance(s, 'qa', 0), newInstance(s, 'dev_junior', 0), newInstance(s, 'cafe', 0));
+    s.players[1].grave.push(newInstance(s, 'qa', 1));
+    expect(proView(s, 0, ceo).atk).toBe(2600);
   });
   it('Isso é meus ovos: anula todos os Profissionais do oponente', () => {
     let s = game();

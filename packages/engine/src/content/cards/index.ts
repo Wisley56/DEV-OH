@@ -34,6 +34,7 @@ import qa from './generic/qa';
 import devJunior from './generic/dev_junior';
 import devFullstack from './generic/dev_fullstack';
 import arquiteta from './generic/arquiteta';
+import ceo from './generic/ceo';
 import cafe from './tasks/cafe';
 import homeOffice from './tasks/home_office';
 import reuniao from './tasks/reuniao';
@@ -101,6 +102,7 @@ export const CARD_MODULES: CardModule[] = [
   devJunior,
   devFullstack,
   arquiteta,
+  ceo,
   cafe,
   homeOffice,
   reuniao,

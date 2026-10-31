@@ -109,6 +109,8 @@ export interface CardEffects {
   // ── Campo ──
   /** Imune a destruição por efeitos do oponente: retorna a fala do log, ou null. */
   immuneToOppEffects?(ctx: EffectCtx): string | null;
+  /** Protege outro Profissional do mesmo lado de ser destruído por efeitos do oponente: retorna a fala do log, ou null. */
+  protectAllyFromOppEffects?(ctx: EffectCtx, victim: ProSlot): string | null;
   /** Ao mudar de posição: retorna o id do card em que se transforma. */
   onPositionChange?(ctx: EffectCtx, to: 'atk' | 'def'): string | undefined;
   /** Devolve ao oponente um aumento de Estresse causado por ele. true = devolvido. */
