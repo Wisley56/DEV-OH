@@ -35,7 +35,10 @@ export const router = createBrowserRouter([
           { path: '/decks', lazy: () => import('../pages/DeckBuilderPage').then((m) => ({ Component: m.DeckBuilderPage })) },
           { path: '/entrar', lazy: () => import('../pages/LoginPage').then((m) => ({ Component: m.LoginPage })) },
           { path: '/ranking', lazy: () => import('../pages/RankingPage').then((m) => ({ Component: m.RankingPage })) },
-          { path: '/admin/balanceamento', lazy: () => import('../pages/AdminBalancePage').then((m) => ({ Component: m.AdminBalancePage })) },
+          {
+            path: '/admin/balanceamento',
+            lazy: () => import('../pages/AdminBalancePage').then((m) => ({ Component: m.AdminBalancePage })),
+          },
           { path: '*', lazy: () => import('../pages/NotFoundPage').then((m) => ({ Component: m.NotFoundPage })) },
         ],
       },
