@@ -226,3 +226,35 @@ select:focus {
   vertical-align: middle;
   margin-right: 6px;
 }
+
+/* ───────── Confirmação modal ───────── */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(5, 8, 20, 0.72);
+}
+.confirm-dialog {
+  width: min(420px, 100%);
+  border-color: var(--border-strong);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.5);
+}
+.confirm-dialog h2 {
+  margin: 0 0 8px;
+  font-family: var(--font-title);
+  font-size: 1.2rem;
+  color: var(--gold2);
+}
+.confirm-body {
+  color: var(--text-soft);
+  font-size: 0.92rem;
+}
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 18px;
+}

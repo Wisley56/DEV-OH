@@ -40,4 +40,6 @@ export const STORAGE_KEYS = {
   botLevel: 'devoh.botLevel',
   sound: 'devoh.sound',
   tutorialSeen: 'devoh.tutorialSeen',
+  /** Deck builder: mostrar os decks iniciais na lista de decks. */
+  showStarterDecks: 'devoh.showStarterDecks',
 } as const;

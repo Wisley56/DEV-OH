@@ -10,9 +10,19 @@ export interface CollectionFilter {
   subtype: string | 'all';
   level: number | 'all';
   sort: SortKey;
+  /** Busca no nome e no texto do card (sem diferenciar maiúsculas/acentos). */
+  query: string;
 }
 
-export const EMPTY_FILTER: CollectionFilter = { kind: 'all', rarity: 'all', attribute: 'all', subtype: 'all', level: 'all', sort: 'code' };
+export const EMPTY_FILTER: CollectionFilter = {
+  kind: 'all',
+  rarity: 'all',
+  attribute: 'all',
+  subtype: 'all',
+  level: 'all',
+  sort: 'code',
+  query: '',
+};
 
 /** Subtipos que um card exibe nos filtros: o subtipo e, se tiver, "FLIP". */
 export function subtypesOf(c: CardDef): string[] {
@@ -20,15 +30,30 @@ export function subtypesOf(c: CardDef): string[] {
   return info.flip ? [info.subtype, 'FLIP'] : [info.subtype];
 }
 
+/** Texto em minúsculas e sem acentos, para comparar buscas. */
+export const fold = (s: string) =>
+  s
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase();
+
+const matches = (c: CardDef, q: string) => !q || fold(`${c.name} ${c.text}`).includes(q);
+
+/** Quantos filtros (fora busca e ordenação) estão ativos. */
+export const activeFilters = (f: CollectionFilter) =>
+  (['kind', 'rarity', 'attribute', 'subtype', 'level'] as const).filter((k) => f[k] !== 'all').length;
+
 export function applyFilter(list: readonly CardDef[], f: CollectionFilter): CardDef[] {
   const order = new Map(list.map((c, i) => [c.id, i]));
+  const q = fold(f.query.trim());
   const out = list.filter(
     (c) =>
       (f.kind === 'all' || c.kind === f.kind) &&
       (f.rarity === 'all' || c.rarity === f.rarity) &&
       (f.attribute === 'all' || c.attribute === f.attribute) &&
       (f.subtype === 'all' || subtypesOf(c).includes(f.subtype)) &&
-      (f.level === 'all' || c.level === f.level),
+      (f.level === 'all' || c.level === f.level) &&
+      matches(c, q),
   );
   const by: Record<SortKey, (c: CardDef) => number> = {
     code: (c) => order.get(c.id)!,

@@ -1,6 +1,6 @@
-import { DECK_MAX, STARTER_DECKS } from '@devoh/engine';
+import { DECK_MAX, maxCopies, STARTER_DECKS, validateDeck } from '@devoh/engine';
 import { describe, expect, it } from 'vitest';
-import { addCard, canAdd, isStarterDeck, newDeckFrom, removeCard, sortedEntries } from './deckEditing';
+import { addCard, canAdd, countCards, isStarterDeck, newDeckFrom, randomDeck, removeCard, sortedEntries } from './deckEditing';
 
 const base = STARTER_DECKS[0];
 
@@ -35,5 +35,16 @@ describe('edição de deck', () => {
       ['cafe', 2],
       ['merge_conflict', 1],
     ]);
+  });
+
+  it('deck aleatório é válido, cheio e respeita as cópias', () => {
+    let seed = 7;
+    const rng = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
+    for (let i = 0; i < 20; i++) {
+      const cards = randomDeck(rng);
+      expect(cards).toHaveLength(DECK_MAX);
+      expect(validateDeck(cards)).toEqual([]);
+      for (const [id, n] of countCards(cards)) expect(n).toBeLessThanOrEqual(maxCopies(id));
+    }
   });
 });
