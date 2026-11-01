@@ -40,6 +40,7 @@ Achou uma falha? Fale direto com o Wisley, em privado. Não abra issue pública.
 | `RATE_CREATE_PER_MIN`                        | 5                                          | Salas criadas por IP                       |
 | `RATE_JOIN_PER_MIN`                          | 10                                         | Entrar ou reconectar, por IP               |
 | `RATE_ACTION_PER_SEC`                        | 10                                         | Jogadas por conexão (rajada de 3×)         |
+| `DEV_ADMIN_USERNAMES`                        | vazia (proibida em produção)               | Contas admin em dev e testes               |
 
 ## Monitoramento
 

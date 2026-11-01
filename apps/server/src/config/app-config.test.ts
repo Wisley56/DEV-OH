@@ -54,6 +54,16 @@ describe('AppConfig', () => {
     },
   );
 
+  it('DEV_ADMIN_USERNAMES: nome exato ou prefixo fora de produção; em produção o servidor não sobe', () => {
+    const c = new AppConfig({ DEV_ADMIN_USERNAMES: ' Chefe , admin_* ' });
+    expect(c.isDevAdmin('chefe')).toBe(true);
+    expect(c.isDevAdmin('admin_x1')).toBe(true);
+    expect(c.isDevAdmin('chefe2')).toBe(false);
+    expect(new AppConfig({}).isDevAdmin('chefe')).toBe(false);
+    expect(new AppConfig(PROD).isDevAdmin('chefe')).toBe(false);
+    expect(() => new AppConfig({ ...PROD, DEV_ADMIN_USERNAMES: 'chefe' })).toThrow('DEV_ADMIN_USERNAMES');
+  });
+
   it('em produção recusa banco que não seja Postgres', () => {
     expect(() => new AppConfig({ ...PROD, DATABASE_URL: 'pglite://memory' })).toThrow('postgres');
   });

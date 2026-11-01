@@ -36,6 +36,11 @@ const EnvSchema = z.object({
   SESSION_TTL_DAYS: z.coerce.number().int().positive().max(365).optional(),
   TURNSTILE_SITE_KEY: z.string().optional(),
   TURNSTILE_SECRET_KEY: z.string().optional(),
+  /**
+   * Só fora de produção (dev e testes): contas tratadas como admin sem mexer no banco.
+   * Lista separada por vírgula; "prefixo*" vale para todo usuário que começa assim.
+   */
+  DEV_ADMIN_USERNAMES: z.string().optional(),
   /** Sala sem atividade por esse tempo é removida. */
   ROOM_TTL_MS: int(2 * 60 * 60 * 1000),
   /** Sala sem ninguém conectado por esse tempo é removida. */
@@ -64,7 +69,7 @@ export interface RateRule {
   perSec: number;
 }
 
-export type RateBucket = 'create' | 'join' | 'action' | 'room' | 'list' | 'strikes' | 'auth' | 'decks';
+export type RateBucket = 'create' | 'join' | 'action' | 'room' | 'list' | 'strikes' | 'auth' | 'decks' | 'admin';
 
 /** Configuração do servidor, validada a partir das variáveis de ambiente. */
 export class AppConfig {
@@ -83,6 +88,7 @@ export class AppConfig {
   readonly turnTimeoutMs: number;
   readonly reconnectTimeoutMs: number;
   readonly rates: Record<RateBucket, RateRule>;
+  private readonly devAdmins: readonly string[];
 
   constructor(env: Record<string, string | undefined> = process.env) {
     const parsed = EnvSchema.safeParse(env);
@@ -101,7 +107,13 @@ export class AppConfig {
       const missing = PRODUCTION_REQUIRED.filter((k) => e[k] === undefined || e[k] === '');
       if (missing.length) throw new Error(`Em produção, defina no Railway: ${missing.join(', ')}.`);
       if (!/^postgres(ql)?:\/\//.test(e.DATABASE_URL!)) throw new Error('Em produção, DATABASE_URL deve ser postgres://…');
+      if (e.DEV_ADMIN_USERNAMES)
+        throw new Error('DEV_ADMIN_USERNAMES só vale fora de produção: dê admin com "npm run admin -- grant-admin".');
     }
+    this.devAdmins = (e.DEV_ADMIN_USERNAMES ?? '')
+      .split(',')
+      .map((s) => s.trim().toLowerCase())
+      .filter(Boolean);
     const dev = devDefaults(e.NODE_ENV);
     this.trustProxyHops = e.TRUST_PROXY_HOPS ?? dev.trustProxyHops;
     this.databaseUrl = e.DATABASE_URL || dev.databaseUrl;
@@ -130,7 +142,15 @@ export class AppConfig {
       auth: { capacity: e.RATE_AUTH_PER_MIN, perSec: e.RATE_AUTH_PER_MIN / 60 },
       /** Salvar/apagar decks. */
       decks: { capacity: 30, perSec: 1 },
+      /** Rotas do painel admin. */
+      admin: { capacity: 60, perSec: 2 },
     };
+  }
+
+  /** A conta é admin de desenvolvimento (DEV_ADMIN_USERNAMES)? Em produção, nunca. */
+  isDevAdmin(username: string) {
+    const name = username.toLowerCase();
+    return this.devAdmins.some((d) => (d.endsWith('*') ? name.startsWith(d.slice(0, -1)) : name === d));
   }
 
   /** Valor para a opção `cors.origin`: `true` libera tudo. */
