@@ -90,6 +90,12 @@
   background: var(--panel-border);
   margin: 0 4px;
 }
+/* No celular os botões quebram linha e o separador ficaria solto no começo de uma. */
+@media (max-width: 640px) {
+  .balance-sep {
+    display: none;
+  }
+}
 .balance-baseline {
   color: var(--muted);
 }

@@ -1,4 +1,5 @@
 import type { BalanceMode } from '@devoh/ai/balance';
+import { Download, FolderOpen, GitCompareArrows, Pin, Play, Square } from 'lucide-react';
 import { useRef, type ChangeEvent } from 'react';
 import { useNow } from '../../../shared/lib/useNow';
 import { Button } from '../../../shared/ui';
@@ -95,11 +96,13 @@ export function RunForm() {
         <div className="balance-actions">
           {running ? (
             <Button variant="ghost" onClick={cancel} disabled={status === 'cancelling'}>
-              {status === 'cancelling' ? 'Parando…' : '■ Cancelar'}
+              <Square size={16} aria-hidden />
+              {status === 'cancelling' ? 'Parando…' : 'Cancelar'}
             </Button>
           ) : (
             <Button variant="primary" onClick={run}>
-              ▶ Rodar simulação
+              <Play size={16} aria-hidden />
+              Rodar simulação
             </Button>
           )}
         </div>
@@ -123,7 +126,8 @@ export function RunForm() {
         <input ref={openRef} type="file" accept=".json,application/json" hidden onChange={onFile('report')} />
         <input ref={compareRef} type="file" accept=".json,application/json" hidden onChange={onFile('baseline')} />
         <Button size="sm" variant="ghost" disabled={running} onClick={() => openRef.current?.click()}>
-          📂 Abrir relatório
+          <FolderOpen size={16} aria-hidden />
+          Abrir relatório
         </Button>
         {report && (
           <>
@@ -132,20 +136,24 @@ export function RunForm() {
               variant="ghost"
               onClick={() => download(reportFileName(report, 'json'), reportToJson(report), 'application/json')}
             >
-              ⬇ JSON
+              <Download size={16} aria-hidden />
+              JSON
             </Button>
             <Button size="sm" variant="ghost" onClick={() => download(reportFileName(report, 'md'), reportToMd(report), 'text/markdown')}>
-              ⬇ Markdown
+              <Download size={16} aria-hidden />
+              Markdown
             </Button>
           </>
         )}
-        <span className="balance-sep" />
+        <span className="balance-sep" aria-hidden />
         <Button size="sm" variant="ghost" disabled={running} onClick={() => compareRef.current?.click()}>
-          ⚖ Comparar com arquivo…
+          <GitCompareArrows size={16} aria-hidden />
+          Comparar com arquivo…
         </Button>
         {report && report !== baseline && (
           <Button size="sm" variant="ghost" onClick={useAsBaseline} title="Guarda este resultado para comparar com a próxima execução.">
-            📌 Usar este como comparação
+            <Pin size={16} aria-hidden />
+            Usar este como comparação
           </Button>
         )}
         {baseline && (
