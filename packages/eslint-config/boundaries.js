@@ -46,6 +46,16 @@ export default [
     ],
   ),
 
+  restrict(
+    ['packages/engine/src/dsl/**/*.ts'],
+    [
+      {
+        group: ['**/rules/**', '**/core/board', '**/core/rng', '**/core/log', '**/core/catalog', '**/content', '**/content/**'],
+        message: 'Os blocos de efeito usam só effects/api (e os tipos de core/types), como os cards em código.',
+      },
+    ],
+  ),
+
   // ── Servidor: domínio sem framework; aplicação sem transporte.
   restrict(
     ['apps/server/src/modules/*/domain/**/*.ts'],

@@ -1,9 +1,16 @@
 import { installCatalog } from '../core/catalog';
 import type { CardDef } from '../core/types';
 import { DEVOH_CATALOG } from '../content';
+import { compileEffects } from '../dsl/compile';
+import type { CardEffects } from '../effects/types';
 import { toCardDef } from './toCardDef';
-import { customCode, type PublishedCustomCard } from './types';
+import { customCode, type CustomCardInput, type PublishedCustomCard } from './types';
 import { validateCustomInput } from './validate';
+
+/** Os dados de cada card do painel instalado (os bots leem os blocos para decidir as jogadas). */
+let inputs = new Map<string, CustomCardInput>();
+
+export const customCardInput = (id: string): CustomCardInput | undefined => inputs.get(id);
 
 export interface InstallResult {
   installed: string[];
@@ -18,8 +25,10 @@ export interface InstallResult {
 export function installCustomCards(records: readonly PublishedCustomCard[]): InstallResult {
   const list: CardDef[] = [...DEVOH_CATALOG.list];
   const defs: Record<string, CardDef> = { ...DEVOH_CATALOG.defs };
+  const effects: Record<string, CardEffects> = { ...DEVOH_CATALOG.effects };
   const codes: Record<string, string> = {};
   const serials = new Set<number>();
+  const installedInputs = new Map<string, CustomCardInput>();
   const result: InstallResult = { installed: [], rejected: [] };
 
   const sorted = [...records].sort((a, b) => (a?.serial ?? 0) - (b?.serial ?? 0));
@@ -32,13 +41,17 @@ export function installCustomCards(records: readonly PublishedCustomCard[]): Ins
     }
     const def = toCardDef(record.input, record.artVersion);
     defs[id] = def;
+    const fx = compileEffects({ ...record.input, name: def.name });
+    if (fx) effects[id] = fx;
     codes[id] = customCode(record.serial);
     serials.add(record.serial);
+    installedInputs.set(id, record.input);
     if (record.status === 'published') list.push(def);
     result.installed.push(id);
   }
 
-  installCatalog({ list, defs, effects: DEVOH_CATALOG.effects, codes });
+  inputs = installedInputs;
+  installCatalog({ list, defs, effects, codes });
   return result;
 }
 

@@ -1,6 +1,7 @@
 import { applyAction, card, getAtk, getDef, isFlip, prosOf, tributesNeeded, type Action, type GameState, type Seat } from '@devoh/engine';
 import { chance, strongest, value } from './heuristics/board';
 import { FLIP_ATK_GAIN, FLIP_PLAYS, IGNITION_PLAYS, playCtx, QUICK_BATTLE_PLAYS, SUMMON_OK, TASK_PLAYS } from './heuristics/cardPlays';
+import { dslIgnitionPlay, dslSummonOk, dslTaskPlay } from './heuristics/dslPlays';
 
 /**
  * Bot "Com IA" (normal): gera ações candidatas em ordem de prioridade e devolve
@@ -25,14 +26,14 @@ function mainCandidates(s: GameState, seat: Seat): Action[] {
 
   // 1) Efeitos de Profissionais.
   for (const p of mine) {
-    const play = IGNITION_PLAYS[p.card.cardId]?.(ctx);
+    const play = (IGNITION_PLAYS[p.card.cardId] ?? dslIgnitionPlay(p.card.cardId))?.(ctx);
     if (play) out.push({ type: 'ignition', iid: p.card.iid, target: play.target });
   }
 
   // 2) Tasks.
   for (const c of me.hand) {
     if (card(c.cardId).kind !== 'task') continue;
-    const rule = TASK_PLAYS[c.cardId];
+    const rule = TASK_PLAYS[c.cardId] ?? dslTaskPlay(c.cardId);
     const play = rule ? rule(ctx) : {};
     if (play) out.push({ type: 'activate', iid: c.iid, target: play.target });
   }
@@ -45,7 +46,8 @@ function mainCandidates(s: GameState, seat: Seat): Action[] {
         (a, b) => (card(b.cardId).atk ?? 0) + (card(b.cardId).def ?? 0) / 2 - ((card(a.cardId).atk ?? 0) + (card(a.cardId).def ?? 0) / 2),
       );
     for (const c of pros) {
-      if (SUMMON_OK[c.cardId] && !SUMMON_OK[c.cardId](ctx)) continue;
+      const summonOk = SUMMON_OK[c.cardId] ?? dslSummonOk(c.cardId);
+      if (summonOk && !summonOk(ctx)) continue;
       const d = card(c.cardId);
       const need = tributesNeeded(d.level ?? 1);
       const fodder = [...mine].sort((a, b) => value(s, seat, a, true) - value(s, seat, b, true)).slice(0, need);

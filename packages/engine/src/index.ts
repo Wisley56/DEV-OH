@@ -12,6 +12,8 @@ export { cardFrame, cardInfo, fullTypeLine, isFlip, RARITIES, RARITY_INFO, setCo
 export const BASE_CARD_LIST = DEVOH_CATALOG.list;
 export { STARTER_DECKS, deckById, HIDDEN_CARD } from './content';
 export * from './custom';
+export * from './dsl';
+export * from './balance';
 
 export { createGame, type NewGameOptions } from './rules/turn';
 export { applyAction } from './rules/actions';
