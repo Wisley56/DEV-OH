@@ -1,4 +1,5 @@
 import type { MatchHistoryEntry, RankingEntry } from '@devoh/protocol';
+import { Medal } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { api } from '../../../shared/lib/api';
 import { Spinner } from '../../../shared/ui';
@@ -64,7 +65,16 @@ export function Ranking() {
             <tbody>
               {rows.map((r) => (
                 <tr key={r.username} className={r.username === account?.username ? 'me' : undefined}>
-                  <td>{r.position <= 3 ? ['🥇', '🥈', '🥉'][r.position - 1] : r.position}</td>
+                  <td className="r-pos">
+                    {r.position <= 3 ? (
+                      <span className={`medal place-${r.position}`} title={`${r.position}º lugar`}>
+                        <Medal size={18} aria-hidden />
+                        <span className="sr-only">{r.position}</span>
+                      </span>
+                    ) : (
+                      r.position
+                    )}
+                  </td>
                   <td className="r-name">{r.displayName}</td>
                   <td className="r-elo">{r.elo}</td>
                   <td>{r.wins}</td>

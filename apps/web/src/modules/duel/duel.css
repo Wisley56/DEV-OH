@@ -33,6 +33,9 @@
   display: none;
 }
 .side-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
   margin: 0;
   padding: 8px 10px;
   border-radius: 8px;
@@ -71,7 +74,9 @@
 }
 .log-head {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-start;
   padding: 8px 10px;
   border: 0;
   background: #121a36;
@@ -151,30 +156,54 @@
   width: var(--zone);
   height: var(--zone);
   border-radius: 10px;
-  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border: 1.5px dashed #3b4a85;
+  background: rgba(22, 33, 74, 0.45);
   display: grid;
   place-items: center;
   position: relative;
 }
-.zone-pro {
-  background: rgba(196, 106, 43, 0.06);
-}
-.zone-spell {
-  background: rgba(27, 138, 107, 0.06);
-}
 .zone-label {
   max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
   overflow: hidden;
-  font-size: 0.66rem;
-  color: rgba(255, 255, 255, 0.28);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #8592c4;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   white-space: nowrap;
 }
 .zone-label-icon {
-  display: none;
-  font-size: 1.1rem;
-  opacity: 0.5;
+  opacity: 0.85;
+}
+.zone-grave {
+  border-style: solid;
+  border-color: #2c3a6b;
+  background: rgba(10, 16, 36, 0.7);
+}
+.zone-grave .zone-card {
+  position: relative;
+}
+/* Quantos Desligados: selo no card do topo (o HUD também mostra). */
+.grave-count {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #0a1024;
+  border: 1px solid #3b4a85;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
 }
 .zone-card {
   width: var(--zw);
@@ -249,6 +278,11 @@
 .phase-tools {
   gap: 2px;
 }
+.mode-hint-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
 .mode-hint {
   display: flex;
   align-items: center;
@@ -291,6 +325,9 @@
   border-radius: 999px;
 }
 .chip-shock {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   background: rgba(255, 93, 143, 0.25);
   color: #ffc2d6;
 }
@@ -357,9 +394,16 @@
 }
 .pbar-counts {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   color: var(--muted);
   white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+}
+.pbar-counts > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .hand {
@@ -525,7 +569,13 @@
   place-items: center;
 }
 .vs-icon {
-  font-size: 1.2rem;
+  display: grid;
+  place-items: center;
+  color: var(--gold2);
+}
+.vs-text svg {
+  margin-right: 4px;
+  vertical-align: -2px;
 }
 .victory-actions {
   display: flex;
@@ -677,14 +727,12 @@
     display: none;
   }
   .zone-label {
-    font-size: 0.56rem;
+    font-size: 0.5rem;
     letter-spacing: 0.02em;
+    gap: 3px;
   }
-  .zone-grave .zone-label-text {
+  .zone-label-text {
     display: none;
-  }
-  .zone-grave .zone-label-icon {
-    display: inline;
   }
 }
 
@@ -852,17 +900,15 @@
   }
 }
 
-/* Celular deitado: zonas pequenas demais para escrever "Desligados" — fica só o ícone (o título da zona explica). */
+/* Celular deitado: zonas pequenas demais para os rótulos — fica só o ícone (o título da zona explica). */
 @media (orientation: landscape) and (max-height: 560px) {
   .zone-label {
-    font-size: 0.56rem;
+    font-size: 0.5rem;
     letter-spacing: 0.02em;
+    gap: 3px;
   }
-  .zone-grave .zone-label-text {
+  .zone-label-text {
     display: none;
-  }
-  .zone-grave .zone-label-icon {
-    display: inline;
   }
 }
 
@@ -963,6 +1009,9 @@
   background: radial-gradient(circle, rgba(8, 10, 20, 0.82) 0%, rgba(8, 10, 20, 0.45) 40%, transparent 75%);
 }
 .fx-dice-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-family: var(--font-title);
   font-size: 1.35rem;
   font-weight: 700;
@@ -1048,6 +1097,9 @@
   border: 1px solid rgba(233, 185, 73, 0.45);
 }
 .ability-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin: 0 0 6px;
   font-family: var(--font-title);
   font-weight: 700;
@@ -1057,6 +1109,11 @@
   margin: 0 0 6px;
   font-size: 0.9rem;
   line-height: 1.4;
+}
+.ability-target {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 .ability-target,
 .ability-note {
@@ -1072,13 +1129,24 @@
 
 /* Arrastar da mão para o campo. */
 .zone.drop-ok {
-  border-color: rgba(124, 255, 178, 0.7);
-  background: rgba(124, 255, 178, 0.06);
+  border-color: var(--gold);
+  background: rgba(233, 185, 73, 0.08);
+}
+/* Slot vazio que aceita o card arrastado: o rótulo vira "Solte aqui". */
+.zone.drop-ok > .zone-label {
+  color: var(--gold2);
+}
+.zone.drop-ok > .zone-label .zone-label-text {
+  font-size: 0;
+}
+.zone.drop-ok > .zone-label .zone-label-text::after {
+  content: 'Solte aqui';
+  font-size: 0.6rem;
 }
 .zone.drop-over {
   border-style: solid;
-  background: rgba(124, 255, 178, 0.18);
-  box-shadow: 0 0 16px rgba(124, 255, 178, 0.45);
+  background: rgba(233, 185, 73, 0.18);
+  box-shadow: 0 0 16px rgba(233, 185, 73, 0.45);
 }
 .drag-card {
   width: calc(var(--zw) * 1.12);

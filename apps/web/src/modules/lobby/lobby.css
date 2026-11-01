@@ -1,70 +1,162 @@
 /* ───────── Home ───────── */
 .home {
-  max-width: 1080px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 24px 16px 60px;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* Garante que nada do hero crie rolagem lateral. */
+  overflow-x: clip;
+  padding: 0 24px 72px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Hero: slogan à esquerda, leque de cards e logo à direita. */
+.hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 32px;
+  padding: 48px 0 24px;
+}
+.hero-text {
+  flex: 1 1 440px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
   gap: 20px;
 }
-.hero {
-  grid-column: 1 / -1;
-  text-align: center;
-  padding-top: 10px;
-  /* O leque de cards gira para fora das bordas: corta sem criar rolagem lateral. */
-  overflow-x: clip;
+.hero-eyebrow {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--code);
 }
-.hero-cards {
-  --hc: clamp(104px, 30vw, 190px);
-  display: flex;
-  justify-content: center;
-  height: calc(var(--hc) * 1.53);
-  margin-bottom: calc(var(--hc) * -0.21);
-}
-.hero-card {
-  width: var(--hc);
-  margin: 0 calc(var(--hc) * -0.14);
-  transform-origin: 50% 120%;
-}
-.logo {
-  position: relative;
+.hero-title {
+  margin: 0;
   font-family: var(--font-title);
   font-weight: 900;
-  font-size: clamp(3rem, 9vw, 5.6rem);
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  line-height: 1.02;
+  letter-spacing: 0.01em;
+  color: var(--gold2);
+}
+.hero-lead {
   margin: 0;
+  max-width: 480px;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--text-soft);
+}
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 4px;
+}
+.hero-actions .btn:not(.btn-primary) {
+  color: var(--text);
+}
+/*
+ * Leque e logo escalam juntos com a largura da coluna, sem passar de 220px por card: as mesmas
+ * proporções em qualquer tela e nada cortado. O leque inteiro ocupa ~3 cards de largura, então
+ * cada card mede 1/3 da coluna (a metade do conteúdo, ou a largura toda com o hero empilhado).
+ */
+.hero-art {
+  --hc: min(220px, calc((min(100vw, 1200px) - 96px) / 2 * 0.33));
+  flex: 1 1 460px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.hero-cards {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: calc(var(--hc) * 1.72);
+}
+.hero-card {
+  position: absolute;
+  /* Os cards dos lados ficam um pouco mais baixos que o do meio. */
+  top: calc(var(--i) * var(--i) * var(--hc) * 0.16);
+  left: calc(50% + var(--i) * var(--hc) * 0.62 - var(--hc) / 2);
+  width: var(--hc);
+  transform-origin: 50% 110%;
+  filter: drop-shadow(0 24px 24px rgba(0, 0, 0, 0.55));
+}
+/* O logo fica por cima da base do leque, para não sumir atrás dos cards. */
+.logo {
+  position: relative;
+  z-index: 2;
+  margin: calc(var(--hc) * -0.14) 0 0;
+  font-family: var(--font-title);
+  font-weight: 900;
+  font-size: calc(var(--hc) * 0.29);
+  line-height: 1;
   letter-spacing: 0.04em;
-  background: linear-gradient(#fff6cf, var(--gold) 55%, #9a6410);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  filter: drop-shadow(0 4px 0 #3a1d00) drop-shadow(0 10px 24px rgba(0, 0, 0, 0.7));
+  white-space: nowrap;
+  color: var(--gold);
+  text-shadow:
+    0 4px 0 #3a1d00,
+    0 10px 24px rgba(0, 0, 0, 0.7);
 }
 .logo span {
   color: var(--code);
-  -webkit-text-fill-color: var(--code);
 }
-.tagline {
-  margin: 4px 0 0;
-  color: var(--muted);
-  font-size: 1.05rem;
+
+/* Painéis de jogo */
+.play-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  scroll-margin-top: 16px;
 }
-.lobby {
+.lobby-card {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
+}
+.lobby-card h2 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+.lobby-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.lobby-card-head a {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.lobby-card > .btn {
+  min-height: 44px;
 }
 .field-label {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   color: var(--muted);
   font-weight: 600;
 }
 .deck-desc {
   margin: 0;
-  font-size: 0.88rem;
+  font-size: 0.82rem;
+  line-height: 1.55;
   color: var(--muted);
+}
+.deck-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+.deck-status.ok {
+  color: var(--code);
 }
 .invite {
   margin: 0;
@@ -72,141 +164,264 @@
   text-align: center;
   padding: 10px 12px;
   border-radius: 10px;
-  background: rgba(124, 255, 178, 0.1);
+  background: rgba(124, 255, 178, 0.08);
   border: 1px solid rgba(124, 255, 178, 0.35);
-}
-.lobby-actions {
-  display: grid;
-  gap: 10px;
-  margin-top: 6px;
 }
 .join {
   display: flex;
   gap: 8px;
 }
+.join-code {
+  flex: 1;
+  min-width: 0;
+}
 .join input {
   text-transform: uppercase;
   letter-spacing: 0.3em;
+  font-family: var(--font-mono);
   font-weight: 700;
   text-align: center;
 }
 .check-label {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: -4px;
-  font-size: 0.84rem;
-  color: var(--muted);
+  gap: 10px;
+  min-height: 28px;
+  font-size: 0.82rem;
+  color: var(--text-soft);
   cursor: pointer;
 }
 .check-label input {
-  width: auto;
+  width: 16px;
+  height: 16px;
+  min-height: 0;
   accent-color: var(--gold);
 }
 .mode-picker {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 10px;
+  background: var(--sunken);
+  border: 1px solid var(--panel-border);
 }
 .mode-option {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 2px;
-  padding: 8px 10px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--text);
+  min-height: 52px;
+  border-radius: 7px;
+  border: 0;
+  background: transparent;
+  color: var(--text-soft);
   font: inherit;
   cursor: pointer;
-  text-align: left;
+}
+.mode-option b {
+  font-size: 0.875rem;
 }
 .mode-option span {
-  font-size: 0.78rem;
-  color: var(--muted);
+  font-size: 0.7rem;
+  opacity: 0.8;
+}
+.mode-option:hover:not(.active) {
+  color: var(--text);
 }
 .mode-option.active {
-  border-color: var(--gold);
-  background: rgba(233, 185, 73, 0.12);
+  background: var(--gold);
+  color: #1d1405;
+}
+.lobby-note {
+  margin: 0;
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+/* Salas abertas */
+.open-rooms {
+  border-radius: 14px;
+  border: 1px solid var(--panel-border);
+  background: var(--surface);
+  overflow: hidden;
+}
+.open-rooms-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--panel-border);
+  font-size: 0.75rem;
+}
+.open-rooms-head h2 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95rem;
+}
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--ok);
+  box-shadow: 0 0 0 4px rgba(74, 222, 128, 0.15);
+}
+.live-dot.off {
+  background: var(--danger);
+  box-shadow: 0 0 0 4px rgba(255, 77, 109, 0.15);
+}
+.open-rooms-scroll {
+  overflow-x: auto;
+  max-height: 320px;
+}
+.open-rooms table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+.open-rooms th {
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.open-rooms td {
+  padding: 10px 12px;
+  border-top: 1px solid #18213f;
+}
+.open-rooms th:first-child,
+.open-rooms td:first-child {
+  padding-left: 20px;
+}
+.open-rooms th:last-child,
+.open-rooms td:last-child {
+  padding-right: 20px;
+}
+.open-rooms tbody tr:hover {
+  background: #121b3a;
+}
+.or-host {
+  font-weight: 600;
+}
+.or-code {
+  margin-left: 6px;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  color: var(--code);
 }
 .or-mode {
-  margin-right: 6px;
-  font-size: 0.78rem;
+  display: inline-flex;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--surface2);
+  color: #c9d2f5;
+}
+.or-mode.torneio {
+  background: rgba(233, 185, 73, 0.14);
   color: var(--gold2);
 }
-.open-rooms {
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+.or-action {
+  text-align: right;
 }
-.open-rooms h3 {
-  margin: 0 0 8px;
-  font-size: 0.9rem;
+.or-action .btn {
+  color: var(--gold2);
+  background: transparent;
 }
-.open-rooms ul {
+.open-rooms-empty {
+  margin: 0;
+  padding: 16px 20px;
+  font-size: 0.84rem;
+  color: var(--muted);
+}
+
+/* Como jogar: sempre 6 cartões, em 3, 2 ou 1 coluna (nunca sobra célula vazia). */
+.rules {
+  margin-top: 24px;
+}
+.rules h2 {
+  margin: 0 0 16px;
+  font-family: var(--font-title);
+  font-size: 1.6rem;
+  color: var(--gold);
+}
+.rules-grid {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 6px;
-  max-height: 220px;
-  overflow-y: auto;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
 }
-.open-rooms li {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  grid-template-areas: 'host btn' 'meta btn';
-  align-items: center;
-  column-gap: 10px;
-  padding: 6px 8px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
-}
-.or-host {
-  grid-area: host;
-  font-weight: 700;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.or-meta {
-  grid-area: meta;
-  font-size: 0.78rem;
-  color: var(--muted);
-  letter-spacing: 0.04em;
-}
-.open-rooms li .btn {
-  grid-area: btn;
-}
-.open-rooms-empty {
-  margin: 0;
-  font-size: 0.84rem;
-  color: var(--muted);
-}
-.lobby-links {
+.rules-grid li {
   display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 20px;
+  border-radius: 12px;
+  border: 1px solid var(--panel-border);
+  background: #0c1329;
 }
-.rules h2 {
-  font-family: var(--font-title);
-  margin: 0 0 8px;
-  color: var(--gold);
+.rules-grid b {
+  font-size: 0.95rem;
 }
-.rules ul {
-  margin: 0;
-  padding-left: 18px;
+.rules-grid li > span:last-child {
+  font-size: 0.82rem;
   line-height: 1.55;
-  color: #d5dbf5;
+  color: #a9b2d6;
 }
-.rules li {
-  margin-bottom: 6px;
+.rules-n {
+  font-size: 0.75rem;
+  color: var(--code);
 }
 
-/* Celular / janelas estreitas */
-@media (max-width: 860px) {
+/* Tela estreita demais para as duas colunas: leque e logo em cima, texto embaixo. */
+@media (max-width: 980px) {
+  .hero {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 24px;
+    padding-top: 32px;
+  }
+  .hero-text,
+  .hero-art {
+    flex: none;
+  }
+  .hero-art {
+    --hc: min(220px, calc((100vw - 48px) * 0.33));
+    order: -1;
+  }
+}
+@media (max-width: 900px) {
+  .rules-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 640px) {
   .home {
+    padding: 0 16px 40px;
+  }
+  .hero {
+    padding-top: 20px;
+    gap: 16px;
+  }
+  .hero-art {
+    --hc: calc((100vw - 32px) * 0.33);
+  }
+  .hero-actions .btn {
+    flex: 1 1 100%;
+  }
+}
+@media (max-width: 560px) {
+  .rules-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 }

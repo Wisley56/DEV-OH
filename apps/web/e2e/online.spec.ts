@@ -24,7 +24,7 @@ test('sala pública: aparece na lista, entra, joga, reconecta e desistência exp
   const code = await createRoom(ana);
 
   await bia.goto('/');
-  const row = bia.getByRole('region', { name: 'Salas abertas' }).locator('li', { hasText: code });
+  const row = bia.getByRole('region', { name: 'Salas abertas' }).locator('tr', { hasText: code });
   await expect(row).toContainText('Ana');
   await row.getByRole('button', { name: 'Entrar' }).click();
 

@@ -1,0 +1,131 @@
+/* ───────── Telas de menu: barra superior e fundo de pixels ───────── */
+.pixel-bg {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+.topbar,
+.menu-main {
+  position: relative;
+  z-index: 1;
+}
+/* Carregando/erros dentro do menu: centraliza na área abaixo da barra. */
+.menu-main .center-screen {
+  min-height: calc(100vh - 65px);
+}
+/* Acima do conteúdo: no celular, as abas fixas embaixo ficam por cima da página. */
+.topbar {
+  z-index: 2;
+  border-bottom: 1px solid #1d2850;
+  background: rgba(10, 15, 31, 0.92);
+}
+.topbar-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  min-height: 64px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 24px;
+}
+.topbar-logo {
+  font-family: var(--font-title);
+  font-weight: 900;
+  font-size: 1.5rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  color: var(--gold);
+}
+.topbar-logo span {
+  color: var(--code);
+}
+.topbar-logo:hover {
+  color: var(--gold2);
+}
+.topnav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  flex: 1 1 auto;
+}
+.topnav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #a9b2d6;
+}
+.topnav-link:hover {
+  background: #141d3d;
+  color: var(--text);
+}
+.topnav-link[aria-current='page'] {
+  background: #141d3d;
+  color: var(--text);
+  font-weight: 600;
+}
+.topbar-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.sound-toggle {
+  width: 40px;
+  min-height: 40px;
+  padding: 0;
+  border: 1px solid var(--border);
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Celular e tablet: os links viram abas fixas embaixo (a barra de cima fica só com logo, som e conta). */
+@media (max-width: 860px) {
+  .topbar-logo {
+    font-size: 1.25rem;
+  }
+  .topbar-inner {
+    padding: 0 16px;
+    min-height: 56px;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+  }
+  .topnav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 20;
+    flex-wrap: nowrap;
+    gap: 0;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    background: rgba(10, 15, 31, 0.97);
+    border-top: 1px solid #1d2850;
+  }
+  .topnav-link {
+    flex: 1 1 0;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    min-height: 48px;
+    padding: 0;
+    font-size: 0.7rem;
+  }
+  .menu-main {
+    padding-bottom: 72px;
+  }
+}

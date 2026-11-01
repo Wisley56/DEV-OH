@@ -12,7 +12,9 @@ export function CardPool() {
   const counts = useMemo(() => countCards(cards), [cards]);
   return (
     <section className="db-pool">
-      <p className="muted">Clique para adicionar · pessoas da squad, Ultra e Secreta: 1 cópia · Super: 2 · demais: 3</p>
+      <p className="db-hint">
+        Clique para adicionar · pessoas da squad, Ultra e Secreta: <b>1 cópia</b> · Super: <b>2</b> · demais: <b>3</b>
+      </p>
       <div className="pool-grid">
         {CARD_LIST.map((c) => {
           const n = counts.get(c.id) ?? 0;

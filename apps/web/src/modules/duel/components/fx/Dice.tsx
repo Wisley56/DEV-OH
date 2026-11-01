@@ -1,4 +1,5 @@
 import { m } from 'framer-motion';
+import { Dices } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 /** Quanto tempo o dado rola antes de parar na face sorteada (o som da queda usa o mesmo tempo). */
@@ -78,7 +79,9 @@ export function Dice({
       animate={{ opacity: [0, 1, 1, 0] }}
       transition={{ duration: sec, times: [0, 0.08, 0.88, 1] }}
     >
-      <div className="fx-dice-title">🎲 A Mão do Moisés</div>
+      <div className="fx-dice-title">
+        <Dices size={20} aria-hidden /> A Mão do Moisés
+      </div>
       <m.div
         className={`fx-die ${landed ? (ok ? 'is-ok' : 'is-fail') : ''}`}
         initial={reduced ? false : { y: from * 220, x: -from * 60, rotate: 0, scale: 0.7 }}

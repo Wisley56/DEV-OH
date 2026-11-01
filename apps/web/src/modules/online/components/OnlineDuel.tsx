@@ -1,5 +1,6 @@
 import type { GameView } from '@devoh/engine';
 import type { RoomState } from '@devoh/protocol';
+import { Trophy, WifiOff } from 'lucide-react';
 import { useNow } from '../../../shared/lib/useNow';
 import { DuelBoard } from '../../duel';
 import { useRoomStore } from '../store/roomStore';
@@ -31,10 +32,12 @@ export function OnlineDuel({
   const woSecs = woAt ? Math.max(0, Math.ceil((woAt - now) / 1000)) : null;
   const banner =
     status !== 'ready' ? (
-      <div className="net-banner">⚠ Reconectando…</div>
+      <div className="net-banner">
+        <WifiOff size={16} aria-hidden /> Reconectando…
+      </div>
     ) : !opp?.connected ? (
       <div className="net-banner">
-        ⚠ {opp?.name ?? 'Oponente'} caiu da call…{' '}
+        <WifiOff size={16} aria-hidden /> {opp?.name ?? 'Oponente'} caiu da call…{' '}
         {woSecs !== null ? `se não voltar em ${woSecs}s, você vence por W.O.` : 'aguardando reconexão.'}
       </div>
     ) : null;
@@ -64,7 +67,7 @@ function EloDelta({ delta }: { delta: number }) {
   const cls = delta > 0 ? 'elo-delta up' : delta < 0 ? 'elo-delta down' : 'elo-delta';
   return (
     <span className={cls}>
-      🏆 {delta > 0 ? '+' : ''}
+      <Trophy size={16} aria-hidden /> {delta > 0 ? '+' : ''}
       {delta} Elo
     </span>
   );

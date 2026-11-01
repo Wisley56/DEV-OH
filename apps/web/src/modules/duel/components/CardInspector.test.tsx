@@ -43,7 +43,7 @@ describe('habilidade de Profissional', () => {
 
     expect(container.querySelector('.badge-ability')).not.toBeNull();
     fireEvent.click(container.querySelector('[data-slot-iid="cop"] button')!);
-    fireEvent.click(screen.getByRole('button', { name: '⚡ Autocompletar' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Autocompletar' }));
 
     // Ainda não jogou: mostra o que a habilidade faz.
     expect(send).not.toHaveBeenCalled();
@@ -56,7 +56,7 @@ describe('habilidade de Profissional', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
 
     // Confirmar segue para a escolha do alvo e, ao clicar no alvo, envia a jogada.
-    fireEvent.click(screen.getByRole('button', { name: '⚡ Autocompletar' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Autocompletar' }));
     fireEvent.click(screen.getByRole('button', { name: 'Usar habilidade' }));
     expect(screen.getByText(/Escolha um Profissional seu/)).toBeTruthy();
     fireEvent.click(container.querySelector('[data-slot-iid="cop"] button')!);

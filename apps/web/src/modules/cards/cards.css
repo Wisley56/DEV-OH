@@ -386,10 +386,12 @@
   position: absolute;
   top: -2px;
   left: -2px;
+  display: grid;
+  place-items: center;
   font-size: 14cqw;
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(10, 16, 36, 0.85);
   border-radius: 50%;
-  padding: 2cqw 4cqw;
+  padding: 4cqw;
 }
 .badge.count {
   background: var(--gold);

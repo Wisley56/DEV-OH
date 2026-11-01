@@ -8,8 +8,12 @@
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
-  gap: 10px 14px;
-  margin-bottom: 18px;
+  gap: 12px 14px;
+  margin-bottom: 24px;
+  padding: 16px 20px;
+  border-radius: 14px;
+  border: 1px solid var(--panel-border);
+  background: var(--surface);
 }
 .collection-filters label {
   display: grid;
@@ -24,15 +28,20 @@
 }
 .collection-count {
   margin-left: auto;
-  font-size: 13px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-size: 0.75rem;
+  color: var(--muted);
 }
 .link-btn {
   margin-left: 8px;
   padding: 0;
   border: 0;
   background: none;
-  color: var(--gold);
-  text-decoration: underline;
+  color: var(--gold2);
+  font-size: 0.82rem;
+  font-weight: 600;
   cursor: pointer;
 }
 @media (max-width: 560px) {
