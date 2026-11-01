@@ -1,6 +1,6 @@
 import { CARD_LIST } from '@devoh/engine';
 import { describe, expect, it } from 'vitest';
-import { applyFilter, countByRarity, EMPTY_FILTER, filterOptions } from './collectionFilter';
+import { activeFilters, applyFilter, countByRarity, EMPTY_FILTER, filterOptions } from './collectionFilter';
 
 describe('filtro da coleção', () => {
   it('sem filtro devolve tudo na ordem da coleção', () => {
@@ -35,5 +35,22 @@ describe('filtro da coleção', () => {
     expect(o.levels[0]).toBeGreaterThan(0);
     const n = countByRarity(CARD_LIST);
     expect(Object.values(n).reduce((a, b) => a + b, 0)).toBe(CARD_LIST.length);
+  });
+
+  it('busca no nome e no texto, sem maiúsculas nem acentos', () => {
+    const c = CARD_LIST.find((x) => /[áéíóúãõç]/i.test(x.name)) ?? CARD_LIST[0];
+    const plain = c.name
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
+      .toUpperCase();
+    expect(applyFilter(CARD_LIST, { ...EMPTY_FILTER, query: plain }).map((x) => x.id)).toContain(c.id);
+    const word = CARD_LIST[1].text.split(/\s+/).find((w) => w.length > 5)!;
+    expect(applyFilter(CARD_LIST, { ...EMPTY_FILTER, query: word }).map((x) => x.id)).toContain(CARD_LIST[1].id);
+    expect(applyFilter(CARD_LIST, { ...EMPTY_FILTER, query: 'zzzz-nada' })).toEqual([]);
+  });
+
+  it('conta filtros ativos sem busca e ordenação', () => {
+    expect(activeFilters(EMPTY_FILTER)).toBe(0);
+    expect(activeFilters({ ...EMPTY_FILTER, kind: 'pro', level: 4, query: 'x', sort: 'atk' })).toBe(2);
   });
 });
