@@ -11,6 +11,7 @@ export async function startServer(env: Record<string, string> = {}) {
   const addr = app.getHttpServer().address() as { port: number };
   const sockets: Socket[] = [];
   return {
+    app,
     url: `http://127.0.0.1:${addr.port}`,
     sockets,
     async close() {

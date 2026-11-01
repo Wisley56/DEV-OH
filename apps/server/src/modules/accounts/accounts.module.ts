@@ -6,23 +6,26 @@ import { ACCOUNT_REPOSITORY, HUMAN_VERIFIER, PASSWORD_HASHER } from './applicati
 import { Argon2Hasher } from './infrastructure/argon2.hasher.js';
 import { DrizzleAccountRepository } from './infrastructure/drizzle-account.repository.js';
 import { TurnstileVerifier } from './infrastructure/turnstile.verifier.js';
+import { AdminController } from './presentation/admin.controller.js';
+import { AdminGuard } from './presentation/admin.guard.js';
 import { AuthController } from './presentation/auth.controller.js';
 import { AuthGuard } from './presentation/auth.guard.js';
 import { SessionCookie } from './presentation/session-cookie.js';
 
-/** Contas: global porque decks, ranking e salas dependem da sessão (AuthGuard, SessionCookie). */
+/** Contas: global porque decks, ranking, salas e o painel admin dependem da sessão (AuthGuard, AdminGuard, SessionCookie). */
 @Global()
 @Module({
-  controllers: [AuthController],
+  controllers: [AuthController, AdminController],
   providers: [
     AccountsService,
     AuthGuard,
+    AdminGuard,
     SessionCookie,
     { provide: ACCOUNT_REPOSITORY, useClass: DrizzleAccountRepository },
     { provide: PASSWORD_HASHER, useClass: Argon2Hasher },
     { provide: HUMAN_VERIFIER, useClass: TurnstileVerifier },
     { provide: CLOCK, useClass: SystemClock },
   ],
-  exports: [AccountsService, AuthGuard, SessionCookie],
+  exports: [AccountsService, AuthGuard, AdminGuard, SessionCookie],
 })
 export class AccountsModule {}

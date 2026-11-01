@@ -67,7 +67,7 @@ export class AccountsService {
       passwordHash: await this.hasher.hash(input.password),
     });
     if (!user) throw new DomainError('Esse usuário já existe. Escolha outro.', 409);
-    return { account: toAccountView(user), token: await this.startSession(user.id) };
+    return { account: toAccountView(this.withDevAdmin(user)), token: await this.startSession(user.id) };
   }
 
   async login(input: LoginPayload, ip: string): Promise<SessionResult> {
@@ -89,7 +89,7 @@ export class AccountsService {
       throw new DomainError(INVALID_LOGIN, 401);
     }
     if (user.failedLogins || user.lockedUntil) await this.repo.setFailedLogins(user.id, 0, null);
-    return { account: toAccountView(user), token: await this.startSession(user.id) };
+    return { account: toAccountView(this.withDevAdmin(user)), token: await this.startSession(user.id) };
   }
 
   /**
@@ -104,7 +104,7 @@ export class AccountsService {
     const ttl = this.config.sessionTtlMs;
     const renew = found.expiresAt.getTime() - now < ttl - RENEW_AFTER_MS;
     if (renew) await this.repo.renewSession(hashToken(token), new Date(now + ttl));
-    return { user: found.user, renewed: renew };
+    return { user: this.withDevAdmin(found.user), renewed: renew };
   }
 
   async logout(token: string | undefined) {
@@ -118,6 +118,11 @@ export class AccountsService {
     await this.repo.setPassword(user.id, await this.hasher.hash(next));
     await this.repo.deleteUserSessions(user.id);
     return this.startSession(user.id);
+  }
+
+  /** Fora de produção, DEV_ADMIN_USERNAMES dá admin sem gravar no banco. */
+  private withDevAdmin(user: UserRecord): UserRecord {
+    return user.isAdmin || !this.config.isDevAdmin(user.username) ? user : { ...user, isAdmin: true };
   }
 
   private async startSession(userId: string) {

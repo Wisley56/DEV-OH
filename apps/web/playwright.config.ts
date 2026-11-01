@@ -37,6 +37,8 @@ export default defineConfig({
         RATE_JOIN_PER_MIN: '200',
         RATE_AUTH_PER_MIN: '200',
         DATABASE_URL: 'pglite://memory',
+        // Contas de teste criadas como "Admin" (usuário admin_…) são admin, sem mexer no banco.
+        DEV_ADMIN_USERNAMES: 'admin_*',
       },
     },
     {

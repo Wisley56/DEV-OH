@@ -9,17 +9,16 @@ test('painel de balanceamento: conta comum vê "Acesso restrito" e não tem o bo
   await expect(page.getByRole('button', { name: /Painel admin/ })).toHaveCount(0);
   await page.goto('/admin/balanceamento');
   await expect(page.getByRole('heading', { name: 'Acesso restrito' })).toBeVisible();
+  // O servidor também barra: não é só a interface.
+  expect((await page.request.get('/api/admin/me')).status()).toBe(403);
 });
 
 test('painel de balanceamento: admin roda a simulação no worker e vê o relatório', async ({ page }) => {
   const noErrors = failOnConsoleErrors(page);
   await withProfile(page, 'Admin');
+  // O servidor de teste trata os usuários admin_… como admin (DEV_ADMIN_USERNAMES).
   await signUp(page, 'Admin');
-  // O is_admin é dado direto no banco; aqui o /auth/me é interceptado para marcar a conta como admin.
-  await page.route('**/api/auth/me', async (route) => {
-    const res = await route.fetch();
-    await route.fulfill({ response: res, json: { ...(await res.json()), isAdmin: true } });
-  });
+  expect((await page.request.get('/api/admin/me')).status()).toBe(200);
 
   await page.goto('/');
   await page.getByRole('banner').getByRole('button', { name: 'Painel admin' }).click();

@@ -29,6 +29,8 @@ npm run balance    # bots jogando entre si e relatório de balanceamento (--rand
 npm run db:generate -w @devoh/server   # mudou o schema? gera a migration SQL em apps/server/drizzle (versione o arquivo)
 npm run admin -w @devoh/server -- users                        # lista as contas do banco da DATABASE_URL
 npm run admin -w @devoh/server -- reset-password <usuário>     # senha esquecida: gera uma nova e derruba as sessões
+npm run admin -w @devoh/server -- grant-admin <usuário>        # dá acesso ao painel admin
+npm run admin -w @devoh/server -- revoke-admin <usuário>       # tira o acesso ao painel admin
 ```
 
 Para o `admin` em produção, rode no seu computador com `DATABASE_URL` igual à **DATABASE_PUBLIC_URL** do Postgres no Railway (Variables do serviço Postgres).
@@ -39,21 +41,21 @@ Para o `admin` em produção, rode no seu computador com `DATABASE_URL` igual à
 
 Os **decks gerados** (`--random` no CLI, padrão no painel) são decks válidos de 30 cards sorteados com peso por raridade e curva de nível jogável. Um rodízio coloca cada card do catálogo como "foco" até todos estarem em pelo menos N partidas. A medida "com o card no deck gerado" é a menos enviesada para decidir buff/nerf; "quando jogado" favorece cards caros, que aparecem mais em partidas já ganhas.
 
-Só contas com `users.is_admin = true` veem o painel. Não há tela nem comando para isso: a permissão é dada direto no banco.
+### Quem é admin
 
-```sql
-UPDATE users SET is_admin = true  WHERE username = 'douglas';  -- dar admin
-UPDATE users SET is_admin = false WHERE username = 'douglas';  -- tirar admin
-SELECT username FROM users WHERE is_admin;                     -- listar admins
-```
-
-Em produção, rode no console do Postgres do Railway (aba Data/Query) ou com `psql` na **DATABASE_PUBLIC_URL**. Em dev, o banco é o PGlite: com o server **parado**, rode a partir de `apps/server`:
+Só contas com `users.is_admin = true` veem o painel. A permissão é dada pelo terminal, nunca pela interface:
 
 ```bash
-node --input-type=module -e "const { PGlite } = await import('@electric-sql/pglite'); const db = new PGlite('.data/dev'); console.log((await db.query(\"UPDATE users SET is_admin = true WHERE username = 'douglas' RETURNING username\")).rows); await db.close();"
+npm run admin -w @devoh/server -- grant-admin douglas    # dar admin
+npm run admin -w @devoh/server -- revoke-admin douglas   # tirar admin
+npm run admin -w @devoh/server -- users                  # a coluna isAdmin lista quem é
 ```
 
-A mudança vale no próximo carregamento da página (o `/auth/me` lê a conta do banco a cada pedido). O bloqueio para quem não é admin é só na interface: a simulação usa o código dos cards e dos bots, que já é público.
+Em produção, rode no seu computador com `DATABASE_URL` igual à **DATABASE_PUBLIC_URL** do Postgres no Railway. Em dev, o banco é o PGlite em `apps/server/.data/dev`: pare o server antes (o PGlite só abre em um processo por vez). A mudança vale no próximo pedido da pessoa: a sessão lê a conta do banco a cada pedido.
+
+**Em dev e nos testes**, `DEV_ADMIN_USERNAMES` trata contas como admin sem mexer no banco: lista separada por vírgula, com `prefixo*` valendo para todo usuário que começa assim (o Playwright usa `admin_*`). Em produção essa variável é proibida: se estiver definida, o servidor não sobe.
+
+As rotas do painel no servidor (`/api/admin/…`) usam `@AdminOnly()`, que exige sessão (401) e conta admin (403, registrado como `admin-denied` no log de segurança). O painel de balanceamento não tem rota no servidor: a simulação roda no navegador com o código dos cards e dos bots, que já é público.
 
 ## Arquitetura
 
