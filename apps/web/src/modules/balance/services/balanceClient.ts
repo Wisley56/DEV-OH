@@ -1,7 +1,9 @@
 import type { BalanceConfig, BalanceReport } from '@devoh/ai/balance';
+import type { PublishedCustomCard } from '@devoh/engine';
 
 /** Mensagens entre a tela e o worker que roda as partidas. */
-export type WorkerRequest = { type: 'run'; config: BalanceConfig } | { type: 'cancel' };
+/** `custom`: cards do painel que o worker instala antes de jogar (o worker tem o próprio catálogo). */
+export type WorkerRequest = { type: 'run'; config: BalanceConfig; custom: readonly PublishedCustomCard[] } | { type: 'cancel' };
 export type WorkerResponse =
   { type: 'progress'; done: number; total: number } | { type: 'done'; report: BalanceReport } | { type: 'error'; message: string };
 
@@ -22,7 +24,7 @@ export interface BalanceHandle {
  * Roda a simulação num Web Worker: as partidas não travam a tela e o servidor não gasta nada.
  * Um worker por execução; ele é encerrado ao terminar.
  */
-export function startBalance(config: BalanceConfig, on: BalanceHandlers): BalanceHandle {
+export function startBalance(config: BalanceConfig, custom: readonly PublishedCustomCard[], on: BalanceHandlers): BalanceHandle {
   const worker = new Worker(new URL('../worker/balance.worker.ts', import.meta.url), { type: 'module', name: 'balanceamento' });
   const send = (m: WorkerRequest) => worker.postMessage(m);
   worker.onmessage = (e: MessageEvent<WorkerResponse>) => {
@@ -38,6 +40,6 @@ export function startBalance(config: BalanceConfig, on: BalanceHandlers): Balanc
     worker.terminate();
     on.error(e.message || 'O worker da simulação falhou.');
   };
-  send({ type: 'run', config });
+  send({ type: 'run', config, custom });
   return { cancel: () => send({ type: 'cancel' }), terminate: () => worker.terminate() };
 }

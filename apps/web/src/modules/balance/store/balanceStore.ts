@@ -1,5 +1,6 @@
 import { DEFAULT_CONFIG, type BalanceConfig, type BalanceReport } from '@devoh/ai/balance';
 import { create } from 'zustand';
+import { customCards } from '../../catalog';
 import { startBalance, type BalanceHandle } from '../services/balanceClient';
 import { parseReport } from '../services/reportIO';
 
@@ -36,7 +37,7 @@ export const useBalance = create<BalanceState>((set, get) => ({
   run() {
     if (get().status !== 'idle') return;
     set({ status: 'running', error: null, progress: { done: 0, total: 0, startedAt: Date.now() } });
-    handle = startBalance(get().config, {
+    handle = startBalance(get().config, customCards(), {
       progress: (done, total) => set((s) => ({ progress: { ...s.progress, done, total } })),
       done: (report) => {
         handle = null;

@@ -1,4 +1,5 @@
 import { createBalanceRun, type BalanceConfig } from '@devoh/ai/balance';
+import { installCustomCards, type PublishedCustomCard } from '@devoh/engine';
 import type { WorkerRequest, WorkerResponse } from '../services/balanceClient';
 
 /**
@@ -16,8 +17,10 @@ let cancelled = false;
 const post = (m: WorkerResponse) => scope.postMessage(m);
 const yieldToEvents = () => new Promise((r) => setTimeout(r, 0));
 
-async function run(config: BalanceConfig) {
+async function run(config: BalanceConfig, custom: readonly PublishedCustomCard[]) {
   cancelled = false;
+  const { rejected } = installCustomCards(custom);
+  if (rejected.length) throw new Error(`Card inválido para simular: ${rejected.map((r) => r.reason).join(' ')}`);
   const sim = createBalanceRun(config);
   post({ type: 'progress', done: 0, total: sim.total });
   let more = sim.total > 0;
@@ -34,5 +37,5 @@ async function run(config: BalanceConfig) {
 scope.onmessage = (e: MessageEvent<WorkerRequest>) => {
   const m = e.data;
   if (m.type === 'cancel') cancelled = true;
-  else run(m.config).catch((err: unknown) => post({ type: 'error', message: err instanceof Error ? err.message : String(err) }));
+  else run(m.config, m.custom).catch((err: unknown) => post({ type: 'error', message: err instanceof Error ? err.message : String(err) }));
 };

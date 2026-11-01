@@ -22,6 +22,8 @@ test('painel de balanceamento: admin roda a simulação no worker e vê o relat�
 
   await page.goto('/');
   await page.getByRole('banner').getByRole('button', { name: 'Painel admin' }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+  await page.getByRole('button', { name: 'Abrir o painel' }).click();
   await expect(page).toHaveURL(/\/admin\/balanceamento$/);
 
   await page.getByLabel('Decks').selectOption('starters');
