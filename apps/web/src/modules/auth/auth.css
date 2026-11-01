@@ -125,29 +125,22 @@
   flex-wrap: wrap;
 }
 
-/* Atalho do painel admin: canto superior direito da tela, fora do fluxo da home. */
-.admin-shortcut {
-  position: fixed;
-  top: 14px;
-  right: 16px;
-  z-index: 20;
-}
-.admin-shortcut .btn {
-  border-color: var(--gold);
+/* Atalho do painel admin na barra superior (antes do som): dourado para se destacar. */
+.btn.admin-shortcut {
+  min-height: 40px;
+  border: 1px solid var(--gold);
   color: var(--gold2);
-  background: rgba(10, 15, 31, 0.85);
-  backdrop-filter: blur(4px);
 }
-.admin-shortcut .btn:hover {
+.btn.admin-shortcut:hover {
   background: var(--gold);
   color: #24170a;
 }
-@media (max-width: 560px) {
-  .admin-shortcut {
-    top: 8px;
-    right: 8px;
+/* Mesmo corte da barra: no celular e tablet fica só o ícone, do tamanho do botão de som. */
+@media (max-width: 860px) {
+  .btn.admin-shortcut {
+    width: 40px;
+    padding: 0;
   }
-  /* No celular só o ícone, para não cobrir as cartas do topo. */
   .admin-shortcut-label {
     display: none;
   }

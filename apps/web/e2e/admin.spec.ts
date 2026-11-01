@@ -5,7 +5,7 @@ test('painel de balanceamento: conta comum vê "Acesso restrito" e não tem o bo
   await withProfile(page, 'Comum');
   await signUp(page, 'Comum');
   await page.goto('/');
-  await expect(page.getByRole('button', { name: /Ranking/ })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Ranking/ })).toBeVisible();
   await expect(page.getByRole('button', { name: /Painel admin/ })).toHaveCount(0);
   await page.goto('/admin/balanceamento');
   await expect(page.getByRole('heading', { name: 'Acesso restrito' })).toBeVisible();
@@ -22,10 +22,7 @@ test('painel de balanceamento: admin roda a simulação no worker e vê o relat�
   });
 
   await page.goto('/');
-  await page
-    .getByRole('navigation', { name: 'Administração' })
-    .getByRole('button', { name: /Painel admin/ })
-    .click();
+  await page.getByRole('banner').getByRole('button', { name: 'Painel admin' }).click();
   await expect(page).toHaveURL(/\/admin\/balanceamento$/);
 
   await page.getByLabel('Decks').selectOption('starters');
