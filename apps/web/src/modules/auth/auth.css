@@ -124,3 +124,31 @@
   gap: 8px;
   flex-wrap: wrap;
 }
+
+/* Atalho do painel admin: canto superior direito da tela, fora do fluxo da home. */
+.admin-shortcut {
+  position: fixed;
+  top: 14px;
+  right: 16px;
+  z-index: 20;
+}
+.admin-shortcut .btn {
+  border-color: var(--gold);
+  color: var(--gold2);
+  background: rgba(10, 15, 31, 0.85);
+  backdrop-filter: blur(4px);
+}
+.admin-shortcut .btn:hover {
+  background: var(--gold);
+  color: #24170a;
+}
+@media (max-width: 560px) {
+  .admin-shortcut {
+    top: 8px;
+    right: 8px;
+  }
+  /* No celular só o ícone, para não cobrir as cartas do topo. */
+  .admin-shortcut-label {
+    display: none;
+  }
+}
