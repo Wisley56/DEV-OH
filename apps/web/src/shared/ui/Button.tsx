@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes } from 'react';
+import type { ButtonHTMLAttributes, Ref } from 'react';
 
 type Variant = 'default' | 'primary' | 'ghost' | 'battle' | 'end';
 type Size = 'md' | 'sm' | 'lg';
@@ -6,6 +6,7 @@ type Size = 'md' | 'sm' | 'lg';
 interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
   size?: Size;
+  ref?: Ref<HTMLButtonElement>;
 }
 
 /** Botão padrão do jogo (classes .btn do tema). */
