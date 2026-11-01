@@ -11,6 +11,7 @@ export interface UserRecord {
   draws: number;
   failedLogins: number;
   lockedUntil: Date | null;
+  isAdmin: boolean;
 }
 
 export interface NewUser {

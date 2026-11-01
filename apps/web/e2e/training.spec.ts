@@ -42,7 +42,12 @@ test('arrasta um card da mão para uma zona e joga contra o bot', async ({ page 
     await card.dragTo(zones.nth(free), { steps: 12 });
     const menu = page.getByRole('menu', { name: 'Invocar em' });
     if (await menu.isVisible().catch(() => false)) {
-      await menu.getByRole('button', { name: /Ataque/ }).click();
+      // Até 50 ms depois do arrasto o @dnd-kit descarta cliques (para o "soltar" não virar clique):
+      // um clique rápido demais se perde e o menu fica aberto. Repete até o menu fechar.
+      await expect(async () => {
+        await menu.getByRole('button', { name: /Ataque/ }).click({ timeout: 1000 });
+        await expect(menu).toBeHidden({ timeout: 300 });
+      }).toPass({ timeout: 5000 });
       dropped = true;
     } else await page.keyboard.press('Escape');
   }

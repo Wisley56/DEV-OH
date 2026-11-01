@@ -5,6 +5,10 @@ import { useNow } from '../../../shared/lib/useNow';
 import { DuelBoard } from '../../duel';
 import { useRoomStore } from '../store/roomStore';
 
+/** Prazo para a confirmação da desistência antes de sair mesmo assim (servidor fora do ar). */
+const SURRENDER_ACK_MS = 1500;
+const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
 /** Duelo online: o tabuleiro ligado à sala, com timer de turno, avisos de conexão e revanche. */
 export function OnlineDuel({
   room,
@@ -48,8 +52,10 @@ export function OnlineDuel({
         view,
         send,
         exit: () => {
-          if (view.winner === null) send({ type: 'surrender' });
-          onExit();
+          if (view.winner !== null) return onExit();
+          // Espera o servidor registrar a desistência antes de desconectar: sem isso o socket
+          // podia fechar antes, e o duelo virava W.O. por abandono só depois do prazo de volta.
+          void Promise.race([send({ type: 'surrender' }), wait(SURRENDER_ACK_MS)]).then(onExit);
         },
         exitLabel: inTournament ? 'Voltar ao torneio' : undefined,
         rematch: iWantRematch || inTournament ? undefined : rematch,

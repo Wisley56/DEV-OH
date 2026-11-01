@@ -1,4 +1,4 @@
-import { index, integer, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { boolean, index, integer, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 
 /**
  * Tabelas do DEV-OH!. Mudou algo aqui? Gere a migration com `npm run db:generate -w @devoh/server`
@@ -22,6 +22,8 @@ export const users = pgTable(
     /** Senhas erradas seguidas; ao chegar no limite, a conta fica travada até `locked_until`. */
     failedLogins: integer('failed_logins').notNull().default(0),
     lockedUntil: timestamp('locked_until', { withTimezone: true }),
+    /** Acesso ao painel admin. Sem tela para mudar: é dado direto no banco (veja DEVELOPER.md). */
+    isAdmin: boolean('is_admin').notNull().default(false),
     createdAt: createdAt(),
   },
   (t) => [uniqueIndex('users_username_key').on(t.username), index('users_ranking_idx').on(t.elo.desc(), t.wins.desc())],

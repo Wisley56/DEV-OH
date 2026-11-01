@@ -38,6 +38,7 @@ export const toAccountView = (u: UserRecord): AccountView => ({
   wins: u.wins,
   losses: u.losses,
   draws: u.draws,
+  isAdmin: u.isAdmin,
 });
 
 /** Casos de uso de conta: cadastro, login, sessão, logout e troca de senha. */

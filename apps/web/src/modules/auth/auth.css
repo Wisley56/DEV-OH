@@ -124,3 +124,24 @@
   gap: 8px;
   flex-wrap: wrap;
 }
+
+/* Atalho do painel admin na barra superior (antes do som): dourado para se destacar. */
+.btn.admin-shortcut {
+  min-height: 40px;
+  border: 1px solid var(--gold);
+  color: var(--gold2);
+}
+.btn.admin-shortcut:hover {
+  background: var(--gold);
+  color: #24170a;
+}
+/* Mesmo corte da barra: no celular e tablet fica só o ícone, do tamanho do botão de som. */
+@media (max-width: 860px) {
+  .btn.admin-shortcut {
+    width: 40px;
+    padding: 0;
+  }
+  .admin-shortcut-label {
+    display: none;
+  }
+}
