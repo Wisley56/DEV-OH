@@ -27,6 +27,7 @@ class FakeRepo implements AccountRepository {
       draws: 0,
       failedLogins: 0,
       lockedUntil: null,
+      isAdmin: false,
       ...u,
     };
     this.users.push(user);

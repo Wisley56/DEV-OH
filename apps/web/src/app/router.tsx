@@ -19,6 +19,7 @@ function RouteLoading() {
  * Convite: /sala/CODIGO (se a conta não estiver na sala, abre o lobby em /?sala=CODIGO).
  * Conta: /entrar?next=… (online e deck builder pedem login; treino, coleção e ranking não).
  * As telas de menu ficam dentro do MenuLayout (barra superior e fundo de pixels); treino e sala não.
+ * Admin: /admin/balanceamento (só contas com is_admin; o painel roda as simulações num Web Worker).
  * O servidor do web (server.mjs) devolve o index.html para qualquer rota.
  */
 export const router = createBrowserRouter([
@@ -38,6 +39,7 @@ export const router = createBrowserRouter([
         ],
       },
       { path: '/treino', lazy: () => import('../pages/TrainingPage').then((m) => ({ Component: m.TrainingPage })) },
+      { path: '/admin/balanceamento', lazy: () => import('../pages/AdminBalancePage').then((m) => ({ Component: m.AdminBalancePage })) },
       { path: '/sala/:code', lazy: () => import('../pages/RoomPage').then((m) => ({ Component: m.RoomPage })) },
     ],
   },

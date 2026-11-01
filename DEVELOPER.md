@@ -25,13 +25,35 @@ npm run format     # Prettier
 npm run build:all  # build de todos os workspaces (o CI roda tudo isso)
 npm run e2e        # Playwright: sobe server + web com prazos curtos e joga no navegador (usa o Chrome instalado; PW_CHANNEL=msedge para o Edge)
 npm run crop-art   # regera as artes a partir de assets/source
-npm run balance    # round-robin dos decks iniciais com os bots e relatório de balanceamento (--games N, --hard, --out arquivo)
+npm run balance    # bots jogando entre si e relatório de balanceamento (--random, --random-only, --games N, --min-games N, --hard, --seed N, --out arquivo.md, --json arquivo.json)
 npm run db:generate -w @devoh/server   # mudou o schema? gera a migration SQL em apps/server/drizzle (versione o arquivo)
 npm run admin -w @devoh/server -- users                        # lista as contas do banco da DATABASE_URL
 npm run admin -w @devoh/server -- reset-password <usuário>     # senha esquecida: gera uma nova e derruba as sessões
 ```
 
 Para o `admin` em produção, rode no seu computador com `DATABASE_URL` igual à **DATABASE_PUBLIC_URL** do Postgres no Railway (Variables do serviço Postgres).
+
+### Painel admin de balanceamento
+
+`/admin/balanceamento` (link "⚖ Balanceamento" na faixa da conta) roda a mesma simulação do `npm run balance` **no navegador**, num Web Worker, e mostra os resultados em gráficos: matriz de confrontos dos decks iniciais, win rate de cada card com intervalo de confiança de 95%, veredito de buff/nerf e auditoria de ATK/DEF. Dá para exportar o relatório (JSON/Markdown) e abrir um JSON anterior para comparar antes e depois de um ajuste. O `--json` do CLI gera o mesmo formato.
+
+Os **decks gerados** (`--random` no CLI, padrão no painel) são decks válidos de 30 cards sorteados com peso por raridade e curva de nível jogável. Um rodízio coloca cada card do catálogo como "foco" até todos estarem em pelo menos N partidas. A medida "com o card no deck gerado" é a menos enviesada para decidir buff/nerf; "quando jogado" favorece cards caros, que aparecem mais em partidas já ganhas.
+
+Só contas com `users.is_admin = true` veem o painel. Não há tela nem comando para isso: a permissão é dada direto no banco.
+
+```sql
+UPDATE users SET is_admin = true  WHERE username = 'douglas';  -- dar admin
+UPDATE users SET is_admin = false WHERE username = 'douglas';  -- tirar admin
+SELECT username FROM users WHERE is_admin;                     -- listar admins
+```
+
+Em produção, rode no console do Postgres do Railway (aba Data/Query) ou com `psql` na **DATABASE_PUBLIC_URL**. Em dev, o banco é o PGlite: com o server **parado**, rode a partir de `apps/server`:
+
+```bash
+node --input-type=module -e "const { PGlite } = await import('@electric-sql/pglite'); const db = new PGlite('.data/dev'); console.log((await db.query(\"UPDATE users SET is_admin = true WHERE username = 'douglas' RETURNING username\")).rows); await db.close();"
+```
+
+A mudança vale no próximo carregamento da página (o `/auth/me` lê a conta do banco a cada pedido). O bloqueio para quem não é admin é só na interface: a simulação usa o código dos cards e dos bots, que já é público.
 
 ## Arquitetura
 
@@ -161,7 +183,7 @@ O web nunca guarda segredo no navegador: a sessão é um cookie HttpOnly e o `au
 4. Registre o card em `content/cards/index.ts`. A posição nessa lista é a ordem da coleção.
 5. Se o bot precisar de uma regra para usá-lo bem, adicione em `packages/ai/src/heuristics/cardPlays.ts` (`TASK_PLAYS`, `IGNITION_PLAYS`, `FLIP_PLAYS`, `QUICK_BATTLE_PLAYS`…).
 6. Arte: coloque a imagem em `assets/source`, registre o recorte em `scripts/crop-art.ts` e rode `npm run crop-art -- <id>` (sem ids, refaz todos). Alternativa: `art: 'icon:<emoji>|<cor1>|<cor2>'`.
-7. `npm test`: as partidas bot×bot pegam efeitos quebrados. Mexeu em stats ou nos decks? Rode `npm run balance` (meta: cada deck inicial entre 45% e 55%; o relatório também lista quem passa do orçamento ATK/DEF por nível).
+7. `npm test`: as partidas bot×bot pegam efeitos quebrados. Mexeu em stats ou nos decks? Rode `npm run balance -- --random` ou o painel `/admin/balanceamento` (meta: cada deck inicial entre 45% e 55%; card novo fora dos decks iniciais só é testado nos decks gerados; o relatório também lista quem passa do orçamento ATK/DEF por nível).
 
 > **Teste golden** (`packages/ai/src/golden.test.ts`): 50 partidas com seed fixa precisam dar exatamente o mesmo resultado. Ele existe para pegar mudanças de comportamento sem querer. Se a mudança de regra **for** intencional, regrave com `npx vitest run -u` em `packages/ai` e explique no commit.
 

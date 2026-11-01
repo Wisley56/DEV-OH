@@ -1,0 +1,420 @@
+/* ───────── Painel admin: balanceamento ───────── */
+/* Cores da escala divergente (fundo escuro): fraco = azul, forte = vermelho, meio = cinza. */
+.balance-page {
+  --bal-weak: #3987e5;
+  --bal-strong: #e66767;
+  --bal-neutral: #98a2c8;
+  --bal-line: rgba(238, 241, 255, 0.12);
+  max-width: 1100px;
+  display: grid;
+  gap: 16px;
+}
+.balance-hint {
+  margin: 0;
+  font-size: 13px;
+}
+.balance-empty {
+  text-align: center;
+  padding: 30px 0;
+}
+.balance-section {
+  display: grid;
+  gap: 10px;
+}
+.balance-section h2 {
+  margin: 8px 0 0;
+  font-size: 1.15rem;
+}
+
+/* Formulário */
+.balance-run {
+  display: grid;
+  gap: 12px;
+  padding: 14px 16px;
+}
+.balance-fields,
+.balance-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px 14px;
+}
+.balance-fields label,
+.balance-filters label {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.balance-fields input[type='number'] {
+  width: 110px;
+}
+.balance-fields select,
+.balance-filters select {
+  width: auto;
+  min-width: 140px;
+}
+.balance-actions {
+  margin-left: auto;
+}
+.balance-progress {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.balance-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.balance-bar span {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+  border-radius: 999px;
+  transition: width 0.3s;
+}
+.balance-files {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+.balance-sep {
+  width: 1px;
+  height: 20px;
+  background: var(--panel-border);
+  margin: 0 4px;
+}
+.balance-baseline {
+  color: var(--muted);
+}
+.balance-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--gold);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Resumo */
+.balance-meta {
+  margin: 0;
+  font-size: 13px;
+}
+.balance-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+}
+.balance-tile {
+  display: grid;
+  gap: 2px;
+  padding: 12px 14px;
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  background: var(--panel);
+}
+.bt-label {
+  font-size: 12px;
+  color: var(--muted);
+}
+.bt-value {
+  font-size: 1.6rem;
+  color: var(--text);
+}
+.bt-note {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Tabelas */
+.balance-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--panel-border);
+  border-radius: 14px;
+  background: var(--panel);
+}
+.balance-heatmap,
+.balance-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.balance-heatmap th,
+.balance-heatmap td,
+.balance-table th,
+.balance-table td {
+  padding: 8px 10px;
+  text-align: center;
+  white-space: nowrap;
+}
+.balance-heatmap thead th,
+.balance-table thead th {
+  color: var(--muted);
+  font-weight: 600;
+  border-bottom: 1px solid var(--panel-border);
+}
+.balance-heatmap tbody th,
+.balance-table tbody th {
+  text-align: left;
+  font-weight: 600;
+}
+
+/* Matriz de confrontos: 2px de respiro entre as células coloridas. */
+.balance-heatmap {
+  border-collapse: separate;
+  border-spacing: 2px;
+}
+.balance-heatmap .hm-cell,
+.balance-heatmap .hm-total {
+  color: #fff;
+  font-weight: 700;
+  border-radius: 6px;
+  min-width: 80px;
+}
+.balance-heatmap .hm-self {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+}
+.balance-scale {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.balance-scale i {
+  width: 180px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+/* Gráfico de win rate com intervalo de confiança */
+.wr-chart {
+  position: relative;
+  padding: 10px 14px 12px;
+  border: 1px solid var(--panel-border);
+  border-radius: 14px;
+  background: var(--panel);
+}
+.wr-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.wr-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.wr-legend .wr-dot,
+.wr-legend .wr-base {
+  position: static;
+  transform: none;
+}
+.wr-row,
+.wr-guides {
+  display: grid;
+  grid-template-columns: minmax(120px, 230px) 1fr 44px;
+  align-items: center;
+  gap: 10px;
+}
+.wr-row {
+  height: 20px;
+  font-size: 12.5px;
+  border-radius: 4px;
+}
+.wr-row:not(.wr-axis):hover,
+.wr-row:focus-visible {
+  background: rgba(255, 255, 255, 0.05);
+  outline: none;
+}
+.wr-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: right;
+}
+.wr-value {
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+.wr-track {
+  position: relative;
+  height: 100%;
+}
+.wr-body {
+  position: relative;
+}
+.wr-guides {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.wr-guides i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--bal-line);
+}
+.wr-guides i.mid {
+  background: rgba(238, 241, 255, 0.35);
+}
+.wr-axis {
+  height: 18px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.wr-axis .wr-track span {
+  position: absolute;
+  top: 2px;
+  transform: translateX(-50%);
+}
+.wr-ci,
+.wr-ci-sample {
+  position: absolute;
+  top: 50%;
+  height: 2px;
+  margin-top: -1px;
+  background: rgba(238, 241, 255, 0.4);
+  border-radius: 2px;
+}
+.wr-ci-sample {
+  position: static;
+  display: inline-block;
+  width: 22px;
+  margin: 0;
+}
+.wr-dot,
+.wr-base {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  display: inline-block;
+}
+/* Anel da cor do fundo: separa o ponto do traço e dos vizinhos. */
+.wr-dot {
+  box-shadow: 0 0 0 2px #121a36;
+}
+.v-nerf.wr-dot {
+  background: var(--bal-strong);
+}
+.v-buff.wr-dot {
+  background: var(--bal-weak);
+}
+.v-ok.wr-dot {
+  background: var(--bal-neutral);
+}
+.v-poucos-dados.wr-dot {
+  background: transparent;
+  border: 2px solid var(--bal-neutral);
+}
+.wr-base {
+  width: 8px;
+  height: 8px;
+  border: 2px dashed var(--gold2);
+  background: transparent;
+}
+.wr-tip {
+  position: fixed;
+  z-index: 50;
+  display: grid;
+  gap: 2px;
+  max-width: 300px;
+  padding: 8px 10px;
+  font-size: 12.5px;
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  background: #0d1430;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+
+/* Tabela de cards */
+.balance-table thead th button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.balance-table tbody tr + tr > * {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+.balance-table .bt-name {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.kind-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  margin-right: 4px;
+}
+.kind-dot.k-pro {
+  background: var(--pro);
+}
+.kind-dot.k-task {
+  background: var(--task);
+}
+.kind-dot.k-bug {
+  background: var(--bug);
+}
+.verdict {
+  text-align: left !important;
+}
+.verdict.v-ok,
+.verdict.v-poucos-dados {
+  color: var(--muted);
+}
+.verdict.v-nerf::before,
+.verdict.v-buff::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+.verdict.v-nerf::before {
+  background: var(--bal-strong);
+}
+.verdict.v-buff::before {
+  background: var(--bal-weak);
+}
+
+.balance-budget {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 4px;
+  font-size: 14px;
+}
+
+@media (max-width: 640px) {
+  .wr-row,
+  .wr-guides {
+    grid-template-columns: 110px 1fr 36px;
+    gap: 6px;
+  }
+  .balance-actions {
+    margin-left: 0;
+    flex-basis: 100%;
+  }
+}

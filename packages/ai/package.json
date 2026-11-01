@@ -9,6 +9,11 @@
       "source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./balance": {
+      "source": "./src/balance/index.ts",
+      "types": "./dist/balance/index.d.ts",
+      "import": "./dist/balance/index.js"
     }
   },
   "files": [

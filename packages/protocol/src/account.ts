@@ -19,6 +19,8 @@ export interface AccountView {
   wins: number;
   losses: number;
   draws: number;
+  /** Pode abrir o painel admin (/admin). */
+  isAdmin: boolean;
 }
 
 export interface RegisterPayload {

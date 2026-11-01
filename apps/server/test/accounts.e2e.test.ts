@@ -38,7 +38,7 @@ describe('contas e decks (e2e)', () => {
     expect(setCookie).toMatch(/SameSite=Strict/i);
     expect(res.headers.get('cache-control')).toBe('no-store');
     const body = await res.text();
-    expect(JSON.parse(body)).toEqual({ username: 'ana_1', displayName: 'Ana', elo: 1000, wins: 0, losses: 0, draws: 0 });
+    expect(JSON.parse(body)).toEqual({ username: 'ana_1', displayName: 'Ana', elo: 1000, wins: 0, losses: 0, draws: 0, isAdmin: false });
     expect(body).not.toContain(sessionCookie(res).split('=')[1]);
 
     const me = await api('/auth/me', { cookie: sessionCookie(res) });
