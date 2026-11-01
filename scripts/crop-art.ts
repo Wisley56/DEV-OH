@@ -2,20 +2,17 @@
  * Recorta as ilustrações das imagens originais (assets/source) para
  * apps/web/public/art no formato da janela de arte do card (≈1.163:1).
  * Regiões mais largas que o alvo são encaixadas sobre uma cópia desfocada,
- * para não cortar o texto dos stickers.
+ * para não cortar o texto dos stickers (o algoritmo fica em @devoh/card-art, o mesmo do upload
+ * do criador de cartas).
  *
  * Uso: npm run crop-art            (todos)
  *      npm run crop-art -- juju diegao   (só os ids informados)
  */
-import sharp from 'sharp';
-import { mkdirSync } from 'node:fs';
+import { renderCardArt, type Box } from '@devoh/card-art';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 
-const OUT_W = 720;
-const OUT_H = 620;
 const SRC = 'assets/source';
 const OUT = 'apps/web/public/art';
-
-type Box = { left: number; top: number; width: number; height: number };
 
 // Regiões medidas nas imagens enviadas (pixels da imagem original).
 const CROPS: Record<string, { src: string; box?: Box }> = {
@@ -72,13 +69,6 @@ mkdirSync(OUT, { recursive: true });
 
 for (const [id, { src, box }] of Object.entries(CROPS)) {
   if (only.length && !only.includes(id)) continue;
-  const base = sharp(`${SRC}/${src}.webp`);
-  const region = await (box ? base.extract(box) : base).toBuffer();
-  const bg = await sharp(region).resize(OUT_W, OUT_H, { fit: 'cover' }).blur(28).modulate({ brightness: 0.6 }).toBuffer();
-  const fg = await sharp(region).resize(OUT_W, OUT_H, { fit: 'inside' }).toBuffer();
-  await sharp(bg)
-    .composite([{ input: fg, gravity: 'center' }])
-    .webp({ quality: 84 })
-    .toFile(`${OUT}/${id}.webp`);
+  writeFileSync(`${OUT}/${id}.webp`, await renderCardArt(readFileSync(`${SRC}/${src}.webp`), box));
   console.log('✔', id);
 }
