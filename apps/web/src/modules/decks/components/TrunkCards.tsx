@@ -1,9 +1,10 @@
-import { CARD_LIST, maxCopies } from '@devoh/engine';
+import { cardList, maxCopies } from '@devoh/engine';
 import { ArrowDownWideNarrow, FilterX, Search, SlidersHorizontal } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Button } from '../../../shared/ui';
 import { activeFilters, applyFilter, CollectionFilterFields, EMPTY_FILTER, SORTS, type CollectionFilter } from '../../collection';
 import { countCards } from '../services/deckEditing';
+import { useCatalogRevision } from '../../cards';
 import { useDeckBuilder } from '../store/deckBuilderStore';
 import { CardTile } from './CardTile';
 
@@ -11,7 +12,9 @@ import { CardTile } from './CardTile';
 export function TrunkCards({ filter: f, onFilter: setF }: { filter: CollectionFilter; onFilter(next: CollectionFilter): void }) {
   const cards = useDeckBuilder((s) => s.editing.cards);
   const [showFilters, setShowFilters] = useState(false);
-  const list = useMemo(() => applyFilter(CARD_LIST, f), [f]);
+  const revision = useCatalogRevision();
+  const all = useMemo(() => (void revision, cardList()), [revision]);
+  const list = useMemo(() => applyFilter(all, f), [all, f]);
   const counts = useMemo(() => countCards(cards), [cards]);
   const active = activeFilters(f);
   const pristine = active === 0 && !f.query && f.sort === EMPTY_FILTER.sort;
@@ -63,7 +66,7 @@ export function TrunkCards({ filter: f, onFilter: setF }: { filter: CollectionFi
       )}
 
       <p className="mono muted db-trunk-count">
-        {list.length} de {CARD_LIST.length} cards
+        {list.length} de {all.length} cards
       </p>
 
       <div className="db-trunk-grid">

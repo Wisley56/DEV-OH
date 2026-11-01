@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyAction, createGame, forfeit, fullTypeLine, getView, STARTER_DECKS, validateDeck, CARD_LIST } from '../index';
+import { applyAction, createGame, forfeit, fullTypeLine, getView, STARTER_DECKS, validateDeck, BASE_CARD_LIST } from '../index';
 import { newInstance, newProSlot } from '../core/board';
 import { destroyPro } from './zones';
 import type { Action, GameState, Seat } from '../core/types';
@@ -61,7 +61,7 @@ describe('decks', () => {
     expect(errs.some((e) => e.includes('máximo 1'))).toBe(true);
   });
   it('toda arte e texto definidos', () => {
-    for (const c of CARD_LIST) {
+    for (const c of BASE_CARD_LIST) {
       expect(c.art, c.id).toBeTruthy();
       expect(c.text.length, c.id).toBeGreaterThan(10);
     }
@@ -641,7 +641,7 @@ describe('FLIP: efeitos', () => {
   });
 
   it('cards com FLIP mostram a tag no tipo', () => {
-    const d = CARD_LIST.find((c) => c.id === 'docker')!;
+    const d = BASE_CARD_LIST.find((c) => c.id === 'docker')!;
     expect(fullTypeLine(d)).toBe('Ferramenta / Container / Efeito / FLIP');
   });
 });

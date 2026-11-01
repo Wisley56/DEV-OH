@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyAction, CARD_LIST, createGame, getView, maxCopies, validateDeck } from '../index';
+import { applyAction, BASE_CARD_LIST, createGame, getView, maxCopies, validateDeck } from '../index';
 import { ZONES } from '../core/constants';
 import type { Action, GameState, Seat } from '../core/types';
 
@@ -19,7 +19,7 @@ function prng(seed: number) {
 }
 
 function randomDeck(rand: () => number) {
-  const pool = CARD_LIST.flatMap((c) => Array<string>(maxCopies(c.id)).fill(c.id));
+  const pool = BASE_CARD_LIST.flatMap((c) => Array<string>(maxCopies(c.id)).fill(c.id));
   for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.floor(rand() * (i + 1));
     [pool[i], pool[j]] = [pool[j], pool[i]];

@@ -1,4 +1,4 @@
-import { card, hasCard } from '../core/catalog';
+import { card, cardExists, hasCard } from '../core/catalog';
 import { DECK_MAX, DECK_MIN, MAX_COPIES } from '../core/constants';
 
 /** Cópias permitidas de um card no deck: pessoa da squad, Ultra e Secreta 1; Super 2; demais até MAX_COPIES. */
@@ -16,7 +16,8 @@ export function validateDeck(cards: string[]): string[] {
   const counts = new Map<string, number>();
   for (const id of cards) {
     if (!hasCard(id)) {
-      errors.push(`Card desconhecido: ${id}`);
+      // Fora da coleção, mas o jogo ainda conhece: card criado no painel e depois aposentado.
+      errors.push(cardExists(id) ? `"${card(id).name}" foi aposentado e não pode mais entrar em decks.` : `Card desconhecido: ${id}`);
       continue;
     }
     counts.set(id, (counts.get(id) ?? 0) + 1);

@@ -1,4 +1,4 @@
-import { CARD_LIST, card, maxCopies, type CardDef, type CardKind, type Rarity } from '@devoh/engine';
+import { cardList, card, maxCopies, type CardDef, type CardKind, type Rarity } from '@devoh/engine';
 
 /** Gerador pseudoaleatório com seed (mulberry32): o mesmo seed gera os mesmos decks. */
 export function seededRng(seed: number): () => number {
@@ -29,7 +29,7 @@ const tier = (c: CardDef) => (c.kind !== 'pro' ? 0 : (c.level ?? 1) >= 7 ? 2 : (
  * Deck válido de 30 cards. Os cards de `focus` entram primeiro (1 cópia cada);
  * o resto é sorteado por tipo, com peso por raridade e respeitando as cópias permitidas.
  */
-export function generateDeck(rng: () => number, focus: readonly string[] = [], pool: readonly CardDef[] = CARD_LIST): string[] {
+export function generateDeck(rng: () => number, focus: readonly string[] = [], pool: readonly CardDef[] = cardList()): string[] {
   const counts = new Map<string, number>();
   const byKind: Record<CardKind, number> = { pro: 0, task: 0, bug: 0 };
   const tiers = [0, 0, 0];
@@ -74,7 +74,7 @@ export function generateDeck(rng: () => number, focus: readonly string[] = [], p
  * Entrega os cards foco em rodízio: cada volta embaralha o catálogo inteiro,
  * então todos os cards aparecem o mesmo número de vezes (±1).
  */
-export function focusRotation(rng: () => number, ids: readonly string[] = CARD_LIST.map((c) => c.id)) {
+export function focusRotation(rng: () => number, ids: readonly string[] = cardList().map((c) => c.id)) {
   const queue: string[] = [];
   const refill = () => {
     const next = [...ids];

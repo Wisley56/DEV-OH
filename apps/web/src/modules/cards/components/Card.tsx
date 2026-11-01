@@ -1,5 +1,6 @@
-import { card, cardInfo, RARITY_INFO, type Attribute, type CardDef } from '@devoh/engine';
+import { card, cardExists, cardInfo, RARITY_INFO, type Attribute, type CardDef } from '@devoh/engine';
 import type { CSSProperties, ReactNode } from 'react';
+import { useCatalogRevision } from '../hooks/useCatalogRevision';
 
 export const ATTR: Record<Attribute, { label: string; glyph: string; color: string }> = {
   TREVA: { label: 'TREVA', glyph: '闇', color: '#7b2cbf' },
@@ -62,10 +63,46 @@ export function AttrBadge({ def }: { def: CardDef }) {
   );
 }
 
-/** Card completo, no estilo das cartas da squad. Escala pela largura (container queries). */
-export function CardFull({ cardId, atk, def: defVal, style }: { cardId: string; atk?: number; def?: number; style?: CSSProperties }) {
-  const d = card(cardId);
-  const info = cardInfo(cardId);
+/** O que a face do card mostra além do CardDef (moldura, subtipo, linha de tipo e código). */
+export type CardFaceInfo = ReturnType<typeof cardInfo>;
+
+/** Card que o site ainda não conhece (criado no painel depois do carregamento): some ao atualizar o catálogo. */
+const PENDING_DEF: CardDef = {
+  id: '__pendente',
+  name: 'Carta nova',
+  kind: 'task',
+  rarity: 'comum',
+  text: 'Esta carta acabou de chegar ao jogo. Atualizando o catálogo…',
+  art: 'icon:✨|#1a2350|#3a4a8a',
+};
+const PENDING_INFO: CardFaceInfo = { frame: 'task', flip: false, subtype: 'Carta nova', typeLine: '', code: 'DVOH-???' };
+
+/** CardDef e info de um id; um id desconhecido vira o card "Carta nova" em vez de quebrar a tela. */
+function resolve(cardId: string): { d: CardDef; info: CardFaceInfo } {
+  return cardExists(cardId) ? { d: card(cardId), info: cardInfo(cardId) } : { d: PENDING_DEF, info: PENDING_INFO };
+}
+
+/** Card completo de um id do catálogo. Escala pela largura (container queries). */
+export function CardFull({ cardId, atk, def, style }: { cardId: string; atk?: number; def?: number; style?: CSSProperties }) {
+  useCatalogRevision();
+  const { d, info } = resolve(cardId);
+  return <CardFace card={d} info={info} atk={atk} def={def} style={style} />;
+}
+
+/** A face completa a partir do CardDef: serve também para um rascunho que ainda não está no catálogo. */
+export function CardFace({
+  card: d,
+  info,
+  atk,
+  def: defVal,
+  style,
+}: {
+  card: CardDef;
+  info: CardFaceInfo;
+  atk?: number;
+  def?: number;
+  style?: CSSProperties;
+}) {
   const icon = d.kind === 'pro' ? '' : subtypeIcon(d);
   return (
     <div className={`card-full kind-${d.kind} frame-${info.frame} rarity-${d.rarity}`} style={style}>
@@ -131,18 +168,40 @@ export function CardMini({
   className?: string;
   badge?: ReactNode;
 }) {
+  useCatalogRevision();
   if (!cardId || faceDown) {
     return (
       <div className={`card-mini card-back ${className}`}>
         <div className="cm-inner" />
-        {cardId && faceDown && <div className="cm-peek">{card(cardId).name}</div>}
+        {cardId && faceDown && <div className="cm-peek">{resolve(cardId).d.name}</div>}
         {badge}
       </div>
     );
   }
-  const d = card(cardId);
+  const { d, info } = resolve(cardId);
+  return <CardMiniFace card={d} frame={info.frame} atk={atk} def={defVal} position={position} className={className} badge={badge} />;
+}
+
+/** A face compacta a partir do CardDef (ver CardFace). */
+export function CardMiniFace({
+  card: d,
+  frame,
+  atk,
+  def: defVal,
+  position = 'atk',
+  className = '',
+  badge,
+}: {
+  card: CardDef;
+  frame: CardFaceInfo['frame'];
+  atk?: number;
+  def?: number;
+  position?: 'atk' | 'def';
+  className?: string;
+  badge?: ReactNode;
+}) {
   return (
-    <div className={`card-mini kind-${d.kind} frame-${cardInfo(cardId).frame} rarity-${d.rarity} pos-${position} ${className}`}>
+    <div className={`card-mini kind-${d.kind} frame-${frame} rarity-${d.rarity} pos-${position} ${className}`}>
       <div className="cm-inner">
         <div className="cm-art">
           <CardArt def={d} />
