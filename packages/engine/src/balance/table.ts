@@ -4,7 +4,7 @@ import type { Trigger } from '../dsl/types';
 /**
  * Tabela de balanceamento do DEV-OH! (1 ponto = 100 de ATK/DEF).
  * Base: a curva "vanilla" do Yu-Gi-Oh! (degraus por número de sacrifícios), adaptada a 4000 LP
- * e ao Estresse. É só dado: recalibre aqui e rode os testes de calibração (score.test.ts).
+ * e ao Estresse. É só dado: recalibre aqui e rode os testes de calibração (dsl/dsl.test.ts, "tabela de balanceamento").
  */
 
 /** Por nível: orçamento de ATK+DEF e teto de ATK. */
