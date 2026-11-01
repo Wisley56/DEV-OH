@@ -1,14 +1,16 @@
-import { CARD_LIST } from '@devoh/engine';
+import { cardList } from '@devoh/engine';
 import { useMemo, useState } from 'react';
 import { PageHead } from '../../../shared/ui';
-import { CardFull } from '../../cards';
+import { CardFull, useCatalogRevision } from '../../cards';
 import { applyFilter, EMPTY_FILTER, type CollectionFilter } from '../services/collectionFilter';
 import { CollectionFilterFields, KIND_TABS } from './CollectionFilterFields';
 
 /** Todos os cards do jogo, com filtros por tipo, raridade, atributo, subtipo e nível. */
 export function CardCollection() {
   const [f, setF] = useState<CollectionFilter>(EMPTY_FILTER);
-  const list = useMemo(() => applyFilter(CARD_LIST, f), [f]);
+  const revision = useCatalogRevision();
+  const all = useMemo(() => (void revision, cardList()), [revision]);
+  const list = useMemo(() => applyFilter(all, f), [all, f]);
   return (
     <>
       <PageHead title="Coleção">
@@ -30,9 +32,9 @@ export function CardCollection() {
         <CollectionFilterFields value={f} onChange={setF} />
         <span className="collection-count">
           <span className="mono">
-            {list.length} de {CARD_LIST.length} cards
+            {list.length} de {all.length} cards
           </span>
-          {list.length !== CARD_LIST.length && (
+          {list.length !== all.length && (
             <button className="link-btn" onClick={() => setF(EMPTY_FILTER)}>
               Limpar
             </button>

@@ -1,4 +1,4 @@
-import { CARD_LIST, card, validateDeck } from '@devoh/engine';
+import { BASE_CARD_LIST, card, validateDeck } from '@devoh/engine';
 import { describe, expect, it } from 'vitest';
 import { focusRotation, generateDeck, GENERATED_DECK_SIZE, seededRng } from './deckGen';
 import { reportsToMarkdown } from './markdown';
@@ -24,8 +24,8 @@ describe('decks gerados', () => {
   it('o rodízio de foco passa por todos os cards antes de repetir', () => {
     const next = focusRotation(seededRng(1));
     const seen = new Set<string>();
-    for (let i = 0; i < Math.ceil(CARD_LIST.length / 3); i++) next(3).forEach((id) => seen.add(id));
-    expect(seen.size).toBe(CARD_LIST.length);
+    for (let i = 0; i < Math.ceil(BASE_CARD_LIST.length / 3); i++) next(3).forEach((id) => seen.add(id));
+    expect(seen.size).toBe(BASE_CARD_LIST.length);
   });
 
   it('mesmo seed, mesmos decks', () => {

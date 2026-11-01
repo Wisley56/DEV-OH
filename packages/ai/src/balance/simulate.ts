@@ -1,4 +1,4 @@
-import { applyAction, card, CARD_LIST, createGame, STARTER_DECKS, type CardKind, type GameState, type Seat } from '@devoh/engine';
+import { applyAction, card, cardList, createGame, STARTER_DECKS, type CardKind, type GameState, type Seat } from '@devoh/engine';
 import { botAction, type BotLevel } from '../index';
 import { budgetAudit, type BudgetIssue } from './budget';
 import { focusRotation, generateDeck, seededRng } from './deckGen';
@@ -162,7 +162,7 @@ function planGames(config: BalanceConfig): PlannedGame[] {
   if (config.mode !== 'starters' && config.minGamesPerCard > 0) {
     const rng = seededRng(config.seed + 0x5eed);
     const nextFocus = focusRotation(rng);
-    const inclusion = new Map(CARD_LIST.map((c) => [c.id, 0]));
+    const inclusion = new Map(cardList().map((c) => [c.id, 0]));
     const count = (deck: string[]) => new Set(deck).forEach((id) => add(inclusion, id));
     const covered = () => [...inclusion.values()].every((v) => v >= config.minGamesPerCard);
     for (let k = 0; !covered() && k < MAX_GENERATED_GAMES; k++) {
@@ -205,7 +205,7 @@ export function createBalanceRun(config: BalanceConfig): BalanceRun {
   const wins = STARTER_DECKS.map(() => STARTER_DECKS.map(() => 0));
   const games = STARTER_DECKS.map(() => STARTER_DECKS.map(() => 0));
   const stats = new Map(
-    CARD_LIST.map((c) => [c.id, { played: { games: 0, wins: 0 }, included: { games: 0, wins: 0 }, plays: 0, damage: 0, destroyed: 0 }]),
+    cardList().map((c) => [c.id, { played: { games: 0, wins: 0 }, included: { games: 0, wins: 0 }, plays: 0, damage: 0, destroyed: 0 }]),
   );
   const totals = { games: 0, starterGames: 0, generatedGames: 0, decided: 0, firstWins: 0, turns: 0 };
   let next = 0;
@@ -253,7 +253,7 @@ export function createBalanceRun(config: BalanceConfig): BalanceRun {
       return next < plan.length;
     },
     report(cancelled = false) {
-      const cards: CardStat[] = CARD_LIST.map((c) => {
+      const cards: CardStat[] = cardList().map((c) => {
         const st = stats.get(c.id)!;
         const stat = { id: c.id, name: c.name, kind: c.kind, ...structuredClone(st) };
         return { ...stat, verdict: verdictOf(verdictTally(stat)) };

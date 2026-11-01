@@ -1,5 +1,6 @@
-import { CARD_LIST, RARITIES, RARITY_INFO, type CardKind } from '@devoh/engine';
-import { ATTR } from '../../cards';
+import { cardList, RARITIES, RARITY_INFO, type CardKind } from '@devoh/engine';
+import { useMemo } from 'react';
+import { ATTR, useCatalogRevision } from '../../cards';
 import { countByRarity, filterOptions, type CollectionFilter, type SortKey } from '../services/collectionFilter';
 
 export const KIND_TABS: { id: CardKind | 'all'; label: string }[] = [
@@ -16,9 +17,6 @@ export const SORTS: { id: SortKey; label: string }[] = [
   { id: 'atk', label: 'ATK' },
 ];
 
-const OPTIONS = filterOptions(CARD_LIST);
-const COUNTS = countByRarity(CARD_LIST);
-
 /** Campos de filtro dos cards (tipo opcional, raridade, subtipo, atributo, nível e ordenação). */
 export function CollectionFilterFields({
   value: f,
@@ -32,6 +30,11 @@ export function CollectionFilterFields({
   withKind?: boolean;
   withSort?: boolean;
 }) {
+  const revision = useCatalogRevision();
+  const { OPTIONS, COUNTS } = useMemo(
+    () => (void revision, { OPTIONS: filterOptions(cardList()), COUNTS: countByRarity(cardList()) }),
+    [revision],
+  );
   const set = <K extends keyof CollectionFilter>(k: K, v: CollectionFilter[K]) => onChange({ ...f, [k]: v });
   return (
     <>

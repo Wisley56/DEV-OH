@@ -1,4 +1,4 @@
-import { card, CARD_LIST, DECK_MAX, maxCopies, STARTER_DECKS, type DeckList } from '@devoh/engine';
+import { card, cardList, DECK_MAX, maxCopies, STARTER_DECKS, type DeckList } from '@devoh/engine';
 
 /** Regras de edição de deck no deck builder (funções puras). */
 
@@ -45,7 +45,7 @@ export function sortedEntries(cards: string[]): [string, number][] {
 
 /** Cartas de um deck aleatório e válido com `DECK_MAX` cards (botão Auto). */
 export function randomDeck(rng: () => number = Math.random): string[] {
-  const pool = CARD_LIST.map((c) => c.id);
+  const pool = cardList().map((c) => c.id);
   for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1));
     [pool[i], pool[j]] = [pool[j], pool[i]];

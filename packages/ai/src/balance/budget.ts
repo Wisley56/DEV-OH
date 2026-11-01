@@ -1,4 +1,4 @@
-import { CARD_LIST, cardFrame } from '@devoh/engine';
+import { cardList, cardFrame } from '@devoh/engine';
 
 /**
  * Orçamento de referência por nível: soma ATK+DEF e teto de ATK (Normal ganha +10%).
@@ -25,17 +25,19 @@ export interface BudgetIssue {
 
 /** Profissionais acima do orçamento de ATK/DEF do nível. */
 export function budgetAudit(): BudgetIssue[] {
-  return CARD_LIST.filter((c) => c.kind === 'pro').flatMap((c) => {
-    const level = c.level ?? 1;
-    const b = BUDGET.find((x) => level <= x.max)!;
-    const atk = c.atk ?? 0;
-    const def = c.def ?? 0;
-    const bonus = cardFrame(c) === 'normal' ? 1.1 : 1;
-    const limit = Math.round(b.sum * bonus);
-    const atkCap = b.atk && Math.round(b.atk * bonus);
-    const over: string[] = [];
-    if (atk + def > limit) over.push(`soma ${atk + def} > ${limit}`);
-    if (atkCap && atk > atkCap) over.push(`ATK ${atk} > ${atkCap}`);
-    return over.length ? [{ id: c.id, name: c.name, level, atk, def, over }] : [];
-  });
+  return cardList()
+    .filter((c) => c.kind === 'pro')
+    .flatMap((c) => {
+      const level = c.level ?? 1;
+      const b = BUDGET.find((x) => level <= x.max)!;
+      const atk = c.atk ?? 0;
+      const def = c.def ?? 0;
+      const bonus = cardFrame(c) === 'normal' ? 1.1 : 1;
+      const limit = Math.round(b.sum * bonus);
+      const atkCap = b.atk && Math.round(b.atk * bonus);
+      const over: string[] = [];
+      if (atk + def > limit) over.push(`soma ${atk + def} > ${limit}`);
+      if (atkCap && atk > atkCap) over.push(`ATK ${atk} > ${atkCap}`);
+      return over.length ? [{ id: c.id, name: c.name, level, atk, def, over }] : [];
+    });
 }

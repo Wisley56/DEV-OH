@@ -1,8 +1,8 @@
-import { CARD_LIST, cardInfo, maxCopies } from '@devoh/engine';
+import { BASE_CARD_LIST, cardInfo, maxCopies } from '@devoh/engine';
 import { describe, expect, it } from 'vitest';
 import { cardDetails } from './cardDetails';
 
-const find = (pred: (c: (typeof CARD_LIST)[number]) => boolean) => CARD_LIST.find(pred)!;
+const find = (pred: (c: (typeof BASE_CARD_LIST)[number]) => boolean) => BASE_CARD_LIST.find(pred)!;
 
 describe('detalhes do card em texto', () => {
   it('Profissional: nível, ATK/DEF, tipo, raridade e limite de cópias', () => {
@@ -33,7 +33,7 @@ describe('detalhes do card em texto', () => {
   });
 
   it('todo card do catálogo gera detalhes sem textos vazios', () => {
-    for (const c of CARD_LIST) {
+    for (const c of BASE_CARD_LIST) {
       for (const r of cardDetails(c.id).rules) {
         expect(r.label, c.id).toBeTruthy();
         expect(r.value, c.id).not.toMatch(/undefined/);
