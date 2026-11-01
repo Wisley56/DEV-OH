@@ -1,60 +1,361 @@
-/* ───────── Deck builder ───────── */
+/* ───────── Deck builder: detalhes · deck · catálogo ───────── */
+.page.deckbuilder {
+  max-width: 1600px;
+  padding-bottom: 24px;
+}
 .db-layout {
+  --db-height: max(560px, calc(100dvh - 125px));
   display: grid;
-  grid-template-columns: 1fr 340px;
-  gap: 20px;
-  align-items: start;
+  grid-template-columns: 260px minmax(0, 1fr) 380px;
+  gap: 16px;
+  align-items: stretch;
+  height: var(--db-height);
 }
-.pool-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+.db-layout > .panel {
+  display: flex;
+  flex-direction: column;
   gap: 10px;
+  min-height: 0;
+  padding: 14px;
+  overflow: hidden;
 }
-.pool-card {
+
+/* Card clicável (deck e catálogo) */
+.db-tile {
+  container-type: inline-size;
+  position: relative;
+  display: block;
   padding: 0;
   border: 0;
+  border-radius: 6%;
   background: none;
   cursor: pointer;
   transition: transform 0.12s;
 }
-.pool-card:hover {
-  transform: translateY(-4px);
+.db-tile:hover {
+  transform: translateY(-3px);
 }
-.pool-card.maxed {
-  opacity: 0.4;
-}
-.pool-card:focus-visible {
+.db-tile.selected {
   outline: 2px solid var(--gold2);
   outline-offset: 2px;
+}
+.db-tile:focus-visible {
+  outline: 2px solid var(--gold2);
+  outline-offset: 2px;
+}
+.db-tile.maxed {
+  opacity: 0.4;
+}
+/* Etiqueta de raridade no canto superior direito (C · R · SR · UR · SE), nas cores do projeto. */
+.db-rarity-tag {
+  position: absolute;
+  top: -3cqw;
+  right: -3cqw;
+  z-index: 1;
+  min-width: 26cqw;
+  padding: 1.5cqw 3.5cqw;
+  border-radius: 3cqw;
+  border: 0.8cqw solid rgba(0, 0, 0, 0.55);
+  font-family: var(--font-ui);
+  font-size: 14cqw;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-align: center;
+  color: #1b1f2b;
+  background: linear-gradient(180deg, #c3c8d3, #8d94a3);
+  box-shadow: 0 0.8cqw 1.6cqw rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+.db-rarity-tag.rarity-rara {
+  background: linear-gradient(180deg, #ffffff, #c9d0de);
+}
+.db-rarity-tag.rarity-super {
+  background: linear-gradient(180deg, #fff2b0, #e9b949);
+  color: #3a2600;
+}
+.db-rarity-tag.rarity-ultra {
+  background: linear-gradient(180deg, #fff6c2, #e9b949 55%, #b07a00);
+  color: #2a1a00;
+  box-shadow:
+    0 0.8cqw 1.6cqw rgba(0, 0, 0, 0.5),
+    0 0 3cqw rgba(255, 216, 74, 0.65);
+}
+.db-rarity-tag.rarity-secreta {
+  background: linear-gradient(135deg, #ffc2e6, #fff2a8, #b8ffd4, #c2e6ff, #e2c2ff);
+  color: #2a1033;
+  box-shadow:
+    0 0.8cqw 1.6cqw rgba(0, 0, 0, 0.5),
+    0 0 3cqw rgba(200, 160, 255, 0.7);
+}
+/* Com a etiqueta no canto direito, as estrelas de nível vão para a esquerda. */
+.db-tile .cm-level {
+  right: auto;
+  left: 7cqw;
+}
+/* Cópias no deck: canto inferior direito, como no catálogo do jogo. */
+.db-tile .badge.count {
+  top: auto;
+  bottom: -2px;
+}
+
+/* Esquerda: detalhes do card (carta ilustrativa + tudo em texto) */
+.db-detail {
+  padding: 0 !important;
+  gap: 0 !important;
+}
+.db-detail-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px 10px 14px;
+  border-bottom: 2px solid var(--pro);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--pro) 38%, var(--surface2)), var(--surface2));
+}
+.db-detail-head.kind-task {
+  border-color: var(--task);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--task) 38%, var(--surface2)), var(--surface2));
+}
+.db-detail-head.kind-bug {
+  border-color: var(--bug);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--bug) 38%, var(--surface2)), var(--surface2));
+}
+.db-detail-head h2 {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--font-title);
+  font-size: 1.05rem;
+  line-height: 1.2;
+  color: var(--text);
+}
+/* O selo de atributo usa medidas da carta (cqw): aqui tem tamanho fixo. */
+.db-detail-head .attr {
+  width: 34px;
+  height: 34px;
+  border-width: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+.db-detail-head .attr-glyph {
+  font-size: 17px;
+  margin-top: 4px;
+}
+.db-detail-head .attr-label {
+  top: 3px;
+  font-size: 6px;
+}
+.db-detail-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: 12px 14px;
+}
+.db-detail-top {
+  display: grid;
+  grid-template-columns: 42% 1fr;
+  gap: 12px;
+  align-items: start;
+}
+.db-detail-card {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 3%;
+  background: none;
+  cursor: zoom-in;
+  transition: transform 0.12s;
+}
+.db-detail-card:hover {
+  transform: scale(1.03);
+}
+.db-detail-card:focus-visible {
+  outline: 2px solid var(--gold2);
+  outline-offset: 3px;
+}
+.db-detail-stats {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+.db-stat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.db-stat dt {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--sunken);
+  border: 1px solid var(--border-strong);
+  color: var(--gold2);
+}
+.db-stat dd {
+  margin: 0;
+  font-family: var(--font-title);
+  font-weight: 900;
+  font-size: 1.35rem;
+  line-height: 1;
+  color: var(--text);
+}
+.db-detail-kind dd {
+  margin: 0;
+  padding: 6px 8px;
   border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-align: center;
+  color: #fff;
+  background: var(--task);
 }
-.db-hint {
-  margin: 0 0 14px;
-  font-size: 0.82rem;
-  color: var(--muted);
+.db-detail-kind.kind-bug dd {
+  background: var(--bug);
 }
-.db-hint b {
+.db-detail-rarity dd {
+  margin: 4px 0 0;
+  display: grid;
+  gap: 4px;
+  font-size: 0.75rem;
+}
+.db-rarity {
+  justify-self: start;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 700;
+  background: var(--sunken);
+  border: 1px solid var(--border-strong);
   color: var(--text-soft);
 }
-.db-deck {
-  position: sticky;
-  top: 12px;
+.db-rarity.rarity-rara {
+  color: #e8ecf5;
+  border-color: #8a93a8;
+}
+.db-rarity.rarity-super,
+.db-rarity.rarity-ultra {
+  color: #24170a;
+  border-color: transparent;
+  background: linear-gradient(135deg, #fff2b0, #e9b949);
+}
+.db-rarity.rarity-secreta {
+  color: #2a1033;
+  border-color: transparent;
+  background: linear-gradient(135deg, #ffc2e6, #fff2a8, #b8ffd4, #c2e6ff);
+}
+.db-detail-type {
+  margin: 0;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #24170a;
+  background: linear-gradient(90deg, var(--gold), color-mix(in srgb, var(--gold) 55%, var(--surface2)));
+}
+.db-detail-text {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--text);
+  white-space: pre-line;
+}
+.db-detail-flavor {
+  margin: 0;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--muted);
+}
+.db-detail-rules {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.db-detail-rules div {
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+.db-detail-rules dt {
+  display: inline;
+  font-weight: 700;
+  color: var(--gold2);
+}
+.db-detail-rules dt::after {
+  content: ': ';
+}
+.db-detail-rules dd {
+  display: inline;
+  margin: 0;
+  color: var(--text-soft);
+}
+.db-detail-foot {
+  display: grid;
+  gap: 8px;
+  padding: 10px 14px 14px;
+  border-top: 1px solid var(--border);
+}
+.db-detail-count {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text-soft);
+}
+.db-detail-count b {
+  color: var(--gold);
+}
+.db-detail-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.db-detail-empty {
+  margin: auto 0;
+  padding: 14px;
+  text-align: center;
+}
+
+/* Centro: o deck */
+.db-deck-head {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 10px;
-  max-height: calc(100vh - 24px);
-  overflow: auto;
+}
+.db-deck-icon {
+  flex: none;
+  color: var(--gold);
+}
+.deck-name-field {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
 }
 .deck-name {
   font-family: var(--font-title);
   font-weight: 700;
   font-size: 1.1rem;
+  min-width: 0;
+}
+.db-deck-tools {
+  display: flex;
+  gap: 6px;
 }
 .deck-count {
   display: grid;
   gap: 6px;
   font-weight: 700;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.deck-count .mono {
+  margin-left: 8px;
 }
 .deck-meter {
   height: 6px;
@@ -75,54 +376,435 @@
 .deck-count.bad {
   color: #ff8fa3;
 }
-.deck-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 4px;
-}
-.deck-list li {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 4px 4px 10px;
-  border-radius: 8px;
-  border-left: 4px solid var(--pro);
-  background: var(--sunken);
-  font-size: 0.88rem;
-}
-.deck-list li.kind-task {
-  border-color: var(--task);
-}
-.deck-list li.kind-bug {
-  border-color: var(--bug);
-}
-.dl-n {
-  font-family: var(--font-mono);
-  font-weight: 700;
-  color: var(--gold);
-  width: 28px;
-}
-.dl-name {
+.db-deck-grid {
   flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  align-content: start;
+  gap: 8px;
+  padding: 4px;
+  border-radius: 10px;
+  background: var(--sunken);
+}
+.db-deck-empty,
+.db-trunk-empty {
+  grid-column: 1 / -1;
+  margin: 24px 12px;
+  text-align: center;
+}
+.db-deck-foot .warn {
+  margin: 0 0 4px;
 }
 .db-actions {
   display: flex;
   gap: 8px;
 }
-.db-preview {
-  width: 240px;
-  align-self: center;
+
+/* Direita: abas Cards | Decks */
+.db-trunk-tabs {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.db-trunk-tabs .tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.db-trunk-view {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.db-trunk-count {
+  margin: -2px 0 0;
+  font-size: 0.72rem;
+  text-align: right;
+}
+.db-search,
+.db-sort {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--sunken);
+  color: var(--muted);
+}
+.db-search input,
+.db-sort select {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+}
+.db-trunk-tools {
+  display: flex;
+  gap: 6px;
+}
+.db-sort {
+  flex: 1;
+  min-width: 0;
+}
+.db-trunk-tools .has-filters {
+  border-color: var(--gold);
+}
+.db-filter-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: #24170a;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+.db-trunk-filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+}
+.db-trunk-filters label {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.db-trunk-filters select {
+  width: 100%;
+  min-width: 0;
+}
+.db-trunk-grid {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(68px, 1fr));
+  align-content: start;
+  gap: 8px;
+  padding: 4px;
 }
 
-/* Celular / janelas estreitas */
+/* Aba Decks: deckboxes */
+.db-switch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: var(--text-soft);
+  cursor: pointer;
+  user-select: none;
+}
+.db-switch input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.db-switch-track {
+  position: relative;
+  flex: none;
+  width: 36px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--sunken);
+  border: 1px solid var(--border-strong);
+  transition: background 0.15s;
+}
+.db-switch-track::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition:
+    transform 0.15s,
+    background 0.15s;
+}
+.db-switch input:checked + .db-switch-track {
+  background: color-mix(in srgb, var(--gold) 35%, var(--sunken));
+  border-color: var(--gold);
+}
+.db-switch input:checked + .db-switch-track::after {
+  transform: translateX(16px);
+  background: var(--gold2);
+}
+.db-switch input:focus-visible + .db-switch-track {
+  outline: 2px solid var(--gold2);
+  outline-offset: 2px;
+}
+.db-decks {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 2px 4px 4px;
+}
+.db-decks-title {
+  margin: 4px 0 10px;
+  font-family: var(--font-title);
+  font-size: 0.95rem;
+  color: var(--gold2);
+}
+.db-decks-title .muted {
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+.db-decks-divider {
+  margin: 14px 0 10px;
+  border: 0;
+  border-top: 1px solid var(--border-strong);
+}
+.db-decks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: 14px 10px;
+}
+.db-decks-empty {
+  margin: 8px 0;
+  font-size: 0.85rem;
+}
+.db-deckbox {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 6px 4px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: none;
+  color: var(--text);
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    transform 0.12s;
+}
+.db-deckbox:hover {
+  background: var(--surface2);
+  transform: translateY(-2px);
+}
+.db-deckbox:focus-visible {
+  outline: 2px solid var(--gold2);
+  outline-offset: 2px;
+}
+.db-deckbox.current {
+  border-color: var(--gold);
+  background: color-mix(in srgb, var(--gold) 10%, transparent);
+}
+/* A caixa: corpo na cor do card da capa, lateral mais escura e janela com a arte. */
+.deckbox {
+  --box: #34437a;
+  position: relative;
+  width: 74%;
+  aspect-ratio: 3 / 4;
+  border-radius: 6px 8px 8px 6px;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--box) 70%, white) 0%,
+    var(--box) 45%,
+    color-mix(in srgb, var(--box) 55%, black) 100%
+  );
+  box-shadow:
+    inset 7px 0 0 color-mix(in srgb, var(--box) 45%, black),
+    inset 8px 0 0 rgba(255, 255, 255, 0.25),
+    0 6px 12px rgba(0, 0, 0, 0.45);
+}
+.deckbox::before {
+  /* Tampa */
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 7px;
+  height: 14%;
+  border-radius: 0 8px 0 0;
+  background: rgba(0, 0, 0, 0.22);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+}
+.deckbox-window {
+  position: absolute;
+  inset: 22% 10% 12% calc(7px + 10%);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 3px;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  background: var(--sunken);
+  color: var(--muted);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+.deckbox-window .art {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.db-deckbox-name {
+  max-width: 100%;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.db-deckbox-count {
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+
+/* Janelas médias: detalhes viram uma faixa em cima */
+@media (max-width: 1200px) {
+  .db-layout {
+    grid-template-columns: minmax(0, 1fr) 340px;
+    grid-template-rows: auto minmax(0, 1fr);
+    height: auto;
+  }
+  /* Faixa: carta e status | texto | quantidade e +1/−1 */
+  .db-detail {
+    grid-column: 1 / -1;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 240px;
+    grid-template-rows: auto minmax(0, 1fr);
+    max-height: 300px;
+  }
+  .db-detail-head {
+    grid-column: 1 / -1;
+  }
+  .db-detail-body {
+    grid-template-columns: 250px minmax(0, 1fr);
+    column-gap: 16px;
+  }
+  .db-detail-top {
+    grid-template-columns: 110px 1fr;
+    grid-row: span 5;
+  }
+  .db-detail-body > :not(.db-detail-top) {
+    grid-column: 2;
+  }
+  .db-detail-foot {
+    align-content: end;
+    border-top: 0;
+    border-left: 1px solid var(--border);
+  }
+  .db-deck,
+  .db-trunk {
+    height: var(--db-height);
+  }
+}
+
+/* Celular: uma coluna; detalhes fixos no topo ao rolar */
 @media (max-width: 860px) {
   .db-layout {
     grid-template-columns: 1fr;
   }
-  .db-deck {
-    position: static;
-    max-height: none;
+  .db-detail {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: flex !important;
+    max-height: 46dvh;
+  }
+  .db-detail-body {
+    grid-template-columns: 1fr;
+  }
+  .db-detail-top {
+    grid-template-columns: 84px 1fr;
+    grid-row: auto;
+  }
+  .db-detail-body > :not(.db-detail-top) {
+    grid-column: auto;
+  }
+  .db-detail-foot {
+    border-left: 0;
+    border-top: 1px solid var(--border);
+  }
+  .db-deck,
+  .db-trunk {
+    height: auto;
+    max-height: 80dvh;
+  }
+  .db-deck-head {
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 560px) {
+  .db-deck-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+/* Card voando entre o catálogo e o deck (ver services/cardFlight.ts) */
+.db-flight {
+  position: fixed;
+  z-index: 90;
+  pointer-events: none;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+.db-flight-lift {
+  width: 100%;
+  height: 100%;
+  transform-origin: center;
+  will-change: transform, filter;
+}
+
+/* Carta ampliada (clique na carta do painel de detalhes) */
+.card-zoom {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 14px;
+  padding: 24px;
+  background: rgba(5, 8, 20, 0.82);
+  backdrop-filter: blur(3px);
+  cursor: zoom-out;
+  outline: none;
+  animation: card-zoom-fade 0.18s ease-out;
+}
+.card-zoom-card {
+  /* Até 560px: a arte (720px de largura) continua nítida mesmo em telas de alta densidade. */
+  width: min(560px, 92vw, calc((100dvh - 110px) * 59 / 86));
+  cursor: default;
+  filter: drop-shadow(0 24px 40px rgba(0, 0, 0, 0.6));
+  animation: card-zoom-in 0.24s cubic-bezier(0.25, 0.8, 0.35, 1);
+}
+.card-zoom-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+@keyframes card-zoom-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes card-zoom-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-zoom,
+  .card-zoom-card {
+    animation: none;
   }
 }

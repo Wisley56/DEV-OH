@@ -1,4 +1,4 @@
-import { card, DECK_MAX, maxCopies, STARTER_DECKS, type DeckList } from '@devoh/engine';
+import { card, CARD_LIST, DECK_MAX, maxCopies, STARTER_DECKS, type DeckList } from '@devoh/engine';
 
 /** Regras de edição de deck no deck builder (funções puras). */
 
@@ -41,4 +41,30 @@ export function sortedEntries(cards: string[]): [string, number][] {
   return [...countCards(cards).entries()].sort(
     ([a], [b]) => KIND_ORDER[card(a).kind] - KIND_ORDER[card(b).kind] || (card(b).level ?? 0) - (card(a).level ?? 0),
   );
+}
+
+/** Cartas de um deck aleatório e válido com `DECK_MAX` cards (botão Auto). */
+export function randomDeck(rng: () => number = Math.random): string[] {
+  const pool = CARD_LIST.map((c) => c.id);
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  const cards: string[] = [];
+  // Percorre o catálogo embaralhado pondo 1..máx cópias de cada card até encher.
+  while (cards.length < DECK_MAX) {
+    const before = cards.length;
+    for (const id of pool) {
+      const copies = 1 + Math.floor(rng() * maxCopies(id));
+      for (let k = 0; k < copies && canAdd(cards, id); k++) cards.push(id);
+      if (cards.length >= DECK_MAX) break;
+    }
+    if (cards.length === before) break;
+  }
+  return cards;
+}
+
+/** Card da capa do deck: o primeiro na ordem do deck (Profissional de maior nível). */
+export function coverCard(cards: string[]): string | null {
+  return sortedEntries(cards)[0]?.[0] ?? null;
 }

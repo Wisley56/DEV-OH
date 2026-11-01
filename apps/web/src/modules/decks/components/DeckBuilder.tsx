@@ -1,21 +1,19 @@
 import { useState } from 'react';
-import { PageHead } from '../../../shared/ui';
 import { createDeckBuilderStore, DeckBuilderContext } from '../store/deckBuilderStore';
-import { CardPool } from './CardPool';
-import { DeckPanel } from './DeckPanel';
-import { DeckPicker } from './DeckPicker';
+import { CardDetailPanel } from './CardDetailPanel';
+import { CardTrunk } from './CardTrunk';
+import { DeckGrid } from './DeckGrid';
 
-/** Deck builder completo: escolher base, adicionar/remover cards, salvar. */
+/** Deck builder: detalhes do card · deck em edição · catálogo de cards e lista de decks. */
 export function DeckBuilder() {
-  const [store] = useState(createDeckBuilderStore);
+  const [store] = useState(() => createDeckBuilderStore());
   return (
     <DeckBuilderContext.Provider value={store}>
-      <PageHead title="Montar deck">
-        <DeckPicker />
-      </PageHead>
+      <h1 className="sr-only">Montar deck</h1>
       <div className="db-layout">
-        <CardPool />
-        <DeckPanel />
+        <CardDetailPanel />
+        <DeckGrid />
+        <CardTrunk />
       </div>
     </DeckBuilderContext.Provider>
   );
