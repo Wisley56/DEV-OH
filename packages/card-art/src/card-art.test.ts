@@ -8,7 +8,9 @@ const read = (path: string) => readFileSync(new URL(path, root));
 
 describe('arte dos cards', () => {
   it('reconhece PNG, JPEG e WebP pelos bytes e recusa SVG e GIF', async () => {
-    const png = await sharp({ create: { width: 4, height: 4, channels: 3, background: '#f00' } }).png().toBuffer();
+    const png = await sharp({ create: { width: 4, height: 4, channels: 3, background: '#f00' } })
+      .png()
+      .toBuffer();
     const jpeg = await sharp(png).jpeg().toBuffer();
     const webp = await sharp(png).webp().toBuffer();
     expect([sniffImage(png), sniffImage(jpeg), sniffImage(webp)]).toEqual(['png', 'jpeg', 'webp']);

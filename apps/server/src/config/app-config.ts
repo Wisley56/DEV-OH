@@ -16,6 +16,11 @@ const PRODUCTION_REQUIRED = [
   'TRUST_PROXY_HOPS',
   'TURNSTILE_SITE_KEY',
   'TURNSTILE_SECRET_KEY',
+  'ART_BUCKET',
+  'ART_S3_ENDPOINT',
+  'ART_S3_REGION',
+  'ART_S3_ACCESS_KEY_ID',
+  'ART_S3_SECRET_ACCESS_KEY',
 ] as const;
 
 const EnvSchema = z.object({
@@ -41,6 +46,18 @@ const EnvSchema = z.object({
    * Lista separada por vírgula; "prefixo*" vale para todo usuário que começa assim.
    */
   DEV_ADMIN_USERNAMES: z.string().optional(),
+  /**
+   * Storage Bucket do Railway (compatível com S3) onde fica a arte dos cards do painel.
+   * Cada uma vem de uma variável de referência do bucket (BUCKET, ENDPOINT, REGION, ...).
+   * Fora de produção, sem ART_BUCKET a arte vai para a pasta .data/art (em memória nos testes).
+   */
+  ART_BUCKET: z.string().optional(),
+  ART_S3_ENDPOINT: z.string().optional(),
+  ART_S3_REGION: z.string().optional(),
+  ART_S3_ACCESS_KEY_ID: z.string().optional(),
+  ART_S3_SECRET_ACCESS_KEY: z.string().optional(),
+  /** "true" para buckets antigos que pedem URL no estilo path (a aba Credentials do bucket diz). */
+  ART_S3_FORCE_PATH_STYLE: z.enum(['true', 'false']).optional(),
   /** Sala sem atividade por esse tempo é removida. */
   ROOM_TTL_MS: int(2 * 60 * 60 * 1000),
   /** Sala sem ninguém conectado por esse tempo é removida. */
@@ -69,7 +86,21 @@ export interface RateRule {
   perSec: number;
 }
 
-export type RateBucket = 'create' | 'join' | 'action' | 'room' | 'list' | 'strikes' | 'auth' | 'decks' | 'admin';
+export type RateBucket = 'create' | 'join' | 'action' | 'room' | 'list' | 'strikes' | 'auth' | 'decks' | 'admin' | 'upload' | 'cards';
+
+/** Onde fica a arte dos cards do painel. */
+export type ArtStorageConfig =
+  | {
+      kind: 's3';
+      bucket: string;
+      endpoint: string;
+      region: string;
+      accessKeyId: string;
+      secretAccessKey: string;
+      forcePathStyle: boolean;
+    }
+  | { kind: 'fs'; dir: string }
+  | { kind: 'memory' };
 
 /** Configuração do servidor, validada a partir das variáveis de ambiente. */
 export class AppConfig {
@@ -88,6 +119,7 @@ export class AppConfig {
   readonly turnTimeoutMs: number;
   readonly reconnectTimeoutMs: number;
   readonly rates: Record<RateBucket, RateRule>;
+  readonly artStorage: ArtStorageConfig;
   private readonly devAdmins: readonly string[];
 
   constructor(env: Record<string, string | undefined> = process.env) {
@@ -129,6 +161,17 @@ export class AppConfig {
     this.maxConnPerIp = e.MAX_CONN_PER_IP;
     this.turnTimeoutMs = e.TURN_TIMEOUT_MS;
     this.reconnectTimeoutMs = e.RECONNECT_TIMEOUT_MS;
+    this.artStorage = e.ART_BUCKET
+      ? {
+          kind: 's3',
+          bucket: e.ART_BUCKET,
+          endpoint: required(e.ART_S3_ENDPOINT, 'ART_S3_ENDPOINT'),
+          region: e.ART_S3_REGION || 'auto',
+          accessKeyId: required(e.ART_S3_ACCESS_KEY_ID, 'ART_S3_ACCESS_KEY_ID'),
+          secretAccessKey: required(e.ART_S3_SECRET_ACCESS_KEY, 'ART_S3_SECRET_ACCESS_KEY'),
+          forcePathStyle: e.ART_S3_FORCE_PATH_STYLE === 'true',
+        }
+      : dev.artStorage;
     this.rates = {
       create: { capacity: e.RATE_CREATE_PER_MIN, perSec: e.RATE_CREATE_PER_MIN / 60 },
       join: { capacity: e.RATE_JOIN_PER_MIN, perSec: e.RATE_JOIN_PER_MIN / 60 },
@@ -144,6 +187,10 @@ export class AppConfig {
       decks: { capacity: 30, perSec: 1 },
       /** Rotas do painel admin. */
       admin: { capacity: 60, perSec: 2 },
+      /** Upload de arte (cada um recodifica a imagem: CPU). */
+      upload: { capacity: 10, perSec: 0.2 },
+      /** Catálogo e arte dos cards do painel (o navegador guarda em cache: só a 1ª visita pede). */
+      cards: { capacity: 200, perSec: 20 },
     };
   }
 
@@ -172,5 +219,11 @@ function devDefaults(nodeEnv: string) {
     databaseUrl: nodeEnv === 'test' ? 'pglite://memory' : 'pglite://.data/dev',
     dbPoolMax: 10,
     sessionTtlDays: 30,
+    artStorage: (nodeEnv === 'test' ? { kind: 'memory' } : { kind: 'fs', dir: '.data/art' }) as ArtStorageConfig,
   };
+}
+
+function required(value: string | undefined, name: string): string {
+  if (!value) throw new Error(`Com ART_BUCKET definido, defina também ${name}.`);
+  return value;
 }

@@ -1,5 +1,8 @@
 import sharp from 'sharp';
 
+// O servidor recodifica uploads raros: o cache de operações do sharp só gastaria memória.
+sharp.cache(false);
+
 /**
  * Arte dos cards: recorte da imagem enviada no formato da janela de arte (720×620, ≈1.163:1).
  * Regiões de outra proporção são encaixadas sobre uma cópia desfocada, para não cortar nada.
@@ -44,7 +47,15 @@ export async function inspectImage(input: Buffer): Promise<{ width: number; heig
 /** A caixa cabe na imagem? (inteiros, dentro dos limites, com área). */
 export function boxFits(box: Box, width: number, height: number): boolean {
   const ints = [box.left, box.top, box.width, box.height].every((n) => Number.isInteger(n));
-  return ints && box.left >= 0 && box.top >= 0 && box.width > 0 && box.height > 0 && box.left + box.width <= width && box.top + box.height <= height;
+  return (
+    ints &&
+    box.left >= 0 &&
+    box.top >= 0 &&
+    box.width > 0 &&
+    box.height > 0 &&
+    box.left + box.width <= width &&
+    box.top + box.height <= height
+  );
 }
 
 /**

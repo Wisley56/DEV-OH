@@ -15,6 +15,13 @@
       "when": 1793476900249,
       "tag": "0001_admin_flag",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793567534497,
+      "tag": "0002_custom_cards",
+      "breakpoints": true
     }
   ]
 }

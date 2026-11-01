@@ -3,7 +3,7 @@ import type { RoomState } from '@devoh/protocol';
 import type { Room } from '../domain/room.js';
 
 /** Estado da sala como o jogador do assento `seat` pode ver (mão do oponente escondida). */
-export function roomStateFor(room: Room, seat: Seat, now: number): RoomState {
+export function roomStateFor(room: Room, seat: Seat, now: number, catalogRevision: string): RoomState {
   return {
     code: room.code,
     seat,
@@ -15,5 +15,6 @@ export function roomStateFor(room: Room, seat: Seat, now: number): RoomState {
     view: room.game ? getView(room.game, seat) : null,
     turnDeadline: room.turnDeadline,
     serverNow: now,
+    catalogRevision,
   };
 }

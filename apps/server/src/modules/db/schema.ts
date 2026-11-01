@@ -1,3 +1,4 @@
+import type { CustomCardInput, CustomStatus } from '@devoh/engine';
 import { boolean, index, integer, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 
 /**
@@ -79,4 +80,30 @@ export const matches = pgTable(
     eloDeltaP1: integer('elo_delta_p1').notNull(),
   },
   (t) => [index('matches_p0_idx').on(t.p0User, t.playedAt.desc()), index('matches_p1_idx').on(t.p1User, t.playedAt.desc())],
+);
+
+/**
+ * Cards criados no painel admin. A arte não fica aqui: vai para o bucket (`cards/<id>/v<art_version>.webp`);
+ * o banco guarda só a versão e o tamanho. Publicado ou aposentado, o servidor instala no catálogo ao subir.
+ */
+export const customCards = pgTable(
+  'custom_cards',
+  {
+    /** "x_…", escolhido na criação e fixo. */
+    id: text('id').primaryKey(),
+    status: text('status').$type<CustomStatus>().notNull().default('draft'),
+    input: jsonb('input').$type<CustomCardInput>().notNull(),
+    /** Ordem de publicação (código DVOH-X01), dada na 1ª publicação e nunca reaproveitada. */
+    serial: integer('serial'),
+    /** Trava otimista das edições. */
+    version: integer('version').notNull().default(1),
+    /** 0 = sem arte. */
+    artVersion: integer('art_version').notNull().default(0),
+    artBytes: integer('art_bytes').notNull().default(0),
+    createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+    updatedBy: uuid('updated_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('custom_cards_serial_key').on(t.serial)],
 );

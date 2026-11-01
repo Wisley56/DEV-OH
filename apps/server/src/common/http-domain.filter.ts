@@ -10,6 +10,7 @@ export class HttpDomainFilter implements ExceptionFilter {
     if (host.getType() !== 'http') throw exception;
     const res = host.switchToHttp().getResponse<Response>();
     const body: ApiError = { statusCode: exception.status, message: exception.message };
+    if (exception.problems) body.problems = exception.problems;
     res.status(exception.status).json(body);
   }
 }

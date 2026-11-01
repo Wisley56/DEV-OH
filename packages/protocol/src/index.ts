@@ -76,9 +76,12 @@ export interface RoomState {
   turnDeadline: number | null;
   /** Relógio do servidor no envio: o cliente corrige a diferença para o próprio relógio. */
   serverNow: number;
+  /** Versão do catálogo de cards do painel no servidor: mudou, o cliente recarrega. */
+  catalogRevision: string;
 }
 
 export { ROOM_CODE_ALPHABET, ROOM_CODE_LENGTH } from './room-code';
 export * from './tournament';
 export { DEFAULT_NAME, NAME_MAX, sanitizeName } from './name';
 export * from './account';
+export * from './cards';

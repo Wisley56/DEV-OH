@@ -11,6 +11,11 @@ const PROD = {
   TRUST_PROXY_HOPS: '2',
   TURNSTILE_SITE_KEY: 'site',
   TURNSTILE_SECRET_KEY: 'secret',
+  ART_BUCKET: 'arte-abc123',
+  ART_S3_ENDPOINT: 'https://t3.storageapi.dev',
+  ART_S3_REGION: 'auto',
+  ART_S3_ACCESS_KEY_ID: 'tid_x',
+  ART_S3_SECRET_ACCESS_KEY: 'tsec_x',
 };
 
 describe('AppConfig', () => {
@@ -23,6 +28,15 @@ describe('AppConfig', () => {
   it('em produção exige CORS_ORIGIN explícito e sem "*"', () => {
     expect(() => new AppConfig({ ...PROD, CORS_ORIGIN: undefined })).toThrow('CORS_ORIGIN');
     expect(() => new AppConfig({ ...PROD, CORS_ORIGIN: '*' })).toThrow('CORS_ORIGIN');
+  });
+
+  it('em produção exige o bucket da arte; fora dela, pasta local ou memória', () => {
+    expect(() => new AppConfig({ ...PROD, ART_S3_SECRET_ACCESS_KEY: undefined })).toThrow('ART_S3_SECRET_ACCESS_KEY');
+    expect(new AppConfig(PROD).artStorage).toMatchObject({ kind: 's3', bucket: 'arte-abc123', forcePathStyle: false });
+    expect(new AppConfig({ ...PROD, ART_S3_FORCE_PATH_STYLE: 'true' }).artStorage).toMatchObject({ forcePathStyle: true });
+    expect(new AppConfig({}).artStorage).toEqual({ kind: 'fs', dir: '.data/art' });
+    expect(new AppConfig({ NODE_ENV: 'test' }).artStorage).toEqual({ kind: 'memory' });
+    expect(() => new AppConfig({ ART_BUCKET: 'b' })).toThrow('ART_S3_ENDPOINT');
   });
 
   it('aceita só as origens da lista', () => {

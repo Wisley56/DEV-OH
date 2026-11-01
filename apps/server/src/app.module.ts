@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { SecurityModule } from './common/security/security.module.js';
 import { ConfigModule } from './config/config.module.js';
 import { AccountsModule } from './modules/accounts/accounts.module.js';
+import { CardsModule } from './modules/cards/cards.module.js';
 import { DbModule } from './modules/db/db.module.js';
 import { DecksModule } from './modules/decks/decks.module.js';
 import { DuelModule } from './modules/duel/duel.module.js';
@@ -16,6 +17,7 @@ import { TournamentsModule } from './modules/tournaments/tournaments.module.js';
     DbModule,
     SecurityModule,
     AccountsModule,
+    CardsModule,
     RankingModule,
     DecksModule,
     RoomsModule,
