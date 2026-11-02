@@ -69,10 +69,18 @@ class SfxPlayer {
   private context() {
     if (!this.ctx && typeof AudioContext !== 'undefined') {
       this.ctx = new AudioContext();
-      // Navegadores só liberam áudio depois de um gesto do usuário.
-      const unlock = () => void this.ctx?.resume();
-      window.addEventListener('pointerdown', unlock, { once: true });
-      window.addEventListener('keydown', unlock, { once: true });
+      // Navegadores só liberam áudio depois de um gesto do usuário. No celular, o toque só conta
+      // como gesto ao soltar (pointerup), então tenta a cada gesto até o áudio rodar.
+      const events = ['pointerup', 'keydown'] as const;
+      const unlock = () => {
+        void this.ctx?.resume().then(
+          () => {
+            if (this.ctx?.state === 'running') events.forEach((e) => window.removeEventListener(e, unlock));
+          },
+          () => undefined,
+        );
+      };
+      events.forEach((e) => window.addEventListener(e, unlock));
     }
     return this.ctx;
   }
