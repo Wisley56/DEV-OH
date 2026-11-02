@@ -93,7 +93,7 @@
   white-space: nowrap;
 }
 
-/* Celular e tablet: os links viram abas fixas embaixo (a barra de cima fica só com logo, som e conta). */
+/* Celular e tablet: os links viram abas fixas embaixo (a barra de cima fica só com logo e conta; o som fica no duelo). */
 @media (max-width: 860px) {
   .topbar-logo {
     font-size: 1.25rem;
@@ -127,5 +127,18 @@
   }
   .menu-main {
     padding-bottom: 72px;
+  }
+}
+/* Celular estreito: logo menor e menos espaço, para logo, Admin e conta caberem numa linha. */
+@media (max-width: 400px) {
+  .topbar-inner {
+    padding: 0 12px;
+    column-gap: 12px;
+  }
+  .topbar-logo {
+    font-size: 1.05rem;
+  }
+  .topbar-tools {
+    gap: 6px;
   }
 }

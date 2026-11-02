@@ -1,7 +1,6 @@
 import { BookOpen, Layers, Swords, Trophy } from 'lucide-react';
 import { Link, NavLink, Outlet } from 'react-router';
 import { AccountBar, AdminShortcut } from '../modules/auth';
-import { SoundToggle } from '../modules/sound';
 import { PixelBackground } from '../shared/ui';
 
 const LINKS = [
@@ -31,7 +30,6 @@ export function MenuLayout() {
           </nav>
           <div className="topbar-tools">
             <AdminShortcut />
-            <SoundToggle />
             <AccountBar />
           </div>
         </div>
