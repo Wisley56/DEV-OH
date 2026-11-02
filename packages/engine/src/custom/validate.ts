@@ -1,4 +1,5 @@
 import type { Attribute, BugTrigger, BugType, CardKind, Rarity, TaskSpeed } from '../core/types';
+import { validateEffects } from '../dsl/validate';
 import type { CustomCardInput } from './types';
 
 const KINDS: readonly CardKind[] = ['pro', 'task', 'bug'];
@@ -68,8 +69,11 @@ export function validateCustomInput(input: CustomCardInput): string[] {
   if (input.speed !== undefined && (kind !== 'task' || !SPEEDS.includes(input.speed))) errors.push('Velocidade só vale para Task.');
   if (input.bugType !== undefined && (kind !== 'bug' || !BUG_TYPES.includes(input.bugType))) errors.push('O tipo de Bug só vale para Bug.');
   if (kind === 'bug' && (!input.trigger || !TRIGGERS.includes(input.trigger))) errors.push('Escolha quando o Bug dispara.');
-  if (kind === 'task' && input.trigger !== undefined && (input.speed === 'field' || !TRIGGERS.includes(input.trigger)))
-    errors.push('Esta Task não pode ter gatilho.');
+  if (kind === 'bug' && (input.bugType === 'counter') !== (input.trigger === 'oppBug'))
+    errors.push('Contra-Bug dispara quando um Bug do oponente vai disparar (e só ele).');
+  // Tasks baixadas que disparam sozinhas (como o Moisés Bombado) ficam só nos cards em código.
+  if (kind === 'task' && input.trigger !== undefined) errors.push('Esta Task não pode ter gatilho.');
+  if (KINDS.includes(kind)) errors.push(...validateEffects(input));
 
   return errors;
 }

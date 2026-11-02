@@ -81,4 +81,6 @@ export interface MatchHistoryEntry {
 export interface ApiError {
   statusCode: number;
   message: string;
+  /** Lista de problemas, quando há mais de um (ex.: publicar card fora do orçamento). */
+  problems?: string[];
 }

@@ -23,6 +23,11 @@ export interface BalanceConfig {
   /** Bot de cada assento. */
   levels: [BotLevel, BotLevel];
   seed: number;
+  /**
+   * Só estes cards como foco dos decks gerados (o criador de cartas testa um rascunho assim).
+   * A cobertura mínima passa a valer só para eles.
+   */
+  focus?: string[];
 }
 
 export const DEFAULT_CONFIG: BalanceConfig = {
@@ -161,16 +166,18 @@ function planGames(config: BalanceConfig): PlannedGame[] {
   }
   if (config.mode !== 'starters' && config.minGamesPerCard > 0) {
     const rng = seededRng(config.seed + 0x5eed);
-    const nextFocus = focusRotation(rng);
-    const inclusion = new Map(cardList().map((c) => [c.id, 0]));
-    const count = (deck: string[]) => new Set(deck).forEach((id) => add(inclusion, id));
+    const focus = config.focus?.length ? config.focus : undefined;
+    const nextFocus = focusRotation(rng, focus);
+    const perDeck = Math.min(FOCUS_PER_DECK, focus?.length ?? FOCUS_PER_DECK);
+    const inclusion = new Map((focus ?? cardList().map((c) => c.id)).map((id) => [id, 0]));
+    const count = (deck: string[]) => new Set(deck).forEach((id) => inclusion.has(id) && add(inclusion, id));
     const covered = () => [...inclusion.values()].every((v) => v >= config.minGamesPerCard);
     for (let k = 0; !covered() && k < MAX_GENERATED_GAMES; k++) {
-      const gen = generateDeck(rng, nextFocus(FOCUS_PER_DECK));
+      const gen = generateDeck(rng, nextFocus(perDeck));
       // Alterna: gerado × inicial e gerado × gerado; o gerado troca de assento a cada par.
       const vsStarter = k % 2 === 0;
       const si = (k >> 1) % n;
-      const other = vsStarter ? STARTER_DECKS[si].cards : generateDeck(rng, nextFocus(FOCUS_PER_DECK));
+      const other = vsStarter ? STARTER_DECKS[si].cards : generateDeck(rng, nextFocus(perDeck));
       count(gen);
       if (!vsStarter) count(other);
       const genSeat: Seat = ((k >> 1) % 2) as Seat;

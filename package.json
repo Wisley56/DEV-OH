@@ -19,11 +19,12 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "crop-art": "tsx scripts/crop-art.ts",
+    "crop-art": "tsx --conditions=source scripts/crop-art.ts",
     "balance": "tsx --conditions=source packages/ai/scripts/balance.ts",
     "e2e": "npm run e2e -w @devoh/web"
   },
   "devDependencies": {
+    "@devoh/card-art": "*",
     "@devoh/eslint-config": "*",
     "@devoh/tsconfig": "*",
     "@eslint/js": "^10.0.1",
@@ -32,7 +33,6 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.13.0",
     "prettier": "^3.9.10",
-    "sharp": "^0.35.5",
     "tsx": "^4.19.3",
     "turbo": "^2.11.10",
     "typescript": "~6.0.3",

@@ -1,17 +1,4 @@
-import { cardList, cardFrame } from '@devoh/engine';
-
-/**
- * Orçamento de referência por nível: soma ATK+DEF e teto de ATK (Normal ganha +10%).
- * Efeito forte conta como orçamento extra — a lista é para revisar caso a caso, não é erro.
- */
-const BUDGET: { max: number; sum: number; atk?: number }[] = [
-  { max: 2, sum: 2000 },
-  { max: 3, sum: 2600 },
-  { max: 4, sum: 3200, atk: 1900 },
-  { max: 6, sum: 4300, atk: 2400 },
-  { max: 8, sum: 5300 },
-  { max: 99, sum: 6000 },
-];
+import { cardFrame, cardList, statAudit } from '@devoh/engine';
 
 export interface BudgetIssue {
   id: string;
@@ -23,21 +10,16 @@ export interface BudgetIssue {
   over: string[];
 }
 
-/** Profissionais acima do orçamento de ATK/DEF do nível. */
+/**
+ * Profissionais acima do orçamento de ATK/DEF do nível, pela tabela de balanceamento da engine
+ * (a mesma que o criador de cartas usa). Efeito forte conta como orçamento extra: a lista é para
+ * revisar caso a caso, não é erro.
+ */
 export function budgetAudit(): BudgetIssue[] {
   return cardList()
     .filter((c) => c.kind === 'pro')
     .flatMap((c) => {
-      const level = c.level ?? 1;
-      const b = BUDGET.find((x) => level <= x.max)!;
-      const atk = c.atk ?? 0;
-      const def = c.def ?? 0;
-      const bonus = cardFrame(c) === 'normal' ? 1.1 : 1;
-      const limit = Math.round(b.sum * bonus);
-      const atkCap = b.atk && Math.round(b.atk * bonus);
-      const over: string[] = [];
-      if (atk + def > limit) over.push(`soma ${atk + def} > ${limit}`);
-      if (atkCap && atk > atkCap) over.push(`ATK ${atk} > ${atkCap}`);
-      return over.length ? [{ id: c.id, name: c.name, level, atk, def, over }] : [];
+      const over = statAudit(c, cardFrame(c) !== 'normal');
+      return over.length ? [{ id: c.id, name: c.name, level: c.level ?? 1, atk: c.atk ?? 0, def: c.def ?? 0, over }] : [];
     });
 }

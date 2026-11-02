@@ -10,4 +10,13 @@ export { damage, heal } from '../rules/life';
 export { getAtk, getDef } from '../rules/stats';
 export { addStress } from '../rules/stress';
 export { bounceToHand, destroyPro, destroySpell, draw, flipFaceUp, negatePro, searchDeck, setFaceDown, setPosition } from '../rules/zones';
-export { defineCard, type AttackInfo, type CardEffects, type CardModule, type EffectCtx, type FlipCause, type StatCtx } from './types';
+export {
+  defineCard,
+  type AttackInfo,
+  type BugEvent,
+  type CardEffects,
+  type CardModule,
+  type EffectCtx,
+  type FlipCause,
+  type StatCtx,
+} from './types';

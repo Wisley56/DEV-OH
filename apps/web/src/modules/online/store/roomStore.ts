@@ -1,6 +1,7 @@
 import type { Action } from '@devoh/engine';
 import { isTournamentCode, type RoomState, type TournamentState } from '@devoh/protocol';
 import { create } from 'zustand';
+import { ensureCatalogRevision } from '../../catalog';
 import { RoomClient, type ConnectionStatus, type RoomMode } from '../services/roomClient';
 import { NEW_ROOM } from '../services/session';
 
@@ -51,10 +52,13 @@ export const useRoomStore = create<RoomStoreState>((set, get) => ({
     set({ ...initial, status: 'connecting', activeCode: target });
     client = new RoomClient({
       // No torneio, cada duelo é uma sala própria: guarda o último estado de cada uma.
-      state: (room) =>
-        get().tournament || isTournamentCode(target)
-          ? set((s) => ({ matches: { ...s.matches, [room.code]: room }, clockOffset: offsetOf(room.serverNow) }))
-          : set({ room, clockOffset: offsetOf(room.serverNow) }),
+      state: (room) => {
+        // Card novo publicado no painel depois que a página abriu: baixa antes de precisar desenhar.
+        ensureCatalogRevision(room.catalogRevision);
+        if (get().tournament || isTournamentCode(target))
+          set((s) => ({ matches: { ...s.matches, [room.code]: room }, clockOffset: offsetOf(room.serverNow) }));
+        else set({ room, clockOffset: offsetOf(room.serverNow) });
+      },
       tournament: (tournament) => set({ tournament, clockOffset: offsetOf(tournament.serverNow) }),
       status: (status) => set({ status }),
       error: (error) => set({ error }),

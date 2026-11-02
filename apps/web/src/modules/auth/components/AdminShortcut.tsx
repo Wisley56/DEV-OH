@@ -15,7 +15,7 @@ export function AdminShortcut() {
       className="admin-shortcut"
       aria-label="Painel admin"
       title="Painel admin"
-      onClick={() => navigate('/admin/balanceamento')}
+      onClick={() => navigate('/admin')}
     >
       <Settings size={18} aria-hidden />
       <span className="admin-shortcut-label" aria-hidden>

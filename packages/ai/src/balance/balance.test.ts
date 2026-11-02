@@ -1,9 +1,13 @@
-import { BASE_CARD_LIST, card, validateDeck } from '@devoh/engine';
-import { describe, expect, it } from 'vitest';
+import { BASE_CARD_LIST, card, installCustomCards, validateDeck } from '@devoh/engine';
+import { afterEach, describe, expect, it } from 'vitest';
 import { focusRotation, generateDeck, GENERATED_DECK_SIZE, seededRng } from './deckGen';
 import { reportsToMarkdown } from './markdown';
 import { createBalanceRun, runBalance, type BalanceConfig } from './simulate';
 import { verdictOf, wilson } from './stats';
+
+afterEach(() => {
+  installCustomCards([]);
+});
 
 describe('decks gerados', () => {
   it('são sempre válidos, com curva de nível jogável', () => {
@@ -52,6 +56,32 @@ describe('estatística', () => {
 
 describe('simulação', () => {
   const small: BalanceConfig = { mode: 'both', gamesPerMatchup: 2, minGamesPerCard: 5, levels: ['normal', 'normal'], seed: 3 };
+
+  it('com foco, testa só o card pedido (o rascunho do criador de cartas)', () => {
+    installCustomCards([
+      {
+        serial: 1,
+        artVersion: 1,
+        status: 'published',
+        input: {
+          id: 'x_rascunho',
+          name: 'Rascunho',
+          kind: 'pro',
+          rarity: 'comum',
+          typeLine: 'Humano / Teste',
+          attribute: 'TECH',
+          level: 4,
+          atk: 1800,
+          def: 1000,
+          effects: [{ when: 'summon', do: [{ do: 'stress', side: 'opp', amount: 2 }] }],
+        },
+      },
+    ]);
+    const r = runBalance({ ...small, mode: 'random', focus: ['x_rascunho'] });
+    const x = r.cards.find((c) => c.id === 'x_rascunho')!;
+    expect(x.included.games).toBeGreaterThanOrEqual(small.minGamesPerCard);
+    expect(r.totals.generatedGames).toBeLessThan(small.minGamesPerCard * 3);
+  }, 120_000);
 
   it('decks gerados colocam todo card do catálogo em partidas', () => {
     const r = runBalance({ ...small, mode: 'random' });

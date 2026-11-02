@@ -24,7 +24,8 @@ button {
   color: inherit;
 }
 input,
-select {
+select,
+textarea {
   font: inherit;
   color: var(--text);
   background: var(--sunken);
@@ -33,6 +34,17 @@ select {
   padding: 10px 12px;
   min-height: 44px;
   width: 100%;
+}
+textarea {
+  min-height: auto;
+  resize: vertical;
+  line-height: 1.45;
+}
+input:disabled,
+select:disabled,
+textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 a {
   color: var(--gold2);
@@ -45,7 +57,8 @@ svg.lucide {
   flex: none;
 }
 input:focus,
-select:focus {
+select:focus,
+textarea:focus {
   outline: 2px solid var(--gold);
   outline-offset: 1px;
 }
@@ -257,4 +270,92 @@ select:focus {
   justify-content: flex-end;
   gap: 8px;
   margin-top: 18px;
+}
+
+/* ───────── Trilha (shared/ui/Trail) ───────── */
+.trail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--code);
+}
+.trail a {
+  color: var(--code);
+}
+.trail a:hover {
+  text-decoration: underline;
+}
+.trail-sep {
+  margin-right: 8px;
+  color: #4c5785;
+}
+
+/* ───────── Campos (shared/ui/Field) ───────── */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.field-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+.field-label {
+  margin: 0;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+.field-count {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  color: var(--muted);
+}
+.field-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.number-field {
+  display: flex;
+  align-items: stretch;
+}
+.number-field input {
+  min-width: 0;
+  text-align: center;
+  border-radius: 0;
+  -moz-appearance: textfield;
+}
+.number-field input::-webkit-inner-spin-button,
+.number-field input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+.number-field button {
+  flex: none;
+  width: 40px;
+  border: 1px solid #2c3a6b;
+  background: var(--surface2);
+  color: var(--gold2);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+.number-field button:first-child {
+  border-radius: 8px 0 0 8px;
+  border-right: 0;
+}
+.number-field button:last-child {
+  border-radius: 0 8px 8px 0;
+  border-left: 0;
+}
+.number-field button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }

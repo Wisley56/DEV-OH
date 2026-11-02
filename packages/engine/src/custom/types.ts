@@ -1,4 +1,5 @@
-import type { Attribute, BugTrigger, BugType, CardKind, Rarity, TaskSpeed } from '../core/types';
+import type { Attribute, BugTrigger, BugType, CardKind, Rarity, TargetKind, TaskSpeed } from '../core/types';
+import type { EffectPart } from '../dsl/types';
 
 /** Todo card criado no painel admin tem id com este prefixo; nenhum card em código usa. */
 export const CUSTOM_PREFIX = 'x_';
@@ -7,7 +8,7 @@ export type CustomStatus = 'draft' | 'published' | 'retired';
 
 /**
  * O que o admin edita no criador de cartas. A arte não entra aqui: vem do upload, pelo
- * `artVersion` do registro. Os efeitos em blocos chegam numa etapa seguinte.
+ * `artVersion` do registro. O texto de efeito é sempre gerado dos blocos (dsl/describe).
  */
 export interface CustomCardInput {
   id: string;
@@ -28,6 +29,9 @@ export interface CustomCardInput {
   speed?: TaskSpeed;
   bugType?: BugType;
   trigger?: BugTrigger;
+  /** O alvo que o jogador escolhe ao ativar (Task, Equipamento ou efeito ativável). */
+  target?: TargetKind;
+  effects?: EffectPart[];
 }
 
 /** Card do painel que o jogo conhece: publicado (na coleção) ou aposentado (só desenha). */

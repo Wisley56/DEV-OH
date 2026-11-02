@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { CardsModule } from '../cards/cards.module.js';
 import { CLOCK, ID_GENERATOR, ROOM_NOTIFIER, ROOM_REPOSITORY, SCHEDULER } from './application/ports.js';
 import { RoomsService } from './application/rooms.service.js';
 import { CryptoIdGenerator, SystemClock } from './infrastructure/crypto-id.generator.js';
@@ -10,6 +11,7 @@ import { RoomsGateway } from './presentation/rooms.gateway.js';
 import { SocketRoomNotifier } from './presentation/socket-room.notifier.js';
 
 @Module({
+  imports: [CardsModule],
   controllers: [RoomsController],
   providers: [
     RoomsService,

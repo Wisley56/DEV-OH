@@ -7,6 +7,8 @@
 @import '../../modules/auth/auth.css';
 @import '../../modules/ranking/ranking.css';
 @import '../../modules/balance/balance.css';
+@import '../../modules/admin/admin.css';
+@import '../../modules/cardmaker/cardmaker.css';
 @import '../../modules/training/training.css';
 @import '../../modules/collection/collection.css';
 @import '../../modules/online/online.css';

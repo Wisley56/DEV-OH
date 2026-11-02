@@ -1,0 +1,30 @@
+{
+  "name": "@devoh/card-art",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "sharp": "^0.35.5"
+  },
+  "devDependencies": {
+    "@devoh/tsconfig": "*",
+    "@types/node": "^22.15.0",
+    "tsup": "^9.0.0",
+    "vitest": "^5.0.5"
+  }
+}

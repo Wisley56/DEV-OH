@@ -1,7 +1,6 @@
 import type { BalanceReport } from '@devoh/ai/balance';
 import { useEffect, useMemo, useState } from 'react';
-import { CenterScreen, PageHead, Panel } from '../../../shared/ui';
-import { useAccount } from '../../auth';
+import { PageHead, Trail } from '../../../shared/ui';
 import { cardRows, EMPTY_CARD_FILTER, filterRows, type CardFilter, type Metric } from '../services/reportIO';
 import { stopBalanceWorker, useBalance } from '../store/balanceStore';
 import { CardTable } from './CardTable';
@@ -31,23 +30,13 @@ const METRICS: { id: Metric; label: string; short: string; title: string }[] = [
   },
 ];
 
-/** Painel admin de balanceamento: só contas com is_admin. */
+/** Painel admin de balanceamento (a página põe o RequireAdmin em volta). */
 export function BalanceDashboard() {
-  const { account } = useAccount();
   useEffect(() => stopBalanceWorker, []);
-
-  if (!account?.isAdmin)
-    return (
-      <CenterScreen>
-        <Panel className="require-account">
-          <h2>Acesso restrito</h2>
-          <p>Esta página é só para administradores.</p>
-        </Panel>
-      </CenterScreen>
-    );
 
   return (
     <div className="page balance-page">
+      <Trail items={[{ label: '// admin', to: '/admin' }, { label: 'balanceamento' }]} />
       <PageHead title="Balanceamento" />
       <p className="muted balance-hint">
         Bots jogam milhares de partidas no seu navegador (nada roda no servidor). Os decks gerados colocam todos os cards do catálogo em

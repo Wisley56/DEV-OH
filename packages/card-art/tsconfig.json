@@ -1,0 +1,1 @@
+{ "extends": "@devoh/tsconfig/library.json", "compilerOptions": { "types": ["node"] }, "include": ["src"] }

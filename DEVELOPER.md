@@ -37,9 +37,25 @@ Para o `admin` em produção, rode no seu computador com `DATABASE_URL` igual à
 
 ### Painel admin de balanceamento
 
-`/admin/balanceamento` (link "⚖ Balanceamento" na faixa da conta) roda a mesma simulação do `npm run balance` **no navegador**, num Web Worker, e mostra os resultados em gráficos: matriz de confrontos dos decks iniciais, win rate de cada card com intervalo de confiança de 95%, veredito de buff/nerf e auditoria de ATK/DEF. Dá para exportar o relatório (JSON/Markdown) e abrir um JSON anterior para comparar antes e depois de um ajuste. O `--json` do CLI gera o mesmo formato.
+O botão "Admin" na faixa da conta abre `/admin`, com o **Criador de cartas** e o **Balanceamento**.
+
+`/admin/balanceamento` roda a mesma simulação do `npm run balance` **no navegador**, num Web Worker, e mostra os resultados em gráficos: matriz de confrontos dos decks iniciais, win rate de cada card com intervalo de confiança de 95%, veredito de buff/nerf e auditoria de ATK/DEF. Dá para exportar o relatório (JSON/Markdown) e abrir um JSON anterior para comparar antes e depois de um ajuste. O `--json` do CLI gera o mesmo formato.
 
 Os **decks gerados** (`--random` no CLI, padrão no painel) são decks válidos de 30 cards sorteados com peso por raridade e curva de nível jogável. Um rodízio coloca cada card do catálogo como "foco" até todos estarem em pelo menos N partidas. A medida "com o card no deck gerado" é a menos enviesada para decidir buff/nerf; "quando jogado" favorece cards caros, que aparecem mais em partidas já ganhas.
+
+### Criador de cartas
+
+`/admin/cartas` cria cartas novas sem deploy: formulário em abas (Identidade, Tipo e atributos, Arte, Texto e história, Efeitos), preview ao vivo, medidor da tabela de balanceamento e a lista de Rascunhos, Publicadas, Aposentadas e **Cartas do jogo** (as 65 em código, só para consulta).
+
+- **Rascunho** pode passar do orçamento. **Publicar** exige caber na tabela e ter arte; o servidor confere de novo e responde com os problemas. A carta publicada aparece na coleção e no deck builder de todo mundo na hora.
+- Depois de publicada, as **regras ficam travadas** (tipo, raridade, atributos, efeitos). Nome, textos e arte continuam editáveis. Para mudar a regra: **Duplicar** e **Aposentar** a antiga. Aposentada sai da coleção e dos decks novos, mas duelos e decks antigos continuam funcionando.
+- **Arte:** sempre upload (PNG, JPEG ou WebP, até 8 MB). O recorte é feito na tela, na proporção do card; o servidor recodifica para WebP 720×620. Em dev, a arte fica em `apps/server/.data/art`; em produção, no Storage Bucket do Railway (ver Deploy).
+- **Efeitos** são blocos (gatilho, condições e ações), com receitas prontas. O texto da carta é gerado dos blocos.
+- **Testar no simulador** joga algumas centenas de duelos de bots com a carta nos decks gerados e mostra o win rate. Roda no navegador e não publica nada.
+
+O catálogo fica na memória do server e recarrega a cada publicação. Premissa: **uma réplica só** do server (ver [ADR 0009](docs/adr/0009-cartas-customizadas-em-runtime.md)). A tabela e os blocos estão no [ADR 0010](docs/adr/0010-efeitos-em-blocos-e-tabela.md).
+
+**Recalibrar a tabela:** os números ficam em `packages/engine/src/balance/table.ts` (só dados). Depois de mudar, rode `npm test`: o teste "tabela de balanceamento" em `packages/engine/src/dsl/dsl.test.ts` confere que as cartas em código transcritas em blocos cabem no orçamento. Carta já publicada não é recalculada.
 
 ### Quem é admin
 
@@ -114,6 +130,8 @@ modules/
   accounts/ cadastro (Turnstile), login (argon2id, bloqueio), sessão em cookie HttpOnly, AuthGuard · rotas /api/auth/*
   decks/    decks da conta · rotas /api/decks
   ranking/  Elo e V/D/E gravados no fim de cada partida online (MATCH_RECORDER) · rotas /api/ranking
+  cards/    cartas do painel: CatalogService (instala no engine antes do listen), CardsAdminService, ART_STORAGE (S3, pasta ou memória)
+            · rotas /api/cards/custom, /api/cards/:id/art e /api/admin/cards
   rooms/    domain (Room) · application (RoomsService + portas) · infrastructure (repositório em memória, ids, limpeza) · presentation (gateway, notifier)
   duel/     application (DuelService: aplica a jogada no engine) · presentation (gateway do evento "action")
   health/   GET /health e GET /
@@ -143,7 +161,7 @@ shared/
   lib/      storage seguro, useMediaQuery, env
 ```
 
-Módulos: `cards` (renderização do card), `auth` (conta: login, cadastro com Turnstile, `RequireAccount`), `profile` (apelido do visitante, deck, dificuldade e som salvos), `decks` (decks da conta, importação dos antigos e deck builder), `ranking`, `collection`, `lobby` (inclui a lista de salas abertas), `training` (duelo contra o bot), `online` (salas, timer e queda), `duel` (o tabuleiro, usado pelo treino e pelo online através da porta `DuelController`), `sound` (efeitos sonoros) e `tutorial` (tour guiado).
+Módulos: `cards` (renderização do card), `auth` (conta: login, cadastro com Turnstile, `RequireAccount`), `profile` (apelido do visitante, deck, dificuldade e som salvos), `decks` (decks da conta, importação dos antigos e deck builder), `ranking`, `collection`, `lobby` (inclui a lista de salas abertas), `training` (duelo contra o bot), `online` (salas, timer e queda), `duel` (o tabuleiro, usado pelo treino e pelo online através da porta `DuelController`), `sound` (efeitos sonoros), `tutorial` (tour guiado), `catalog` (carrega as cartas do painel), `admin` (hub `/admin`), `cardmaker` (criador de cartas) e `balance` (painel de balanceamento).
 
 **Animações e sons do duelo** (`modules/duel/services/boardEvents.ts` → `components/fx/FxLayer.tsx`):
 
@@ -162,22 +180,27 @@ Módulos: `cards` (renderização do card), `auth` (conta: login, cadastro com T
 
 **Rotas:**
 
-| Rota           | Página                                   |
-| -------------- | ---------------------------------------- |
-| `/`            | início e lobby                           |
-| `/colecao`     | coleção de cards                         |
-| `/decks`       | deck builder (pede conta)                |
-| `/entrar`      | login e cadastro (`?next=` volta)        |
-| `/ranking`     | ranking online e suas partidas           |
-| `/treino`      | duelo contra o bot                       |
-| `/sala/nova`   | cria uma sala                            |
-| `/sala/CODIGO` | sala (pede conta); o F5 volta pela conta |
+| Rota                   | Página                                   |
+| ---------------------- | ---------------------------------------- |
+| `/`                    | início e lobby                           |
+| `/colecao`             | coleção de cards                         |
+| `/decks`               | deck builder (pede conta)                |
+| `/entrar`              | login e cadastro (`?next=` volta)        |
+| `/ranking`             | ranking online e suas partidas           |
+| `/treino`              | duelo contra o bot                       |
+| `/sala/nova`           | cria uma sala                            |
+| `/sala/CODIGO`         | sala (pede conta); o F5 volta pela conta |
+| `/admin`               | painel admin (pede conta admin)          |
+| `/admin/cartas/:id?`   | criador de cartas (admin)                |
+| `/admin/balanceamento` | painel de balanceamento (admin)          |
 
 Convite: `/sala/CODIGO`. Se a conta ainda não estiver na sala, o convite abre o lobby em `/?sala=CODIGO` para a pessoa escolher o deck.
 
 O web nunca guarda segredo no navegador: a sessão é um cookie HttpOnly e o `authStore` só sabe "quem sou eu" por `GET /api/auth/me`. No `sessionStorage` fica só o código da sala da aba (para o botão "voltar para o duelo").
 
 ## Criar um card novo
+
+O caminho mais curto é o [Criador de cartas](#criador-de-cartas) do painel: sem código e sem deploy. Use código quando o efeito não cabe nos blocos (como Wisley, Curiosa ou Douglas):
 
 1. Crie `packages/engine/src/content/cards/<grupo>/<id>.ts` com `defineCard({ def, effects })`. Use um card parecido como modelo.
 2. Dados: `rarity` é obrigatória. Em Task, `speed` (`normal`, `continuous`, `field`, `quick`, `equip`); em Bug, `trigger` e `bugType` (`normal`, `continuous`, `counter`). O `typeLine` tem só raça/função ("Humano / QA"): Normal/Efeito/FLIP e o subtipo são derivados (`cardFrame`, `fullTypeLine` em `core/cardInfo.ts`). Profissional sem módulo de efeito e sem `ignition` é **Normal**.
@@ -205,6 +228,10 @@ Tudo no Railway, no mesmo projeto: o banco **PostgreSQL** e dois serviços do me
 
 No projeto: **+ New → Database → PostgreSQL**. Ele fica na rede privada e o server lê a URL por referência (abaixo). As migrations rodam sozinhas quando o server sobe.
 
+### Bucket da arte
+
+No projeto: **+ New → Bucket** (Storage Bucket, compatível com S3). Ele guarda as artes das cartas do painel; o banco guarda só a versão. O bucket é privado: o navegador recebe as imagens pelo server (`/api/cards/:id/art`), então não precisa liberar acesso público. A aba **Credentials** do bucket mostra os valores e o estilo de URL (virtual-hosted ou path-style).
+
 ### Serviço `@devoh/server`
 
 1. Settings → Build → Custom Build Command: `npm run build:server`.
@@ -217,6 +244,9 @@ No projeto: **+ New → Database → PostgreSQL**. Ele fica na rede privada e o 
      - `SESSION_TTL_DAYS=30`: validade da sessão (renovada no uso).
      - `TRUST_PROXY_HOPS=2`: proxies na frente do server (borda do Railway + `server.mjs` do web), para achar o IP real no `x-forwarded-for`.
      - `TURNSTILE_SITE_KEY` e `TURNSTILE_SECRET_KEY`: grátis no painel da Cloudflare, em **Turnstile → Add widget**, com o domínio do web.
+     - Arte das cartas, por referência ao bucket (troque `Bucket` pelo nome do serviço do bucket):
+       `ART_BUCKET=${{Bucket.BUCKET}}`, `ART_S3_ENDPOINT=${{Bucket.ENDPOINT}}`, `ART_S3_REGION=${{Bucket.REGION}}`, `ART_S3_ACCESS_KEY_ID=${{Bucket.ACCESS_KEY_ID}}` e `ART_S3_SECRET_ACCESS_KEY=${{Bucket.SECRET_ACCESS_KEY}}`.
+   - `ART_S3_FORCE_PATH_STYLE=true`: só se a aba Credentials do bucket indicar path-style (buckets antigos). O padrão é virtual-hosted.
    - `NODE_ENV=production`: costuma vir do Railway. Liga o log em JSON e as exigências acima.
    - Opcionais: `TURN_TIMEOUT_MS` (tempo do turno no online, padrão 90000) e `RECONNECT_TIMEOUT_MS` (prazo para voltar antes do W.O., padrão 60000). Limites contra abuso: ver [SECURITY.md](SECURITY.md).
 4. Settings → Networking → Generate Domain, apontando para a porta do log (`DEV-OH! server ouvindo na porta ...`).

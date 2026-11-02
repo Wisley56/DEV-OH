@@ -127,9 +127,27 @@ describe('cards do painel no catálogo', () => {
 describe('validateCustomInput', () => {
   it('aceita um Profissional, uma Task e um Bug bem formados', () => {
     expect(validateCustomInput(pro())).toEqual([]);
-    expect(validateCustomInput({ id: 'x_cafe_duplo', name: 'Café Duplo', kind: 'task', rarity: 'rara', speed: 'equip' })).toEqual([]);
     expect(
-      validateCustomInput({ id: 'x_flaky', name: 'Teste Flaky', kind: 'bug', rarity: 'comum', trigger: 'oppAttack', bugType: 'normal' }),
+      validateCustomInput({
+        id: 'x_cafe_duplo',
+        name: 'Café Duplo',
+        kind: 'task',
+        rarity: 'rara',
+        speed: 'equip',
+        target: 'ownPro',
+        effects: [{ passive: 'equip', atk: 300, def: 300 }],
+      }),
+    ).toEqual([]);
+    expect(
+      validateCustomInput({
+        id: 'x_flaky',
+        name: 'Teste Flaky',
+        kind: 'bug',
+        rarity: 'comum',
+        trigger: 'oppAttack',
+        bugType: 'normal',
+        effects: [{ when: 'bug', do: [{ do: 'negateEvent' }] }],
+      }),
     ).toEqual([]);
   });
 

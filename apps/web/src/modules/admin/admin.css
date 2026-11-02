@@ -1,0 +1,46 @@
+/* ───────── Painel admin (hub) ───────── */
+.admin-hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 18px;
+}
+.admin-hub-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.admin-hub-card h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-family: var(--font-title);
+  font-size: 1.3rem;
+  color: var(--gold2);
+}
+.admin-hub-card p {
+  margin: 0;
+  color: var(--text-soft);
+  line-height: 1.5;
+}
+.admin-hub-card .btn {
+  align-self: flex-start;
+  margin-top: auto;
+}
+.admin-hub-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.admin-hub-facts li {
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--sunken);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--muted);
+}

@@ -60,7 +60,7 @@ describe('faces do card', () => {
             kind: 'task',
             rarity: 'comum',
             speed: 'quick',
-            lore: 'Entrou no deploy das 18h.',
+            effects: [{ when: 'activate', do: [{ do: 'draw', amount: 1 }] }],
           },
         },
       ]);

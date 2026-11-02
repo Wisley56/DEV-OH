@@ -1,4 +1,4 @@
-import type { Action } from '@devoh/engine';
+import type { Action, Attribute, BugTrigger, BugType, CardKind, EffectPart, Rarity, TargetKind, TaskSpeed } from '@devoh/engine';
 import { z } from 'zod';
 import type { CreateRoomPayload, JoinRoomPayload, RejoinRoomPayload } from './index';
 import {
@@ -11,6 +11,7 @@ import {
   type LoginPayload,
   type RegisterPayload,
 } from './account';
+import type { ArtCropQuery, SaveCustomCardPayload } from './cards';
 
 /** Schemas de validação dos payloads que chegam ao servidor. */
 
@@ -98,6 +99,69 @@ export const ImportDecksSchema = z
   .array(DeckSchema, { error: 'Decks inválidos.' })
   .max(MAX_DECKS, { error: `No máximo ${MAX_DECKS} decks por conta.` });
 
+// ── Cards do painel admin (HTTP) ──
+// Aqui só a forma e os tetos de tamanho: um rascunho pode estar incompleto. A regra completa
+// (validateCustomInput + tabela de balanceamento) roda no servidor ao publicar.
+
+const KINDS = ['pro', 'task', 'bug'] as const satisfies readonly CardKind[];
+const RARITIES = ['comum', 'rara', 'super', 'ultra', 'secreta'] as const satisfies readonly Rarity[];
+const ATTRIBUTES = ['TREVA', 'AGUA', 'TERRA', 'FOGO', 'LUZ', 'TECH'] as const satisfies readonly Attribute[];
+const SPEEDS = ['normal', 'continuous', 'field', 'quick', 'equip'] as const satisfies readonly TaskSpeed[];
+const BUG_TYPES = ['normal', 'continuous', 'counter'] as const satisfies readonly BugType[];
+const BUG_TRIGGERS = [
+  'oppSummon',
+  'oppAttack',
+  'oppDirectAttack',
+  'oppTask',
+  'battleDamage',
+  'proDestroyedByBattle',
+  'oppBug',
+] as const satisfies readonly BugTrigger[];
+const TARGETS = ['ownPro', 'oppPro', 'anyPro', 'oppSet'] as const satisfies readonly TargetKind[];
+
+const cardText = (max: number) => z.string({ error: 'Texto inválido.' }).max(max, { error: `Texto com mais de ${max} caracteres.` });
+const stat = z.number().int().min(0).max(3000);
+/** Cada bloco de efeito: objeto pequeno; a estrutura é conferida pelo engine (dsl/validate). */
+const effectPart = z.custom<EffectPart>((v) => !!v && typeof v === 'object' && !Array.isArray(v) && JSON.stringify(v).length <= 2000, {
+  error: 'Efeito inválido.',
+});
+
+export const CustomCardInputSchema = z
+  .object(
+    {
+      id: z
+        .string({ error: 'Id inválido.' })
+        .regex(/^x_[a-z0-9_]{2,36}$/, { error: 'O id precisa começar com "x_" e ter só letras minúsculas, números e "_".' }),
+      name: cardText(40),
+      kind: z.enum(KINDS, { error: 'Tipo de card inválido.' }),
+      rarity: z.enum(RARITIES, { error: 'Raridade inválida.' }),
+      typeLine: cardText(40).optional(),
+      lore: cardText(300).optional(),
+      flavor: cardText(200).optional(),
+      unique: z.boolean().optional(),
+      tags: z.array(cardText(20)).max(5).optional(),
+      attribute: z.enum(ATTRIBUTES).optional(),
+      level: z.number().int().min(1).max(10).optional(),
+      atk: stat.optional(),
+      def: stat.optional(),
+      speed: z.enum(SPEEDS).optional(),
+      bugType: z.enum(BUG_TYPES).optional(),
+      trigger: z.enum(BUG_TRIGGERS).optional(),
+      target: z.enum(TARGETS).optional(),
+      effects: z.array(effectPart).max(3, { error: 'No máximo 3 blocos de efeito.' }).optional(),
+    },
+    invalid,
+  )
+  .strict();
+
+export const SaveCustomCardSchema = z.object({ input: CustomCardInputSchema, version: z.number().int().positive().optional() }, invalid);
+
+const px = z.coerce.number({ error: 'Recorte inválido.' }).int({ error: 'Recorte inválido.' }).min(0, { error: 'Recorte inválido.' });
+/** Recorte opcional: sem os quatro números, a imagem inteira vai sobre o fundo desfocado. */
+export const ArtCropSchema = z
+  .object({ left: px, top: px, width: px.min(1), height: px.min(1) }, { error: 'Recorte inválido.' })
+  .optional();
+
 // Garante em tempo de compilação que os schemas batem com os tipos do contrato.
 type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : never) : never;
 export const _contract: [
@@ -109,4 +173,6 @@ export const _contract: [
   Same<z.infer<typeof LoginSchema>, LoginPayload>,
   Same<z.infer<typeof ChangePasswordSchema>, ChangePasswordPayload>,
   Same<z.infer<typeof DeckSchema>, DeckPayload>,
-] = [true, true, true, true, true, true, true, true];
+  Same<z.infer<typeof SaveCustomCardSchema>, SaveCustomCardPayload>,
+  Same<NonNullable<z.infer<typeof ArtCropSchema>>, ArtCropQuery>,
+] = [true, true, true, true, true, true, true, true, true, true];
