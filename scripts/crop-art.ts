@@ -61,6 +61,8 @@ const CROPS: Record<string, { src: string; box?: Box }> = {
   dev_fullstack: { src: 'dev_fullstack', box: { left: 90, top: 194, width: 606, height: 498 } },
   arquiteta: { src: 'arquiteta', box: { left: 86, top: 194, width: 608, height: 490 } },
   ceo: { src: 'ceo', box: { left: 108, top: 204, width: 548, height: 502 } },
+  // Quinta leva (765×1024).
+  wisley_ia: { src: 'wisley_ia', box: { left: 94, top: 200, width: 576, height: 540 } },
 };
 
 const only = process.argv.slice(2);

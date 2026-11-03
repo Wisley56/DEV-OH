@@ -64,6 +64,7 @@ import erro404 from './bugs/erro_404';
 import prodCaiu from './bugs/prod_caiu';
 import dividaTecnica from './bugs/divida_tecnica';
 import revertPr from './bugs/revert_pr';
+import wisleyIa from './squad/wisley_ia';
 
 /** Todos os cards do DEV-OH!, na ordem da coleção. */
 export const CARD_MODULES: CardModule[] = [
@@ -132,4 +133,6 @@ export const CARD_MODULES: CardModule[] = [
   prodCaiu,
   dividaTecnica,
   revertPr,
+  // Cards novos entram no fim: o código DVOH-NNN vem da posição nesta lista.
+  wisleyIa,
 ];

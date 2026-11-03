@@ -391,6 +391,20 @@ describe('segunda leva: Juju, Diegão, Brunão, Pirulito e Tasks', () => {
     s.players[1].grave.push(newInstance(s, 'qa', 1));
     expect(proView(s, 0, ceo).atk).toBe(2600);
   });
+  it('Automatizar: Wisley de IA ganha +200 ATK por card de IA dos dois lados, até +800', () => {
+    const s = game();
+    const w = place(s, 0, 'wisley_ia');
+    expect(proView(s, 0, w).atk).toBe(1600);
+    place(s, 0, 'copilot');
+    s.players[1].grave.push(newInstance(s, 'claude_alucinando', 1), newInstance(s, 'qa', 1));
+    expect(proView(s, 0, w).atk).toBe(2000);
+    // Virado para baixo não conta (não revela a identidade).
+    place(s, 1, 'claude_alucinando', 'def');
+    s.players[1].pros.find((p) => p?.card.cardId === 'claude_alucinando')!.faceDown = true;
+    expect(proView(s, 0, w).atk).toBe(2000);
+    s.players[0].grave.push(newInstance(s, 'copilot', 0), newInstance(s, 'copilot', 0), newInstance(s, 'claude_alucinando', 0));
+    expect(proView(s, 0, w).atk).toBe(2400);
+  });
   it('Isso é meus ovos: anula todos os Profissionais do oponente', () => {
     let s = game();
     const k = place(s, 0, 'kelly');
