@@ -1,11 +1,13 @@
-import { createGame, getView, STARTER_DECKS, type GameView } from '@devoh/engine';
+import { createGame, getView, STARTER_DECKS, type GameView, type ProView } from '@devoh/engine';
 import { describe, expect, it } from 'vitest';
 import {
+  battleForecast,
   canDropOn,
   cardActions,
   isTargetable,
   isTargetOptional,
   modeText,
+  modLines,
   selectionExists,
   toggleTribute,
   winnerText,
@@ -144,5 +146,63 @@ describe('arrastar da mão para o campo', () => {
     expect(canDropOn(hand('erro_404', { canSet: true }), { row: 'field', zone: 0 }, me)).toBe(false);
     expect(canDropOn(hand('hotfix', { canActivate: true }), { row: 'field', zone: 0 }, me)).toBe(true);
     expect(canDropOn(hand('hotfix', { canActivate: true }), { row: 'pro', zone: 0 }, me)).toBe(false);
+  });
+});
+
+describe('previsão de batalha', () => {
+  const pro = (over: Partial<ProView>): ProView => ({
+    iid: 'x',
+    cardId: 'qa',
+    position: 'atk',
+    faceDown: false,
+    atk: 1600,
+    def: 1200,
+    canAttack: false,
+    canChangePos: false,
+    canIgnite: false,
+    canFlip: false,
+    locked: false,
+    ...over,
+  });
+
+  it('contra um Profissional em Ataque: compara ATK com ATK', () => {
+    expect(battleForecast(pro({ atk: 1800 }), pro({ atk: 1500 }))).toEqual({ tone: 'good', text: 'Destrói · −300 LP nele' });
+    expect(battleForecast(pro({ atk: 1500 }), pro({ atk: 1800 }))).toEqual({ tone: 'bad', text: 'Perde o seu · −300 LP em você' });
+    expect(battleForecast(pro({ atk: 1500 }), pro({ atk: 1500 }))).toEqual({ tone: 'even', text: 'Os dois caem' });
+  });
+
+  it('contra um Profissional em Defesa: compara ATK com DEF, sem dano no dono do alvo', () => {
+    expect(battleForecast(pro({ atk: 1800 }), pro({ position: 'def', def: 1500 }))).toEqual({ tone: 'good', text: 'Destrói' });
+    expect(battleForecast(pro({ atk: 1500 }), pro({ position: 'def', def: 1900 }))).toEqual({
+      tone: 'bad',
+      text: 'Não passa · −400 LP em você',
+    });
+    expect(battleForecast(pro({ atk: 1500 }), pro({ position: 'def', def: 1500 }))).toEqual({ tone: 'even', text: 'Não passa' });
+  });
+
+  it('alvo virado não revela nada', () => {
+    expect(battleForecast(pro({}), pro({ cardId: null, faceDown: true, position: 'def', atk: null, def: null }))).toEqual({
+      tone: 'unknown',
+      text: 'Virado: ?',
+    });
+  });
+});
+
+describe('de onde vem o ATK/DEF', () => {
+  it('nomeia a regra ou o card e mostra cada valor com sinal', () => {
+    expect(
+      modLines([
+        { rule: 'stress', atk: 200 },
+        { cardId: 'gato_gordo', atk: 300 },
+        { cardId: 'juju_serio', def: -800 },
+        { cardId: 'moises_bombado', mult: 2 },
+      ]),
+    ).toEqual([
+      { label: 'Estresse (Modo Desespero)', values: ['+200 ATK'], good: true },
+      { label: 'Contemplai… o Gato Gordo da Squad!', values: ['+300 ATK'], good: true },
+      { label: 'Juju Sério', values: ['−800 DEF'], good: false },
+      { label: 'Moisés Bombado', values: ['×2 ATK e DEF'], good: true },
+    ]);
+    expect(modLines(undefined)).toEqual([]);
   });
 });

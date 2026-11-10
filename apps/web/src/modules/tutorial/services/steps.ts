@@ -17,7 +17,7 @@ export const DUEL_TOUR: TourStep[] = [
   {
     target: 'field',
     title: 'Seu campo',
-    text: 'Em cima ficam as 3 zonas de Profissionais; embaixo, as de Tasks e Bugs, a zona de Campo e os Desligados (cemitério).',
+    text: 'Em cima ficam as 3 zonas de Profissionais; embaixo, as de Tasks e Bugs, a zona de Campo e os Desligados (cemitério). Card virado para baixo não tem efeito: o Profissional só vale virado para cima, e o Bug só dispara a partir do turno seguinte ao que foi baixado.',
   },
   {
     target: 'inspector',
@@ -37,6 +37,6 @@ export const DUEL_TOUR: TourStep[] = [
   {
     target: 'log',
     title: 'Histórico',
-    text: 'Tudo o que acontece no duelo fica registrado aqui. Dá para rever este tour no botão "?". Bom jogo!',
+    text: 'Cada efeito é narrado na faixa do alto, com o card que causou, e fica registrado aqui, agrupado por jogada. Dá para rever este tour no botão "?". Bom jogo!',
   },
 ];

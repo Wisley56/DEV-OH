@@ -39,6 +39,21 @@ export function playBoardSound(ev: BoardEvent, you: Seat) {
       // O dado cai na mesa quando a animação para de rolar (ver DICE_ROLL_MS).
       setTimeout(() => sfx.play('dice-throw'), DICE_ROLL_MS);
       return;
+    case 'effect':
+    case 'position':
+      return sfx.play('task');
+    case 'stat':
+      return sfx.play(ev.items.some((x) => x.atk > 0 || x.def > 0) ? 'heal' : 'glitch');
+    case 'negate':
+      return sfx.play('block');
+    case 'bounce':
+      return sfx.play('set');
+    case 'stress':
+      // O +1 de cada dano de batalha vem logo depois do impacto: fica mudo.
+      return ev.source ? sfx.play(ev.amount > 0 ? 'glitch' : 'heal') : undefined;
+    case 'meltdown':
+      sfx.play('glitch');
+      return sfx.play('destroy');
     case 'turn':
       return ev.seat === you ? sfx.play('turn') : undefined;
     case 'end':

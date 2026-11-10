@@ -1,4 +1,15 @@
-import { card, tributesNeeded, type Action, type GameView, type HandCardView, type PlayerView, type TargetKind } from '@devoh/engine';
+import {
+  card,
+  cardExists,
+  tributesNeeded,
+  type Action,
+  type GameView,
+  type HandCardView,
+  type PlayerView,
+  type ProView,
+  type StatPart,
+  type TargetKind,
+} from '@devoh/engine';
 
 /**
  * Regras de interação do tabuleiro (funções puras): o que o jogador pode
@@ -200,4 +211,48 @@ export function canDropOn(c: HandCardView, target: DropTarget, me: PlayerView): 
   if (d.speed === 'field') return target.row === 'field';
   if (d.speed === 'continuous') return target.row === 'spell' && !me.spells[target.zone];
   return target.row !== 'pro';
+}
+
+/** O que se espera de um ataque, pelo que está à vista (não conta Bugs baixados nem efeitos que disparam). */
+export interface Forecast {
+  tone: 'good' | 'bad' | 'even' | 'unknown';
+  text: string;
+}
+
+/** Previsão do ataque de `attacker` em `target`, do ponto de vista de quem ataca. Mesma conta de `rules/battle`. */
+export function battleForecast(attacker: ProView, target: ProView): Forecast {
+  const atk = attacker.atk ?? 0;
+  if (target.faceDown || target.atk === null || target.def === null) return { tone: 'unknown', text: 'Virado: ?' };
+  if (target.position === 'atk') {
+    if (atk > target.atk) return { tone: 'good', text: `Destrói · −${atk - target.atk} LP nele` };
+    if (atk < target.atk) return { tone: 'bad', text: `Perde o seu · −${target.atk - atk} LP em você` };
+    return atk > 0 ? { tone: 'even', text: 'Os dois caem' } : { tone: 'even', text: 'Nada acontece' };
+  }
+  if (atk > target.def) return { tone: 'good', text: 'Destrói' };
+  if (atk < target.def) return { tone: 'bad', text: `Não passa · −${target.def - atk} LP em você` };
+  return { tone: 'even', text: 'Não passa' };
+}
+
+/** Uma linha de "de onde vem esse ATK/DEF": quem dá e quanto. */
+export interface ModLine {
+  label: string;
+  /** Ex.: "+300 ATK", "−800 DEF", "×2 ATK e DEF". */
+  values: string[];
+  good: boolean;
+}
+
+const RULE_LABEL = { stress: 'Estresse (Modo Desespero)', mod: 'Efeitos sofridos', temp: 'Até o fim do turno' } as const;
+const signed = (n: number) => `${n > 0 ? '+' : '−'}${Math.abs(n)}`;
+
+/** Linhas legíveis das partes do ATK/DEF de um Profissional (`ProView.mods`). */
+export function modLines(mods: readonly StatPart[] | undefined): ModLine[] {
+  return (mods ?? []).map((p) => {
+    const values = [
+      p.atk ? `${signed(p.atk)} ATK` : null,
+      p.def ? `${signed(p.def)} DEF` : null,
+      p.mult ? `×${p.mult} ATK e DEF` : null,
+    ].filter((v) => v !== null);
+    const label = p.rule ? RULE_LABEL[p.rule] : p.cardId && cardExists(p.cardId) ? card(p.cardId).name : 'Efeito';
+    return { label, values, good: (p.atk ?? 0) + (p.def ?? 0) + ((p.mult ?? 1) - 1) > 0 };
+  });
 }
