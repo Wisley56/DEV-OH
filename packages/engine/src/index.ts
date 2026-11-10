@@ -20,7 +20,7 @@ export { applyAction } from './rules/actions';
 export { forfeit } from './rules/win';
 export { validateDeck, maxCopies } from './rules/deck';
 export type { StatPart } from './rules/stats';
-export { getView, type GameView, type PlayerView, type ProView, type SpellView, type HandCardView } from './view/getView';
+export { getSpectatorView, getView, type GameView, type PlayerView, type ProView, type SpellView, type HandCardView } from './view/getView';
 
 /** Consultas de leitura do tabuleiro (usadas pelos bots e pela interface). */
 export { other, prosOf, setCardsOf } from './core/board';

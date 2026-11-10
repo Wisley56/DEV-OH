@@ -1445,3 +1445,47 @@
     padding: 2px 5px;
   }
 }
+
+/* ───────── Quem assiste (torneio) ───────── */
+.spectator-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: rgba(10, 15, 34, 0.85);
+  border: 1px solid #7c5cff;
+}
+/* A mão do jogador de cima, aberta, cabe na barra dele; se faltar largura, desce para uma linha própria. */
+.pbar:has(.pbar-hand) {
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+.pbar-hand {
+  display: flex;
+  gap: 3px;
+  margin-left: auto;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.pbar-hand-card {
+  flex: 0 0 auto;
+  width: 30px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+@media (max-width: 860px) {
+  .pbar-hand {
+    flex-basis: 100%;
+    justify-content: center;
+    margin-left: 0;
+  }
+  .pbar-hand-card {
+    width: 24px;
+  }
+}

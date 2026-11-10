@@ -4,10 +4,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { Server } from 'socket.io';
 import { CatalogService } from '../../cards/application/catalog.service.js';
 import { CLOCK, type Clock, type RoomNotifier } from '../application/ports.js';
-import { roomStateFor } from '../application/room-state.js';
+import { roomStateFor, roomStateForSpectator } from '../application/room-state.js';
 import type { Room } from '../domain/room.js';
 
-/** Emite `room:state` para cada jogador conectado, com a visão do seu assento. */
+/** Emite `room:state` a cada jogador conectado (a visão do assento dele) e a quem assiste (a visão aberta). */
 @Injectable()
 export class SocketRoomNotifier implements RoomNotifier {
   private server: Server | null = null;
@@ -26,5 +26,8 @@ export class SocketRoomNotifier implements RoomNotifier {
       if (!p?.socketId) return;
       this.server?.to(p.socketId).emit(EVENTS.roomState, roomStateFor(room, i as Seat, this.clock.now(), this.catalog.revision));
     });
+    if (!room.spectators.size) return;
+    const open = roomStateForSpectator(room, this.clock.now(), this.catalog.revision);
+    for (const socketId of room.spectators) this.server?.to(socketId).emit(EVENTS.roomState, open);
   }
 }

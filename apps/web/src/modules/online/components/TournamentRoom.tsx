@@ -6,11 +6,13 @@ import {
   type TournamentRound,
   type TournamentState,
 } from '@devoh/protocol';
-import { Check, Crown, Link2, Medal, Play, Swords, Trophy } from 'lucide-react';
+import { Check, Crown, Eye, Link2, Medal, Play, Swords, Trophy } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useNow } from '../../../shared/lib/useNow';
 import { Button, PixelBackground, Spinner } from '../../../shared/ui';
 import { useRoomStore } from '../store/roomStore';
 import { OnlineDuel } from './OnlineDuel';
+import { SpectatorDuel } from './SpectatorDuel';
 import { inviteLink } from './WaitingRoom';
 
 const PHASE_LABEL: Record<TournamentPhase, string> = {
@@ -27,19 +29,73 @@ const PHASE_LABEL: Record<TournamentPhase, string> = {
  */
 export function TournamentRoom({ tournament: t, onExit }: { tournament: TournamentState; onExit: () => void }) {
   const matches = useRoomStore((s) => s.matches);
+  const watch = useRoomStore((s) => s.watch);
   const [viewing, setViewing] = useState<string | null>(null);
+  /** Sala assistida na tela. Fica depois que o servidor tira a pessoa da plateia, para mostrar o resultado. */
+  const [watched, setWatched] = useState<string | null>(null);
+  useEffect(() => {
+    if (t.watching) setWatched(t.watching);
+  }, [t.watching]);
+  const seen = watched ? matches[watched] : undefined;
+  // Ao vivo, só enquanto o servidor diz que está assistindo; acabado, o resultado fica até a pessoa sair.
+  const seenOpen = !!seen?.view && !!seen.spectator && (t.watching === watched || seen.view.winner !== null);
   // Duelo novo da pessoa: abre sozinho, a não ser que ela ainda esteja vendo o resultado do anterior.
   useEffect(() => {
-    if (t.myMatch && !viewing) setViewing(t.myMatch);
+    if (t.myMatch && !viewing && !seenOpen) setViewing(t.myMatch);
   }, [t.myMatch]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const room = viewing ? matches[viewing] : undefined;
   if (room?.view) {
     const back = () => setViewing(t.myMatch && t.myMatch !== viewing ? t.myMatch : null);
-    // key: cada duelo do torneio monta um tabuleiro novo (sem herdar seleção, histórico lido etc. do anterior).
-    return <OnlineDuel key={room.code} room={room} view={room.view} onExit={back} inTournament />;
+    // Ainda no resultado do duelo anterior e o próximo já começou (o relógio dele está correndo).
+    const next = t.myMatch && t.myMatch !== viewing ? t.myMatch : null;
+    return (
+      <>
+        {/* key: cada duelo do torneio monta um tabuleiro novo (sem herdar seleção, histórico lido etc. do anterior). */}
+        <OnlineDuel key={room.code} room={room} view={room.view} onExit={back} inTournament />
+        {next && <NextMatchNotice key={next} onGo={() => setViewing(next)} />}
+      </>
+    );
+  }
+  // O próprio duelo vem antes: quando ele começa, o servidor tira a pessoa da plateia; se o assistido
+  // ainda estava ao vivo, troca na hora; se já tinha acabado, avisa como no fim do próprio duelo.
+  if (seen?.view && seenOpen) {
+    const go = (code: string | null) => {
+      setWatched(null);
+      setViewing(code);
+    };
+    const leave = () => {
+      if (t.watching) void watch(null);
+      go(t.myMatch);
+    };
+    return (
+      <>
+        <SpectatorDuel key={seen.code} room={seen} view={seen.view} onExit={leave} />
+        {t.myMatch && <NextMatchNotice key={t.myMatch} onGo={() => go(t.myMatch)} />}
+      </>
+    );
   }
   return t.phase === 'inscricao' ? <Signup t={t} onExit={onExit} /> : <Board t={t} onExit={onExit} onOpen={setViewing} />;
+}
+
+/** Tempo para ler o resultado antes de o tabuleiro trocar sozinho para o duelo novo. */
+const NEXT_MATCH_MS = 8000;
+
+function NextMatchNotice({ onGo }: { onGo: () => void }) {
+  const [until] = useState(() => Date.now() + NEXT_MATCH_MS);
+  const now = useNow(250);
+  const secs = Math.max(0, Math.ceil((until - now) / 1000));
+  useEffect(() => {
+    if (secs === 0) onGo();
+  }, [secs]); // eslint-disable-line react-hooks/exhaustive-deps
+  return (
+    <div className="tour-next" role="alert">
+      <Swords size={18} aria-hidden /> Seu próximo duelo começou · abrindo em {secs}s
+      <Button variant="primary" size="sm" onClick={onGo}>
+        Ir agora
+      </Button>
+    </div>
+  );
 }
 
 function Signup({ t, onExit }: { t: TournamentState; onExit: () => void }) {
@@ -110,6 +166,8 @@ function formatHint(n: number) {
 function Board({ t, onExit, onOpen }: { t: TournamentState; onExit: () => void; onOpen: (code: string) => void }) {
   const over = t.phase === 'encerrado';
   const me = t.entrants.find((e) => e.isMe);
+  const watch = useRoomStore((s) => s.watch);
+  const [watchError, setWatchError] = useState<string | null>(null);
   const leave = () => {
     if (over || me?.status !== 'ativo' || confirm('Sair do torneio? Os duelos que faltam viram W.O.')) onExit();
   };
@@ -131,9 +189,10 @@ function Board({ t, onExit, onOpen }: { t: TournamentState; onExit: () => void; 
           </Button>
         )}
         {!over && !t.myMatch && me && <p className="muted tour-status">{statusLine(me.status)}</p>}
+        {watchError && <p className="warn">{watchError}</p>}
         {t.standings.length > 0 && <Standings t={t} />}
         {[...t.rounds].reverse().map((r) => (
-          <Round key={`${r.phase}-${r.index}`} round={r} />
+          <Round key={`${r.phase}-${r.index}`} round={r} onWatch={(id) => watch(id).then(setWatchError)} />
         ))}
         <Button variant="ghost" onClick={leave}>
           {over || me?.status !== 'ativo' ? 'Voltar ao lobby' : 'Sair do torneio'}
@@ -204,21 +263,21 @@ function Standings({ t }: { t: TournamentState }) {
   );
 }
 
-function Round({ round }: { round: TournamentRound }) {
+function Round({ round, onWatch }: { round: TournamentRound; onWatch: (matchId: string) => void }) {
   const title = round.phase === 'pontos' ? `Pontos · rodada ${round.index}` : round.phase === 'final' ? 'Final' : 'Mata-mata';
   return (
     <section>
       <h3>{title}</h3>
       <ul className="tour-matches">
         {round.matches.map((m) => (
-          <MatchRow key={m.id} m={m} />
+          <MatchRow key={m.id} m={m} onWatch={() => onWatch(m.id)} />
         ))}
       </ul>
     </section>
   );
 }
 
-function MatchRow({ m }: { m: TournamentMatchView }) {
+function MatchRow({ m, onWatch }: { m: TournamentMatchView; onWatch: () => void }) {
   if (!m.b)
     return (
       <li className="tour-match bye">
@@ -246,6 +305,11 @@ function MatchRow({ m }: { m: TournamentMatchView }) {
       <span className="tm-vs">vs</span>
       {side(m.b, 'b', m.lp?.[1])}
       {note && <span className="tm-note">{note}</span>}
+      {m.watchable && (
+        <Button size="sm" className="tm-watch" title="Assistir com as duas mãos abertas" onClick={onWatch}>
+          <Eye size={14} aria-hidden /> Assistir
+        </Button>
+      )}
     </li>
   );
 }

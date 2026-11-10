@@ -111,7 +111,7 @@ export function cardActions(view: GameView, sel: Selection | null): { actions: C
   let hint: string | null = null;
   const me = view.players[view.you];
   const opp = view.players[view.you === 0 ? 1 : 0];
-  const myTurn = view.active === view.you && view.winner === null;
+  const myTurn = !view.spectator && view.active === view.you && view.winner === null;
   if (!sel || !myTurn) return { actions, hint };
 
   if (sel.where === 'hand') {

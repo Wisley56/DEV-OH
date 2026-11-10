@@ -75,6 +75,8 @@ export interface GameView {
   outcome: Outcome | null;
   players: [PlayerView, PlayerView];
   log: LogEntry[];
+  /** Visão de quem assiste: `you` é só o lado que fica embaixo, não um jogador. */
+  spectator?: true;
 }
 
 /** A Task (da mão ou baixada em `set`) pode ser ativada agora? Mesmas regras de applyAction. */
@@ -93,10 +95,23 @@ function taskPlayable(s: GameState, seat: Seat, c: CardInstance, set: SpellSlot 
 
 /** Estado visível para `viewer`: esconde mão e cards virados do oponente. */
 export function getView(s: GameState, viewer: Seat): GameView {
-  const myTurn = s.active === viewer && s.winner === null;
+  return build(s, viewer, false);
+}
+
+/**
+ * Estado para quem assiste: tudo aberto (as duas mãos e os cards virados) e nenhuma ação
+ * liberada. `pov` é o assento que aparece embaixo no tabuleiro.
+ */
+export function getSpectatorView(s: GameState, pov: Seat = 0): GameView {
+  return build(s, pov, true);
+}
+
+function build(s: GameState, viewer: Seat, spectator: boolean): GameView {
+  const myTurn = !spectator && s.active === viewer && s.winner === null;
   const mk = (seat: Seat): PlayerView => {
     const p = s.players[seat];
-    const mine = seat === viewer;
+    // "mine" = quem vê enxerga este lado por inteiro (o próprio lado, ou os dois para o espectador).
+    const mine = spectator || seat === viewer;
     const canAct = mine && myTurn;
     const freePro = p.pros.filter((x) => !x).length;
     const freeSpell = p.spells.some((x) => !x);
@@ -180,6 +195,7 @@ export function getView(s: GameState, viewer: Seat): GameView {
     outcome: s.outcome,
     players: [mk(0), mk(1)],
     log: s.log.slice(-80),
+    ...(spectator && { spectator: true as const }),
   };
 }
 

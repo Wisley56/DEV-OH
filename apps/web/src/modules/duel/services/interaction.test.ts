@@ -70,6 +70,13 @@ describe('interação do tabuleiro', () => {
     expect(cardActions(v, { iid: h.iid, cardId: h.cardId, where: 'hand' }).actions).toEqual([]);
   });
 
+  it('quem assiste não tem ação nem dica, mesmo vendo a mão aberta', () => {
+    const base = view();
+    const h = { iid: 'x1', cardId: 'thy_revisor', canSummon: true, canActivate: false, canSet: false };
+    const v: GameView = { ...base, spectator: true, players: [{ ...base.players[0], hand: [h] }, base.players[1]] };
+    expect(cardActions(v, { iid: h.iid, cardId: h.cardId, where: 'hand' })).toEqual({ actions: [], hint: null });
+  });
+
   it('explica por que um Profissional de nível alto não entra', () => {
     const v = view();
     const hand = [{ iid: 'x1', cardId: 'thy_revisor', canSummon: false, canActivate: false, canSet: false }];

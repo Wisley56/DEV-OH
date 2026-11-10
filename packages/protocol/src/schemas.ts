@@ -1,6 +1,6 @@
 import type { Action, Attribute, BugTrigger, BugType, CardKind, EffectPart, Rarity, TargetKind, TaskSpeed } from '@devoh/engine';
 import { z } from 'zod';
-import type { CreateRoomPayload, JoinRoomPayload, RejoinRoomPayload } from './index';
+import type { CreateRoomPayload, JoinRoomPayload, RejoinRoomPayload, WatchMatchPayload } from './index';
 import {
   MAX_DECKS,
   PASSWORD_MAX,
@@ -22,6 +22,7 @@ const code = z.string().max(8);
 export const CreateRoomSchema = z.object({ deck, private: z.boolean().optional() });
 export const JoinRoomSchema = z.object({ code, deck });
 export const RejoinRoomSchema = z.object({ code });
+export const WatchMatchSchema = z.object({ matchId: z.string().max(24).nullable() });
 
 const position = z.enum(['atk', 'def']);
 const zone = z.number().int().min(0).max(9).optional();
@@ -169,10 +170,11 @@ export const _contract: [
   Same<z.infer<typeof CreateRoomSchema>, CreateRoomPayload>,
   Same<z.infer<typeof JoinRoomSchema>, JoinRoomPayload>,
   Same<z.infer<typeof RejoinRoomSchema>, RejoinRoomPayload>,
+  Same<z.infer<typeof WatchMatchSchema>, WatchMatchPayload>,
   Same<z.infer<typeof RegisterSchema>, RegisterPayload>,
   Same<z.infer<typeof LoginSchema>, LoginPayload>,
   Same<z.infer<typeof ChangePasswordSchema>, ChangePasswordPayload>,
   Same<z.infer<typeof DeckSchema>, DeckPayload>,
   Same<z.infer<typeof SaveCustomCardSchema>, SaveCustomCardPayload>,
   Same<NonNullable<z.infer<typeof ArtCropSchema>>, ArtCropQuery>,
-] = [true, true, true, true, true, true, true, true, true, true];
+] = [true, true, true, true, true, true, true, true, true, true, true];

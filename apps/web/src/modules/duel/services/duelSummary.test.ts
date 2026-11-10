@@ -1,4 +1,4 @@
-import { applyAction, createGame, getView, STARTER_DECKS, type GameState } from '@devoh/engine';
+import { applyAction, createGame, getSpectatorView, getView, STARTER_DECKS, type GameState } from '@devoh/engine';
 import { describe, expect, it } from 'vitest';
 import { duelSummary } from './duelSummary';
 
@@ -29,6 +29,14 @@ describe('resumo do fim do duelo', () => {
     const bia = duelSummary(getView(s, 1))!;
     expect(ana).toMatchObject({ tone: 'win', title: 'SPRINT ENTREGUE!', headline: 'Bia desistiu do duelo.' });
     expect(bia).toMatchObject({ tone: 'lose', headline: 'Você desistiu do duelo.' });
+  });
+
+  it('para quem assiste: o nome de quem venceu e a manchete com o nome de quem perdeu', () => {
+    const s = play(game(), 1, { type: 'surrender' });
+    const sum = duelSummary(getSpectatorView(s, 0))!;
+    expect(sum).toMatchObject({ tone: 'win', title: 'Ana venceu!', headline: 'Bia desistiu do duelo.' });
+    const other = duelSummary(getSpectatorView(play(game(), 0, { type: 'surrender' }), 0))!;
+    expect(other).toMatchObject({ title: 'Bia venceu!', headline: 'Ana desistiu do duelo.' });
   });
 
   it('LP zerado: manchete e a sequência do último turno, com o lado de cada passo', () => {

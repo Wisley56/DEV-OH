@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyAction, createGame, getView } from '../index';
+import { applyAction, createGame, getSpectatorView, getView } from '../index';
 import { newInstance, newProSlot } from '../core/board';
 import { card } from '../core/catalog';
 import type { Action, GameState, LogEntry, Seat } from '../core/types';
@@ -153,5 +153,37 @@ describe('Bug baixado neste turno', () => {
     expect(mine(r, 1).setThisTurn).toBeUndefined();
     r = act(r, 0, { type: 'endTurn' });
     expect(mine(r, 0).setThisTurn).toBeUndefined();
+  });
+});
+
+describe('visão de quem assiste', () => {
+  it('mostra as duas mãos e os cards virados, sem liberar nenhuma ação', () => {
+    const s = setup();
+    place(s, 0, 'dev_junior');
+    const c = newInstance(s, 'backend_noturno', 1);
+    s.players[1].pros[0] = newProSlot(c, 'def', -5, true);
+    setCard(s, 1, 'erro_404');
+    hand(s, 0, 'home_office');
+    const v = getSpectatorView(s, 0);
+    expect(v.spectator).toBe(true);
+    expect(v.players.map((p) => p.hand?.length)).toEqual([s.players[0].hand.length, s.players[1].hand.length]);
+    expect(v.players[1].pros[0]).toMatchObject({ cardId: 'backend_noturno', faceDown: true, atk: 1800 });
+    expect(v.players[1].spells.find((x) => x)?.cardId).toBe('erro_404');
+    const flags = v.players.flatMap((p) => [
+      ...p.hand!.flatMap((h) => [h.canSummon, h.canActivate, h.canSet]),
+      ...p.pros.flatMap((x) => (x ? [x.canAttack, x.canChangePos, x.canIgnite, x.canFlip] : [])),
+      ...p.spells.map((x) => !!x?.canActivate),
+    ]);
+    expect(flags.every((f) => !f)).toBe(true);
+  });
+
+  it('a visão de jogador continua escondendo a mão e os cards virados do oponente', () => {
+    const s = setup();
+    const c = newInstance(s, 'backend_noturno', 1);
+    s.players[1].pros[0] = newProSlot(c, 'def', -5, true);
+    const v = getView(s, 0);
+    expect(v.spectator).toBeUndefined();
+    expect(v.players[1].hand).toBeNull();
+    expect(v.players[1].pros[0]).toMatchObject({ cardId: null, atk: null });
   });
 });

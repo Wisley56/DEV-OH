@@ -104,6 +104,14 @@ export class RoomClient {
     });
   }
 
+  /** Assiste a um duelo do torneio (`null` = para de assistir); resolve com a mensagem de erro, ou null. */
+  watch(matchId: string | null) {
+    return new Promise<string | null>((resolve) => {
+      if (!this.socket?.connected) return resolve('Sem conexão com o servidor.');
+      this.socket.emit(EVENTS.watchTournament, { matchId }, (ack: Ack) => resolve(ack.ok ? null : ack.error));
+    });
+  }
+
   /** Sai da sala (o assento fica livre) ou do torneio (o que faltar vira W.O.) de vez. */
   leave() {
     this.socket?.emit(this.code && isTournamentCode(this.code) ? EVENTS.leaveTournament : EVENTS.leaveRoom);

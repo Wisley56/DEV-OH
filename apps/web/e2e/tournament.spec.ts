@@ -96,3 +96,60 @@ test('torneio com 3 contas: inscrição pela lista, fase de pontos, final e pód
   await expect(ana.locator('.tour-phase')).toHaveText('Torneio encerrado');
   noErrors();
 });
+
+/** Ana cria o torneio, os outros entram pelo código, e a Ana inicia. */
+async function startTournament(host: Page, guests: Page[]) {
+  await host.goto('/');
+  await host.getByRole('radio', { name: /Torneio/ }).click();
+  await host.getByRole('button', { name: /Criar torneio online/ }).click();
+  await expect(host).toHaveURL(/\/sala\/T[A-Z0-9]{5}$/);
+  const code = host.url().split('/').pop()!;
+  for (const g of guests) {
+    await g.goto('/');
+    await g.getByPlaceholder('CÓDIGO').fill(code);
+    await g.locator('.join').getByRole('button', { name: 'Entrar' }).click();
+  }
+  await expect(host.locator('.tour-entrants li')).toHaveCount(guests.length + 1);
+  await host.getByRole('button', { name: /Iniciar torneio/ }).click();
+}
+
+test('quem folga assiste ao duelo com as duas mãos abertas e vai sozinho para o próprio duelo', async ({ browser }) => {
+  test.setTimeout(120_000);
+  const pages = [await player(browser, 'Ana'), await player(browser, 'Bia'), await player(browser, 'Caio')];
+  const errors = pages.map(failOnConsoleErrors);
+  await startTournament(pages[0], pages.slice(1));
+
+  // Fase de pontos com 3: dois duelam e um folga na rodada.
+  for (const p of pages) await expect(p.locator('.tour-board, .duel').first()).toBeVisible();
+  const idle = (await Promise.all(pages.map((p) => p.locator('.duel').isVisible()))).findIndex((v) => !v);
+  const viewer = pages[idle];
+  const players = pages.filter((_, i) => i !== idle);
+
+  await viewer.getByRole('button', { name: 'Assistir' }).click();
+  await expect(viewer.locator('.spectator-badge')).toBeVisible();
+  // As duas mãos abertas, e nenhum botão de jogada.
+  await expect(viewer.locator('.pbar-hand .card-mini').first()).toBeVisible();
+  await expect(viewer.locator('.hand .card-mini').first()).toBeVisible();
+  await expect(viewer.locator('.hand-card.playable')).toHaveCount(0);
+  await expect(viewer.getByRole('button', { name: 'Encerrar turno' })).toHaveCount(0);
+
+  // Um dos dois desiste: quem assiste vê o resultado com o nome de quem venceu.
+  await players[0].getByRole('button', { name: /Sair/ }).click();
+  await expect(viewer.locator('.victory-box h2')).toContainText('venceu!');
+
+  // A rodada seguinte é dele: o aviso aparece no resultado, e o "Ir agora" abre o próprio duelo.
+  await expect(viewer.locator('.tour-next')).toContainText('Seu próximo duelo começou');
+  // O oponente dele também ficou no resultado do duelo anterior: recebe o mesmo aviso.
+  const noticed = () => Promise.all(players.map((p) => p.locator('.tour-next').count()));
+  await expect.poll(async () => (await noticed()).filter(Boolean).length).toBe(1);
+  const opp = players[(await noticed()).findIndex(Boolean)];
+  await viewer.locator('.tour-next').getByRole('button', { name: 'Ir agora' }).click();
+  await expect(viewer.locator('.spectator-badge')).toHaveCount(0);
+  await expect(viewer.locator('.duel[data-over="false"]')).toBeVisible();
+  await expect(viewer.locator('.pbar-hand')).toHaveCount(0);
+
+  // Sem clicar, a contagem acaba e o tabuleiro troca sozinho.
+  await expect(opp.locator('.duel[data-over="false"]')).toBeVisible({ timeout: 15_000 });
+  await expect(opp.locator('.tour-next')).toHaveCount(0);
+  errors.forEach((check) => check());
+});

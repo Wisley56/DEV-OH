@@ -8,16 +8,18 @@ import { modeText } from '../services/interaction';
 
 /** Linha do meio: selo, fase/turno, dica da escolha em andamento, botões de fase e ferramentas (tour, som, sair). */
 export function PhaseBar() {
-  const { ctrl, view, opp, myTurn } = useDuel();
+  const { ctrl, view, opp, myTurn, spectator } = useDuel();
   const { dispatch } = useDuelActions();
-  const exit = () => (view.winner === null ? confirm('Desistir e sair do duelo?') && ctrl.exit() : ctrl.exit());
+  // Quem assiste sai sem desistir de nada.
+  const exit = () => (view.winner === null && !spectator ? confirm('Desistir e sair do duelo?') && ctrl.exit() : ctrl.exit());
+  const turnOf = spectator ? `Turno de ${view.players[view.active].name}` : myTurn ? 'Seu turno' : `Turno de ${opp.name}`;
   return (
     <div className="midline">
       {ctrl.badge}
       {ctrl.turnDeadline && view.winner === null && <TurnTimer deadline={ctrl.turnDeadline} />}
       <div className="phase">
         <span className={`turn-dot ${myTurn ? 'mine' : ''}`} />
-        {view.winner !== null ? 'Fim de duelo' : myTurn ? 'Seu turno' : `Turno de ${opp.name}`} · T{view.turn} ·{' '}
+        {view.winner !== null ? 'Fim de duelo' : turnOf} · T{view.turn} ·{' '}
         {view.phase === 'main' ? 'Fase Principal' : view.phase === 'battle' ? 'Batalha' : '—'}
       </div>
       <ModeHint />
@@ -42,7 +44,13 @@ export function PhaseBar() {
           </Button>
         )}
         <SoundToggle />
-        <Button variant="ghost" className="exit-btn" title="Sair do duelo" aria-label="Sair do duelo" onClick={exit}>
+        <Button
+          variant="ghost"
+          className="exit-btn"
+          title={spectator ? 'Parar de assistir' : 'Sair do duelo'}
+          aria-label={spectator ? 'Parar de assistir' : 'Sair do duelo'}
+          onClick={exit}
+        >
           <X size={18} aria-hidden />
           <span className="btn-text">Sair</span>
         </Button>

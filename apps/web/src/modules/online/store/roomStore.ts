@@ -31,6 +31,8 @@ interface RoomStoreState {
   rematch(): void;
   /** Anfitrião inicia o torneio; resolve com a mensagem de erro, ou null. */
   startTournament(): Promise<string | null>;
+  /** Assiste a um duelo do torneio (`null` = para); resolve com a mensagem de erro, ou null. */
+  watch(matchId: string | null): Promise<string | null>;
   /** Sai da sala de vez e desconecta. */
   leave(): void;
   /** Só desconecta (ao sair da página); dá para voltar pela conta. */
@@ -72,6 +74,7 @@ export const useRoomStore = create<RoomStoreState>((set, get) => ({
   send: (action) => client?.send(action) ?? Promise.resolve('Sem conexão com o servidor.'),
   rematch: () => client?.rematch(),
   startTournament: () => client?.startTournament() ?? Promise.resolve('Sem conexão com o servidor.'),
+  watch: (matchId) => client?.watch(matchId) ?? Promise.resolve('Sem conexão com o servidor.'),
   leave() {
     client?.leave();
     get().close();

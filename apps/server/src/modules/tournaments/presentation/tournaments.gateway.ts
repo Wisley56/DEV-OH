@@ -1,5 +1,12 @@
-import { EVENTS, type Ack, type CreateRoomPayload, type JoinRoomPayload, type RejoinRoomPayload } from '@devoh/protocol';
-import { CreateRoomSchema, JoinRoomSchema, RejoinRoomSchema } from '@devoh/protocol/schemas';
+import {
+  EVENTS,
+  type Ack,
+  type CreateRoomPayload,
+  type JoinRoomPayload,
+  type RejoinRoomPayload,
+  type WatchMatchPayload,
+} from '@devoh/protocol';
+import { CreateRoomSchema, JoinRoomSchema, RejoinRoomSchema, WatchMatchSchema } from '@devoh/protocol/schemas';
 import { Inject, UseFilters } from '@nestjs/common';
 import {
   ConnectedSocket,
@@ -19,7 +26,7 @@ import { playerOf, roomOf, setRoom, setTournament, tournamentOf } from '../../ro
 import { TournamentsService } from '../application/tournaments.service.js';
 import { SocketTournamentNotifier } from './socket-tournament.notifier.js';
 
-/** Eventos do torneio: inscrição, início, saída e reconexão. As jogadas usam o `action` de sempre. */
+/** Eventos do torneio: inscrição, início, plateia, saída e reconexão. As jogadas usam o `action` de sempre. */
 @WebSocketGateway()
 @UseFilters(WsAckFilter)
 export class TournamentsGateway implements OnGatewayInit, OnGatewayDisconnect {
@@ -72,6 +79,16 @@ export class TournamentsGateway implements OnGatewayInit, OnGatewayDisconnect {
   @Throttle('room')
   start(@ConnectedSocket() socket: Socket): Ack {
     this.tournaments.start(tournamentOf(socket), socket.id);
+    return { ok: true };
+  }
+
+  @SubscribeMessage(EVENTS.watchTournament)
+  @Throttle('room')
+  watch(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody(new ZodValidationPipe(WatchMatchSchema, 'Duelo inválido.')) msg: WatchMatchPayload,
+  ): Ack {
+    this.tournaments.watch(tournamentOf(socket), socket.id, msg.matchId);
     return { ok: true };
   }
 

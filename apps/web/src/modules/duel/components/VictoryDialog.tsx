@@ -37,7 +37,15 @@ export function VictoryDialog() {
             <h2 className={sum.tone === 'win' ? 'win' : 'lose'}>{sum.title}</h2>
             <p className="victory-headline">{sum.headline}</p>
             <p className="victory-lp">
-              LP final: <b>você {sum.lp.me}</b> · oponente {sum.lp.opp}
+              {view.spectator ? (
+                <>
+                  LP final: {view.players[view.you].name} {sum.lp.me} · {view.players[view.you === 0 ? 1 : 0].name} {sum.lp.opp}
+                </>
+              ) : (
+                <>
+                  LP final: <b>você {sum.lp.me}</b> · oponente {sum.lp.opp}
+                </>
+              )}
             </p>
             {ctrl.resultNote && <p className="victory-note">{ctrl.resultNote}</p>}
             {sum.steps.length > 0 && (

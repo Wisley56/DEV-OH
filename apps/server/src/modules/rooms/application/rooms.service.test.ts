@@ -1,9 +1,10 @@
-import { STARTER_DECKS } from '@devoh/engine';
+import { card, createGame, getView, other, STARTER_DECKS, tributesNeeded, type Action } from '@devoh/engine';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { DomainError } from '../../../common/domain-error.js';
 import { SecurityLog } from '../../../common/security/security-log.js';
 import { AppConfig } from '../../../config/app-config.js';
-import type { Room } from '../domain/room.js';
+import { DuelService } from '../../duel/application/duel.service.js';
+import { TOURNAMENT_START_GRACE_MS, type Room } from '../domain/room.js';
 import { InMemoryRoomRepository } from '../infrastructure/in-memory-room.repository.js';
 import type { Clock, IdGenerator, MatchRecorder, MatchResult, RoomNotifier, Scheduler } from './ports.js';
 import { RoomsService } from './rooms.service.js';
@@ -203,5 +204,68 @@ describe('RoomsService', () => {
     svc.rematch(code, 's1');
     expect(recorded).toHaveLength(2);
     expect(recorded[1]).toMatchObject({ winner: null, reason: 'draw' });
+  });
+  it('duelo de torneio: folga só no primeiro turno; sala VS não tem folga', () => {
+    codes = ['AAAAA', 'BBBBB'];
+    svc.create('s1', p('Ana'), deck);
+    svc.join('s2', 'AAAAA', p('Bia'), deck);
+    expect(repo.get('AAAAA')!.turnDeadline).toBe(now + 90_000);
+
+    const code = svc.createMatch(
+      { code: 'TXXXXX', matchId: 'TXXXXX-1' },
+      { player: p('Caio'), socketId: 's3', deck },
+      { player: p('Davi'), socketId: 's4', deck },
+    );
+    const room = repo.get(code)!;
+    expect(room.turnDeadline).toBe(now + 90_000 + TOURNAMENT_START_GRACE_MS);
+    fire(`turn:${code}`);
+    expect(room.turnDeadline).toBe(now + 90_000);
+  });
+
+  it('torneio e VS jogam o mesmo jogo: mesma partida e mesmas jogadas dão o mesmo estado', () => {
+    codes = ['AAAAA', 'BBBBB'];
+    svc.create('s1', p('Ana'), deck);
+    svc.join('s2', 'AAAAA', p('Bia'), deck);
+    const vs = repo.get('AAAAA')!;
+    const code = svc.createMatch(
+      { code: 'TXXXXX', matchId: 'TXXXXX-1' },
+      { player: p('Ana'), socketId: 's3', deck },
+      { player: p('Bia'), socketId: 's4', deck },
+    );
+    const match = repo.get(code)!;
+    // A mesma partida nas duas salas (seed e quem começa vêm do sorteio da sala).
+    const start = createGame({
+      seed: 1234,
+      first: 0,
+      players: [
+        { name: 'Ana', deck },
+        { name: 'Bia', deck },
+      ],
+    });
+    vs.game = structuredClone(start);
+    match.game = structuredClone(start);
+    const duel = new DuelService(svc);
+    const sockets = { [vs.code]: ['s1', 's2'], [match.code]: ['s3', 's4'] };
+    /** Jogada simples e determinística: invoca, ataca com tudo e passa a vez. */
+    const next = (room: Room): Action => {
+      const v = getView(room.game!, room.game!.active);
+      const me = v.players[v.you];
+      const opp = v.players[other(v.you)];
+      const summon = me.hand!.find((c) => c.canSummon && tributesNeeded(card(c.cardId).level ?? 1) === 0);
+      if (summon) return { type: 'summon', iid: summon.iid, position: 'atk' };
+      if (v.phase === 'main' && v.turn > 1 && me.pros.some((x) => x)) return { type: 'goBattle' };
+      const attacker = me.pros.find((x) => x?.canAttack);
+      if (attacker) return { type: 'attack', iid: attacker.iid, target: opp.pros.find((x) => x)?.iid };
+      return { type: 'endTurn' };
+    };
+    let steps = 0;
+    for (; vs.game!.winner === null && steps < 400; steps++) {
+      const action = next(vs);
+      expect(next(match)).toEqual(action);
+      for (const room of [vs, match]) duel.play(room.code, sockets[room.code][room.game!.active], action);
+      expect(match.game).toEqual(vs.game);
+    }
+    expect(steps).toBeGreaterThan(10);
+    expect(vs.game!.winner).not.toBeNull();
   });
 });

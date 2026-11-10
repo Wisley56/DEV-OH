@@ -2,7 +2,7 @@ import { STARTER_DECKS } from '@devoh/engine';
 import { EVENTS, type OpenRoom, type RankingEntry, type TournamentState } from '@devoh/protocol';
 import type { Socket } from 'socket.io-client';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { call, player, signUp, startServer, type TestServer } from './support.js';
+import { call, nextState, player, signUp, startServer, type TestServer } from './support.js';
 
 const deck = STARTER_DECKS[0].cards;
 
@@ -124,6 +124,53 @@ describe('torneio (e2e)', () => {
     expect(final.entrants.find((e) => e.name === 'caio')!.status).toBe('saiu');
     expect(final.podium.slice(0, 2)).toEqual(['ana', 'bia']);
     expect(code).toMatch(/^T/);
+    sockets.forEach((s) => s.disconnect());
+  });
+  it('quem folga assiste com tudo aberto; quem duela não pode; o próprio duelo tira da plateia', async () => {
+    const names = ['ana', 'bia', 'caio'];
+    const { sockets, code } = await enter(names);
+    const live = (t: TournamentState) => t.rounds.some((r) => r.matches.some((m) => m.status === 'jogando'));
+    const first = Promise.all(sockets.map((s) => tournamentState(s, live)));
+    expect(await call(sockets[0], EVENTS.startTournament)).toEqual({ ok: true });
+    const states = await first;
+    const idle = states.findIndex((t) => !t.myMatch);
+    const busy = states.findIndex((t) => !!t.myMatch);
+    const roomCode = states[busy].myMatch!;
+    const match = states[idle].rounds.flatMap((r) => r.matches).find((m) => m.status === 'jogando')!;
+    expect(match.watchable).toBe(true);
+    expect(states[busy].rounds.flatMap((r) => r.matches).find((m) => m.id === match.id)!.watchable).toBe(false);
+
+    // Quem está duelando veria a mão do próprio oponente: recusado.
+    expect(await call(sockets[busy], EVENTS.watchTournament, { matchId: match.id })).toEqual({
+      ok: false,
+      error: 'Termine o seu duelo antes de assistir a outro.',
+    });
+
+    const seen = nextState(sockets[idle], (r) => r.code === roomCode && !!r.spectator);
+    const watching = tournamentState(sockets[idle], (t) => t.watching === roomCode);
+    expect(await call(sockets[idle], EVENTS.watchTournament, { matchId: match.id })).toEqual({ ok: true });
+    const room = await seen;
+    await watching;
+    expect(room.view!.spectator).toBe(true);
+    expect(room.view!.players.every((p) => (p.hand?.length ?? 0) > 0)).toBe(true);
+    // Quem assiste não joga.
+    expect(await call(sockets[idle], EVENTS.action, { type: 'endTurn' })).toMatchObject({ ok: false });
+
+    // Caiu e voltou pela conta: continua assistindo.
+    sockets[idle].disconnect();
+    const again = await player(server, cookies[names[idle]]);
+    const reseen = nextState(again, (r) => r.code === roomCode && !!r.spectator);
+    expect(await call(again, EVENTS.rejoinTournament, { code })).toEqual({ ok: true, code });
+    await reseen;
+    sockets[idle] = again;
+
+    // Rodada seguinte: o duelo de quem assistia começa e ele sai da plateia.
+    const own = tournamentState(again, (t) => !!t.myMatch);
+    sockets.forEach((s, i) => autoplay(s, names[i]));
+    await call(sockets[busy], EVENTS.rejoinTournament, { code });
+    const next = await own;
+    expect(next.watching).toBeNull();
+    expect(next.rounds.flatMap((r) => r.matches).some((m) => m.watchable)).toBe(false);
     sockets.forEach((s) => s.disconnect());
   });
 });

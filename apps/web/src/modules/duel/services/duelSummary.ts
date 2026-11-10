@@ -29,6 +29,8 @@ function headline(view: GameView): string {
   const o = view.outcome;
   const oppName = view.players[view.you === 0 ? 1 : 0].name;
   if (!o || o.reason === 'draw') return 'Os dois zeraram os LP ao mesmo tempo.';
+  // Quem assiste não é nenhum dos dois: a frase usa o nome de quem perdeu.
+  if (view.spectator) return headline({ ...view, spectator: undefined, you: o.loser === 0 ? 1 : 0 });
   const mine = o.loser === view.you;
   switch (o.reason) {
     case 'lp':
@@ -66,9 +68,10 @@ export function duelSummary(view: GameView): DuelSummary | null {
   const title = winnerText(view);
   if (!title) return null;
   const opp = view.you === 0 ? 1 : 0;
+  const w = view.winner;
   return {
-    tone: view.winner === 'draw' ? 'draw' : view.winner === view.you ? 'win' : 'lose',
-    title,
+    tone: w === 'draw' ? 'draw' : view.spectator || w === view.you ? 'win' : 'lose',
+    title: view.spectator && w !== null && w !== 'draw' ? `${view.players[w].name} venceu!` : title,
     headline: headline(view),
     steps: finalSteps(view),
     lp: { me: view.players[view.you].lp, opp: view.players[opp].lp },
