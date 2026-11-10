@@ -3,7 +3,7 @@ import { Archive, Ban, Copy, Eye, HeartHandshake, Link2, Mountain, RefreshCw, Us
 import { CardMini } from '../../cards';
 import { useDuel, useDuelUi } from '../hooks/useDuel';
 import { useDuelActions } from '../hooks/useDuelActions';
-import { isTargetable, type Where } from '../services/interaction';
+import { battleForecast, isTargetable, type Forecast, type Where } from '../services/interaction';
 import { DropZone } from './HandDnd';
 
 type Side = 'me' | 'opp';
@@ -19,6 +19,8 @@ export function ProRow({ side }: { side: Side }) {
   const where: Where = mine ? 'myPro' : 'oppPro';
   const tributeChosen = mine && mode?.kind === 'tribute' ? mode.chosen : [];
   const equipped = new Set([...me.spells, ...opp.spells].map((x) => x?.equippedTo).filter(Boolean));
+  // Escolhendo o alvo do ataque: cada Profissional do oponente mostra o resultado esperado.
+  const forecastFor = !mine && mode?.kind === 'attack' ? me.pros.find((x) => x?.iid === mode.iid) : null;
   return (
     <div className="row pro-row">
       {p.pros.map((x, i) => (
@@ -68,9 +70,19 @@ export function ProRow({ side }: { side: Side }) {
             )}
           </AnimatePresence>
           {!x && <EmptySlot Icon={User} label="Profissional" />}
+          {x && forecastFor && <ForecastTag forecast={battleForecast(forecastFor, x)} />}
         </DropZone>
       ))}
     </div>
+  );
+}
+
+/** Etiqueta em cima do alvo com o que o ataque deve dar (sem contar Bugs baixados). */
+function ForecastTag({ forecast }: { forecast: Forecast }) {
+  return (
+    <span className={`forecast forecast-${forecast.tone}`} title="Previsão pelo que está à vista: Bugs baixados podem mudar o resultado.">
+      {forecast.text}
+    </span>
   );
 }
 

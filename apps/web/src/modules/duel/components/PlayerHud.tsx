@@ -48,6 +48,7 @@ export function PlayerHud({ side, active }: { side: 'me' | 'opp'; active: boolea
       </div>
       <div
         className="stress"
+        data-stress={side}
         title={`Estresse ${p.stress}/${MAX_STRESS}: cada ponto dá +100 ATK aos Profissionais. No ${MAX_STRESS}, o de maior nível pede demissão e o Estresse zera.`}
       >
         <span className="stress-label">Estresse</span>

@@ -15,6 +15,7 @@ import { resolveFlip, revealPro, setPosition, tribute } from './zones';
 /** Ponto de entrada das regras: aplica a ação numa cópia do estado. */
 export function applyAction(state: GameState, seat: Seat, action: Action): ActionResult {
   const s = structuredClone(state);
+  s.actionSeq = (s.actionSeq ?? 0) + 1;
   const err = run(s, seat, action);
   if (err) return { ok: false, error: err };
   checkWin(s);

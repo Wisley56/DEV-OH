@@ -55,7 +55,7 @@ describe('eventos do tabuleiro', () => {
     const atk = place(s, 1, 'backend_noturno', 'atk');
     s = toBattle(s);
     const { events } = step(s, 1, { type: 'attack', iid: atk, target });
-    expect(events.map((e) => e.kind)).toEqual(['attack', 'hit', 'destroy', 'damage']);
+    expect(events.map((e) => e.kind)).toEqual(['attack', 'hit', 'destroy', 'damage', 'stress']);
     expect(events[0]).toMatchObject({ seat: 1, attacker: atk, target });
     expect(events[1]).toMatchObject({ seat: 0, target });
   });
@@ -66,7 +66,7 @@ describe('eventos do tabuleiro', () => {
     const atk = place(s, 1, 'backend_noturno', 'atk');
     s = toBattle(s);
     const { events } = step(s, 1, { type: 'attack', iid: atk, target });
-    expect(events.map((e) => e.kind)).toEqual(['attack', 'block', 'damage']);
+    expect(events.map((e) => e.kind)).toEqual(['attack', 'block', 'damage', 'stress']);
     expect(events[1]).toMatchObject({ kind: 'block', seat: 0, target });
     expect(events[2]).toMatchObject({ kind: 'damage', seat: 1 });
   });
@@ -76,7 +76,7 @@ describe('eventos do tabuleiro', () => {
     const atk = place(s, 1, 'backend_noturno', 'atk');
     s = toBattle(s);
     const { events } = step(s, 1, { type: 'attack', iid: atk });
-    expect(events.map((e) => e.kind)).toEqual(['attack', 'hit', 'damage']);
+    expect(events.map((e) => e.kind)).toEqual(['attack', 'hit', 'damage', 'stress']);
     expect(events[1]).toMatchObject({ seat: 0, target: undefined });
   });
 
@@ -87,7 +87,7 @@ describe('eventos do tabuleiro', () => {
     const atk = place(s, 1, 'qa', 'atk');
     s = toBattle(s);
     const { events } = step(s, 1, { type: 'attack', iid: atk, target: d });
-    expect(events.map((e) => e.kind)).toEqual(['attack', 'flip', 'block', 'damage']);
+    expect(events.map((e) => e.kind)).toEqual(['attack', 'flip', 'block', 'damage', 'stress', 'effect', 'effect']);
     expect(events[1]).toMatchObject({ kind: 'flip', seat: 0, iid: d, cardId: 'stackoverflow' });
   });
 
@@ -106,7 +106,9 @@ describe('eventos do tabuleiro', () => {
     s = toBattle(s);
     const { events } = step(s, 1, { type: 'attack', iid: atk });
     expect(events[0]).toMatchObject({ kind: 'attack', seat: 1 });
-    expect(events).toContainEqual({ kind: 'reveal', seat: 0, iid: 'bug1', cardId: 'erro_404' });
+    expect(events.find((e) => e.kind === 'reveal')).toMatchObject({ seat: 0, iid: 'bug1', cardId: 'erro_404' });
+    // A destruição do atacante sai com o Bug como origem.
+    expect(events.find((e) => e.kind === 'destroy')).toMatchObject({ iid: atk, source: { cardId: 'erro_404', iid: 'bug1' } });
   });
 
   it('baixar um Bug, passar o turno e desistir', () => {
@@ -118,7 +120,7 @@ describe('eventos do tabuleiro', () => {
     r = step(r.s, 0, { type: 'endTurn' });
     expect(r.events).toContainEqual({ kind: 'turn', seat: 1 });
     r = step(r.s, 1, { type: 'surrender' });
-    expect(r.events.at(-1)).toEqual({ kind: 'end', winner: 0 });
+    expect(r.events.at(-1)).toMatchObject({ kind: 'end', winner: 0 });
   });
 
   it('A Mão do Moisés rola o dado antes de destruir', () => {
@@ -135,5 +137,60 @@ describe('eventos do tabuleiro', () => {
     expect(dice.ok).toBe(dice.face + 1 >= 4);
     const kinds = events.map((e) => e.kind);
     if (dice.ok) expect(kinds.indexOf('destroy')).toBeGreaterThan(kinds.indexOf('dice'));
+  });
+  it('Task com alvo: a ativação leva o alvo, e o ATK que mudou vira um evento só', () => {
+    const s = game();
+    const mine = place(s, 0, 'backend_noturno');
+    place(s, 0, 'qa');
+    s.players[0].hand.push({ iid: 'rgb1', cardId: 'teclado_rgb', owner: 0 });
+    const { events } = step(s, 0, { type: 'activate', iid: 'rgb1', target: mine });
+    expect(events.map((e) => e.kind)).toEqual(['activate', 'stat']);
+    expect(events[0]).toMatchObject({ target: mine, caption: expect.stringContaining('Teclado') });
+    expect(events[1]).toEqual({ kind: 'stat', items: [{ seat: 0, iid: mine, atk: 500, def: 0 }] });
+  });
+
+  it('Estresse por efeito tem legenda e origem; o ATK do Modo Desespero não vira evento de ATK', () => {
+    const s = game();
+    place(s, 0, 'backend_noturno');
+    place(s, 1, 'backend_noturno');
+    s.players[0].hand.push({ iid: 'daily1', cardId: 'daily', owner: 0 });
+    const { events } = step(s, 0, { type: 'activate', iid: 'daily1' });
+    const stress = events.filter((e) => e.kind === 'stress');
+    expect(stress.map((e) => (e.kind === 'stress' ? [e.seat, e.amount, e.source?.cardId] : null))).toEqual([
+      [0, 2, 'daily'],
+      [1, 2, 'daily'],
+    ]);
+    expect(stress.every((e) => !!e.caption)).toBe(true);
+    expect(events.some((e) => e.kind === 'stat')).toBe(false);
+  });
+
+  it('Estresse no limite e volta para a mão têm evento próprio', () => {
+    const s = game();
+    s.players[0].stress = 5;
+    place(s, 0, 'backend_noturno');
+    s.players[0].hand.push({ iid: 'daily2', cardId: 'daily', owner: 0 });
+    const r = step(s, 0, { type: 'activate', iid: 'daily2' });
+    expect(r.events.map((e) => e.kind)).toContain('meltdown');
+
+    let s2 = game();
+    place(s2, 0, 'qa');
+    s2.players[0].spells[0] = { card: { iid: 'esc1', cardId: 'mudanca_escopo', owner: 0 }, faceDown: true, revealed: false, setTurn: -5 };
+    const atk = place(s2, 1, 'backend_noturno');
+    s2 = toBattle(s2);
+    const { events } = step(s2, 1, { type: 'attack', iid: atk, target: s2.players[0].pros.find((p) => p)!.card.iid });
+    expect(events.find((e) => e.kind === 'bounce')).toMatchObject({ seat: 1, iid: atk, source: { cardId: 'mudanca_escopo' } });
+  });
+
+  it('posição mudada por efeito vira evento; mudada pelo botão, não', () => {
+    const s = game();
+    const theirs = place(s, 1, 'backend_noturno');
+    s.players[0].hand.push({ iid: 'reu1', cardId: 'reuniao', owner: 0 });
+    const byEffect = step(s, 0, { type: 'activate', iid: 'reu1', target: theirs });
+    expect(byEffect.events.find((e) => e.kind === 'position')).toEqual({ kind: 'position', items: [{ seat: 1, iid: theirs, to: 'def' }] });
+
+    const s2 = game();
+    const mine = place(s2, 0, 'backend_noturno');
+    const byButton = step(s2, 0, { type: 'changePosition', iid: mine });
+    expect(byButton.events.some((e) => e.kind === 'position')).toBe(false);
   });
 });

@@ -126,6 +126,8 @@ export function bounceToHand(s: GameState, iid: string) {
   const label = proLabel(f.slot);
   log(s, 'effect', `${label[0].toUpperCase()}${label.slice(1)} voltou para a mão.`, {
     seat: f.seat,
+    iid,
+    fx: 'bounce',
     ...(!f.slot.faceDown && { cardId: f.slot.card.cardId }),
   });
 }

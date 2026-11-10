@@ -1,4 +1,5 @@
 import type { CardEffects } from '../effects/types';
+import { withCause } from './log';
 import type { CardDef, CardInstance, ProSlot } from './types';
 
 /**
@@ -57,7 +58,30 @@ export const codeOf = (id: string): string | undefined => {
   return codes && Object.hasOwn(codes, id) ? codes[id] : undefined;
 };
 export const effectsOf = (id: string): CardEffects | undefined =>
-  Object.hasOwn(catalog().effects, id) ? catalog().effects[id] : undefined;
+  Object.hasOwn(catalog().effects, id) ? attributed(catalog().effects[id]) : undefined;
+
+const wrapped = new WeakMap<CardEffects, CardEffects>();
+
+/**
+ * Os mesmos ganchos, mas cada um que recebe o contexto do efeito (`ctx.self`) roda com o
+ * próprio card como causa: o que ele registrar no log sai com `source`. Os ganchos de cálculo
+ * (ATK/DEF, auras) não têm `self` e passam direto.
+ */
+function attributed(fx: CardEffects): CardEffects {
+  let out = wrapped.get(fx);
+  if (out) return out;
+  out = {};
+  for (const [key, fn] of Object.entries(fx)) {
+    if (typeof fn !== 'function') continue;
+    (out as Record<string, unknown>)[key] = (...args: unknown[]) => {
+      const self = (args[0] as { self?: CardInstance } | undefined)?.self;
+      const run = () => (fn as (...a: unknown[]) => unknown).apply(fx, args);
+      return self ? withCause({ cardId: self.cardId, iid: self.iid }, run) : run();
+    };
+  }
+  wrapped.set(fx, out);
+  return out;
+}
 export const nameOf = (c: CardInstance | string) => card(typeof c === 'string' ? c : c.cardId).name;
 
 /** Nome de um Profissional em campo para o log: "Nome", ou "um Profissional virado" (sem vazar a identidade). */

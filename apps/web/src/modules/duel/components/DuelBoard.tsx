@@ -31,12 +31,13 @@ function BoardLayout() {
   const { ctrl, view, myTurn } = useDuel();
   const sel = useDuelUi((s) => s.sel);
   const showLog = useDuelUi((s) => s.showLog);
+  const choosing = useDuelUi((s) => !!s.mode);
   useSyncWithView();
 
   return (
     <HandDnd>
       {/* data-over: o duelo já acabou, mesmo antes de o resultado aparecer (ele espera as animações). */}
-      <div className="duel" data-over={view.winner !== null}>
+      <div className="duel" data-over={view.winner !== null} data-choosing={choosing || undefined}>
         <aside className={`side ${sel ? 'has-sel' : ''} ${showLog ? 'show-log' : ''}`}>
           <CardInspector />
           <DuelLog />
