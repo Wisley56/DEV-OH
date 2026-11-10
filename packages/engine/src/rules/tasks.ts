@@ -14,7 +14,7 @@ import { toGrave } from './zones';
 export function resolveTask(s: GameState, seat: Seat, c: CardInstance, target: string | undefined, zone?: number) {
   const p = s.players[seat];
   const d = card(c.cardId);
-  log(s, 'task', `${p.name} ativou a Task "${d.name}".`, { seat, cardId: d.id, iid: c.iid });
+  log(s, 'task', `${p.name} ativou a Task "${d.name}".`, { seat, cardId: d.id, iid: c.iid, ...(target && { target }) });
   const ev = fireBugs(s, other(seat), ['oppTask'], { trigger: 'oppTask', task: c.iid });
   if (ev.negated) {
     toGrave(s, c);

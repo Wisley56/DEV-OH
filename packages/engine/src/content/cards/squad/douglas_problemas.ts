@@ -25,6 +25,7 @@ export default defineCard({
       log(ctx.s, 'effect', `Douglas: "E quem disse que isso é problema meu?" — o Estresse volta para ${pname(ctx.s, ctx.opp)}.`, {
         seat: ctx.me,
         cardId: 'douglas_problemas',
+        fx: 'reflect',
       });
       return true;
     },

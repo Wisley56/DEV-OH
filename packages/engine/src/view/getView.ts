@@ -1,11 +1,11 @@
 import { isNegated, prosOf } from '../core/board';
 import { card, effectsOf } from '../core/catalog';
 import { tributesNeeded } from '../core/constants';
-import type { CardInstance, GameState, LogEntry, Outcome, Phase, Seat, SpellSlot } from '../core/types';
+import type { CardInstance, GameState, LogEntry, Outcome, Phase, ProSlot, Seat, SpellSlot } from '../core/types';
 import { ctxFor } from '../effects/context';
 import { positionBlock } from '../rules/actions';
 import { attackBlock } from '../rules/battle';
-import { getAtk, getDef } from '../rules/stats';
+import { getAtk, getDef, statParts, type StatPart } from '../rules/stats';
 import { hasValidTarget } from '../rules/targets';
 
 export interface HandCardView {
@@ -31,6 +31,8 @@ export interface ProView {
   /** Pode fazer a Invocação-Virar agora. */
   canFlip: boolean;
   locked: boolean;
+  /** De onde vem a diferença entre o ATK/DEF atual e o impresso (ausente quando não há ou o card está escondido). */
+  mods?: StatPart[];
   /** Só presente quando os efeitos estão anulados neste turno. */
   negated?: true;
 }
@@ -43,6 +45,8 @@ export interface SpellView {
   revealed: boolean;
   /** Task de Equipamento: iid do Profissional equipado. */
   equippedTo?: string;
+  /** Bug ou Task de gatilho seu, baixado neste turno: ainda não dispara. */
+  setThisTurn?: true;
   /** Task baixada virada (sua) que pode ser ativada agora. */
   canActivate?: boolean;
 }
@@ -145,6 +149,7 @@ export function getView(s: GameState, viewer: Seat): GameView {
             !isNegated(s, slot) &&
             !effectsOf(d.id)?.canIgnite?.(ctxFor(s, slot.card)),
           locked: slot.lockedUntilTurn >= s.turn,
+          ...mods(s, seat, slot, hidden),
           ...(isNegated(s, slot) && { negated: true as const }),
         };
       }),
@@ -156,6 +161,7 @@ export function getView(s: GameState, viewer: Seat): GameView {
               faceDown: x.faceDown,
               revealed: x.revealed,
               ...(x.equippedTo && { equippedTo: x.equippedTo }),
+              ...(mine && x.faceDown && x.setTurn === s.turn && triggers(x.card.cardId) && { setThisTurn: true as const }),
               ...(canAct && x.faceDown && card(x.card.cardId).kind === 'task' && { canActivate: taskPlayable(s, seat, x.card, x) }),
             }
           : null,
@@ -176,3 +182,12 @@ export function getView(s: GameState, viewer: Seat): GameView {
     log: s.log.slice(-80),
   };
 }
+
+function mods(s: GameState, seat: Seat, slot: ProSlot, hidden: boolean): { mods?: StatPart[] } {
+  if (hidden) return {};
+  const parts = statParts(s, seat, slot);
+  return parts.length ? { mods: parts } : {};
+}
+
+/** Card que dispara sozinho por um gatilho (Bugs e Tasks como Moisés Bombado). */
+const triggers = (cardId: string) => !!card(cardId).trigger;

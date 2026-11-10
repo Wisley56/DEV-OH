@@ -143,6 +143,14 @@ export type LogKind =
   | 'coin'
   | 'flip';
 
+export interface LogSource {
+  cardId: string;
+  iid: string;
+}
+
+/** bounce = voltou para a mão; meltdown = Estresse no limite; reflect = Estresse devolvido ao oponente. */
+export type LogFx = 'bounce' | 'meltdown' | 'reflect';
+
 export interface LogEntry {
   id: number;
   kind: LogKind;
@@ -156,6 +164,12 @@ export interface LogEntry {
   target?: string;
   /** Dado rolado (A Mão do Moisés): face tirada, bônus somado e se deu certo — o front anima o dado com isso. */
   roll?: { face: number; bonus: number; ok: boolean };
+  /** Card cujo efeito causou esta linha. O log preenche sozinho enquanto um efeito resolve. */
+  source?: LogSource;
+  /** Acontecimento que o tabuleiro anima de um jeito próprio. */
+  fx?: LogFx;
+  /** Jogada que gerou a linha (`GameState.actionSeq`): o histórico agrupa as consequências por ela. */
+  act?: number;
 }
 
 /** Como o duelo terminou. */
@@ -179,6 +193,8 @@ export interface GameState {
   rng: number;
   nextIid: number;
   nextLogId: number;
+  /** Número da jogada em andamento (cresce a cada `applyAction`); ausente antes da primeira. */
+  actionSeq?: number;
 }
 
 export type Action =
