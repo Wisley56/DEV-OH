@@ -229,3 +229,32 @@
   font-size: 0.8rem;
   color: var(--muted);
 }
+.tm-watch {
+  padding: 4px 10px;
+  font-size: 0.8rem;
+}
+.tour-match.watching {
+  border-color: #7c5cff;
+}
+
+/* Aviso por cima do resultado do duelo anterior: o próximo já começou. */
+.tour-next {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  z-index: 70;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(10, 15, 34, 0.96);
+  border: 1px solid var(--gold);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+  font-weight: 600;
+}

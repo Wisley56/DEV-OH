@@ -1,12 +1,13 @@
-import { MAX_STRESS, START_LP } from '@devoh/engine';
+import { MAX_STRESS, START_LP, type HandCardView } from '@devoh/engine';
 import { AnimatePresence, m } from 'framer-motion';
 import { Archive, Hand, Layers, Zap } from 'lucide-react';
-import { useDuel } from '../hooks/useDuel';
+import { CardMini } from '../../cards';
+import { useDuel, useDuelUi } from '../hooks/useDuel';
 import { useLpDelta } from '../hooks/useLpDelta';
 
 /** Barra do jogador: nome, LP (com variação animada), Estresse e contadores. */
 export function PlayerHud({ side, active }: { side: 'me' | 'opp'; active: boolean }) {
-  const { me, opp } = useDuel();
+  const { me, opp, spectator } = useDuel();
   const p = side === 'me' ? me : opp;
   const delta = useLpDelta(p.lp);
   const lpPct = Math.max(0, Math.min(100, (p.lp / START_LP) * 100));
@@ -69,6 +70,22 @@ export function PlayerHud({ side, active }: { side: 'me' | 'opp'; active: boolea
           <Archive size={14} aria-hidden /> {p.grave.length}
         </span>
       </div>
+      {/* Quem assiste vê também a mão do jogador de cima (a de baixo fica no lugar de sempre). */}
+      {spectator && side === 'opp' && p.hand && <OpenHand cards={p.hand} />}
+    </div>
+  );
+}
+
+/** Mão aberta em miniatura, só para olhar: clicar mostra o card no painel. */
+function OpenHand({ cards }: { cards: HandCardView[] }) {
+  const select = useDuelUi((s) => s.select);
+  return (
+    <div className="pbar-hand" aria-label="Mão do jogador de cima">
+      {cards.map((c) => (
+        <button key={c.iid} className="pbar-hand-card" onClick={() => select({ iid: c.iid, cardId: c.cardId, where: 'grave' })}>
+          <CardMini cardId={c.cardId} />
+        </button>
+      ))}
     </div>
   );
 }

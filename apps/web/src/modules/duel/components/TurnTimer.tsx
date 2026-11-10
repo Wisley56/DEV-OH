@@ -10,7 +10,8 @@ const URGENT_S = 10;
 
 /** Anel com o tempo que resta no turno (só no online, quando o controlador informa o prazo). */
 export function TurnTimer({ deadline }: { deadline: number }) {
-  const { myTurn } = useDuel();
+  const { myTurn, spectator, view } = useDuel();
+  const who = spectator ? view.players[view.active].name : myTurn ? 'você' : 'o oponente';
   const now = useNow(250);
   // Duração total = prazo quando ele mudou (turno novo) menos o momento em que chegou.
   const total = useRef({ deadline, ms: Math.max(1, deadline - Date.now()) });
@@ -25,10 +26,7 @@ export function TurnTimer({ deadline }: { deadline: number }) {
     sfx.play('tick');
   }, [secs, urgent, myTurn]);
   return (
-    <div
-      className={`turn-timer ${urgent ? 'urgent' : ''} ${myTurn ? 'mine' : ''}`}
-      title={`${secs}s para ${myTurn ? 'você' : 'o oponente'} jogar`}
-    >
+    <div className={`turn-timer ${urgent ? 'urgent' : ''} ${myTurn ? 'mine' : ''}`} title={`${secs}s para ${who} jogar`}>
       <svg viewBox="0 0 36 36" width="34" height="34" aria-hidden>
         <circle cx="18" cy="18" r={R} className="tt-track" />
         <circle cx="18" cy="18" r={R} className="tt-fill" strokeDasharray={CIRC} strokeDashoffset={CIRC * (1 - left / total.current.ms)} />
