@@ -12,7 +12,12 @@ export interface Entrant {
   status: 'ativo' | 'eliminado' | 'saiu';
   /** Posição no sorteio do início: último critério de desempate. */
   order: number;
+  /** Duelo (id) a que está assistindo; continua valendo se a conexão cair e voltar. */
+  watching: string | null;
 }
+
+/** O que a inscrição traz; o resto o torneio preenche. */
+export type NewEntrant = Omit<Entrant, 'status' | 'order' | 'watching'>;
 
 /**
  * Torneio: inscrição, fases e pódio. Não joga os duelos: diz quais estão pendentes
@@ -33,7 +38,7 @@ export class Tournament {
 
   constructor(
     readonly code: string,
-    host: Omit<Entrant, 'status' | 'order'>,
+    host: NewEntrant,
     public touched: number,
     /** Privado: entra só quem tem o código/convite (fora da lista do lobby). */
     readonly isPrivate = false,
@@ -41,7 +46,7 @@ export class Tournament {
     private readonly rand: Rand = randomInt,
   ) {
     this.hostUserId = host.userId;
-    this.entrants.push({ ...host, status: 'ativo', order: 0 });
+    this.entrants.push({ ...host, status: 'ativo', order: 0, watching: null });
   }
 
   get started() {
@@ -69,11 +74,11 @@ export class Tournament {
     return this.matches.find((m) => m.status === 'jogando' && (m.a === userId || m.b === userId)) ?? null;
   }
 
-  join(p: Omit<Entrant, 'status' | 'order'>) {
+  join(p: NewEntrant) {
     if (this.started) throw new DomainError('Esse torneio já começou.');
     if (this.entrant(p.userId)) throw new DomainError('Você já está nesse torneio.');
     if (this.isFull) throw new DomainError(`O torneio já tem ${TOURNAMENT_MAX} jogadores.`);
-    this.entrants.push({ ...p, status: 'ativo', order: 0 });
+    this.entrants.push({ ...p, status: 'ativo', order: 0, watching: null });
   }
 
   /** O anfitrião fecha a inscrição: sorteia a ordem de desempate e abre a primeira fase. */

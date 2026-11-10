@@ -5,6 +5,9 @@ import type { Tournament } from '../domain/tournament.js';
 export function tournamentStateFor(t: Tournament, userId: string, now: number): TournamentState {
   const name = (id: string | null) => (id ? (t.entrant(id)?.name ?? '?') : null);
   const rounds: TournamentRound[] = [];
+  /** Quem está duelando não assiste: veria a mão do próprio oponente em outra janela. */
+  const busy = !!t.activeMatch(userId);
+  const watching = t.entrant(userId)?.watching;
   for (const m of t.matches) {
     let round = rounds.find((r) => r.phase === m.stage && r.index === m.round);
     if (!round) rounds.push((round = { phase: m.stage, index: m.round, matches: [] }));
@@ -17,6 +20,7 @@ export function tournamentStateFor(t: Tournament, userId: string, now: number): 
       lp: m.lp,
       wo: m.wo,
       mine: m.a === userId || m.b === userId,
+      watchable: m.status === 'jogando' && m.a !== userId && m.b !== userId && !busy,
     });
   }
   return {
@@ -44,6 +48,7 @@ export function tournamentStateFor(t: Tournament, userId: string, now: number): 
       : [],
     podium: [name(t.podium[0]), name(t.podium[1]), name(t.podium[2])],
     myMatch: t.activeMatch(userId)?.roomCode ?? null,
+    watching: (watching && t.matches.find((m) => m.id === watching)?.roomCode) || null,
     serverNow: now,
   };
 }

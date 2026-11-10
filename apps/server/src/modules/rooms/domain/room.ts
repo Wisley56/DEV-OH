@@ -4,6 +4,11 @@ import { DomainError } from '../../../common/domain-error.js';
 
 /** Estouros de tempo seguidos que dão derrota. */
 export const MAX_TIMEOUTS = 3;
+/**
+ * Folga no primeiro turno de um duelo de torneio: a sala abre sozinha, e quem joga pode ainda
+ * estar na tela do duelo anterior ou no painel do torneio.
+ */
+export const TOURNAMENT_START_GRACE_MS = 15_000;
 
 export interface Seatholder {
   /** Conta dona do assento: é por ela que a pessoa volta depois de cair. */
@@ -33,6 +38,8 @@ export class Room {
   eloDelta: [number | null, number | null] = [null, null];
   /** Duelo de um torneio: sem revanche, e o torneio é avisado de cada mudança. */
   tournament: { code: string; matchId: string } | null = null;
+  /** Sockets de quem assiste (torneio): recebem o estado aberto e não jogam. */
+  readonly spectators = new Set<string>();
 
   constructor(
     readonly code: string,
@@ -137,8 +144,10 @@ export class Room {
     }
     const key = `${g.turn}:${g.active}`;
     if (key === this.turnKey) return false;
+    // Primeiro turno de um duelo de torneio: dá tempo de os dois chegarem ao tabuleiro.
+    const grace = this.turnKey === null && this.tournament ? TOURNAMENT_START_GRACE_MS : 0;
     this.turnKey = key;
-    this.turnDeadline = now + turnMs;
+    this.turnDeadline = now + turnMs + grace;
     return true;
   }
 

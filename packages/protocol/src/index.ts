@@ -20,6 +20,7 @@ export const EVENTS = {
   rejoinTournament: 'tournament:rejoin',
   startTournament: 'tournament:start',
   leaveTournament: 'tournament:leave',
+  watchTournament: 'tournament:watch',
   tournamentState: 'tournament:state',
 } as const;
 
@@ -52,6 +53,11 @@ export interface RejoinRoomPayload {
   code: string;
 }
 
+/** Assistir a um duelo do torneio em que a conta está inscrita (`null` = parar de assistir). */
+export interface WatchMatchPayload {
+  matchId: string | null;
+}
+
 /** Resposta (ack) de toda chamada cliente → servidor. */
 export type Ack = { ok: true; code?: string } | { ok: false; error: string };
 
@@ -78,6 +84,8 @@ export interface RoomState {
   serverNow: number;
   /** Versão do catálogo de cards do painel no servidor: mudou, o cliente recarrega. */
   catalogRevision: string;
+  /** Enviado a quem assiste (torneio): a visão vem aberta e `seat` é só o lado de baixo do tabuleiro. */
+  spectator?: true;
 }
 
 export { ROOM_CODE_ALPHABET, ROOM_CODE_LENGTH } from './room-code';

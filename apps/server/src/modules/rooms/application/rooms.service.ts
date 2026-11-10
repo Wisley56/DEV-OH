@@ -97,6 +97,18 @@ export class RoomsService {
     this.publish(room);
   }
 
+  /** Um inscrito do torneio passa a assistir ao duelo: recebe o estado aberto na hora. */
+  addSpectator(code: string, socketId: string) {
+    const room = this.rooms.get(code);
+    if (!room) throw new DomainError('Esse duelo não existe mais.');
+    room.spectators.add(socketId);
+    this.notifier.publish(room);
+  }
+
+  removeSpectator(code: string, socketId: string) {
+    this.rooms.get(code)?.spectators.delete(socketId);
+  }
+
   /** Sala pelo código (o torneio lê o LP ao vivo dos duelos dele). */
   get(code: string) {
     return this.rooms.get(code);

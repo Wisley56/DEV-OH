@@ -58,11 +58,40 @@ export class TournamentsService implements TournamentWatcher {
     const t = this.tournaments.get(code.toUpperCase());
     const e = t?.entrant(userId);
     if (!t || !e) throw new DomainError('Esse torneio não existe mais.');
+    const previous = e.socketId;
     e.socketId = socketId;
     const m = t.activeMatch(userId);
     if (m?.roomCode && this.rooms.get(m.roomCode)) this.rooms.rejoin(socketId, m.roomCode, userId);
+    // Estava assistindo: a conexão nova assume o lugar da antiga na plateia.
+    const seen = this.watched(t, e);
+    if (seen && this.rooms.get(seen)) {
+      if (previous) this.rooms.removeSpectator(seen, previous);
+      this.rooms.addSpectator(seen, socketId);
+    } else e.watching = null;
     this.publish(t);
     return { code: t.code };
+  }
+
+  /**
+   * Um inscrito que não está duelando assiste a um duelo ao vivo dos outros, com tudo aberto
+   * (`matchId` null = para de assistir). Quem está duelando não pode: em outra janela, veria a
+   * mão do próprio oponente.
+   */
+  watch(code: string | undefined, socketId: string, matchId: string | null) {
+    const t = code ? this.tournaments.get(code) : undefined;
+    const e = t?.entrantBySocket(socketId);
+    if (!t || !e) throw new DomainError('Você não está nesse torneio.');
+    this.unwatch(t, e);
+    if (matchId !== null) {
+      if (t.activeMatch(e.userId)) throw new DomainError('Termine o seu duelo antes de assistir a outro.');
+      const m = t.matches.find((x) => x.id === matchId);
+      if (!m?.roomCode || m.status !== 'jogando' || m.a === e.userId || m.b === e.userId) {
+        throw new DomainError('Esse duelo não está mais ao vivo.');
+      }
+      this.rooms.addSpectator(m.roomCode, socketId);
+      e.watching = m.id;
+    }
+    this.publish(t);
   }
 
   start(code: string | undefined, socketId: string) {
@@ -79,6 +108,7 @@ export class TournamentsService implements TournamentWatcher {
     const t = code ? this.tournaments.get(code) : undefined;
     const e = t?.entrantBySocket(socketId);
     if (!t || !e) return;
+    this.unwatch(t, e);
     const playing = t.leave(e.userId);
     if (!t.started && t.entrants.length === 0) return this.remove(t);
     if (playing?.roomCode) this.rooms.concede(playing.roomCode, e.userId);
@@ -93,6 +123,9 @@ export class TournamentsService implements TournamentWatcher {
     e.socketId = null;
     const m = t.activeMatch(e.userId);
     if (m?.roomCode) this.rooms.disconnect(m.roomCode, socketId);
+    // Sai da plateia, mas `watching` fica: ao voltar pela conta, continua assistindo.
+    const seen = this.watched(t, e);
+    if (seen) this.rooms.removeSpectator(seen, socketId);
     this.publish(t);
   }
 
@@ -171,6 +204,9 @@ export class TournamentsService implements TournamentWatcher {
       const a = t.entrant(m.a)!;
       const b = t.entrant(m.b!)!;
       try {
+        // O próprio duelo tem prioridade: quem vai jogar sai da plateia antes de a sala abrir.
+        this.unwatch(t, a);
+        this.unwatch(t, b);
         const roomCode = this.rooms.createMatch({ code: t.code, matchId: m.id }, this.matchSeat(a), this.matchSeat(b));
         t.begin(m.id, roomCode);
       } catch (err) {
@@ -178,6 +214,17 @@ export class TournamentsService implements TournamentWatcher {
         return;
       }
     }
+  }
+
+  /** Sala do duelo a que o inscrito está assistindo. */
+  private watched(t: Tournament, e: Entrant): string | null {
+    return (e.watching && t.matches.find((m) => m.id === e.watching)?.roomCode) || null;
+  }
+
+  private unwatch(t: Tournament, e: Entrant) {
+    const seen = this.watched(t, e);
+    if (seen && e.socketId) this.rooms.removeSpectator(seen, e.socketId);
+    e.watching = null;
   }
 
   private matchSeat(e: Entrant) {

@@ -36,6 +36,8 @@ export interface TournamentMatchView {
   wo: boolean;
   /** Duelo da própria pessoa. */
   mine: boolean;
+  /** A pessoa pode assistir agora: duelo ao vivo, de outros, e ela não está duelando. */
+  watchable: boolean;
 }
 
 export interface TournamentRound {
@@ -68,5 +70,7 @@ export interface TournamentState {
   podium: [string | null, string | null, string | null];
   /** Sala do duelo atual da pessoa (o `room:state` dela chega no mesmo socket). */
   myMatch: string | null;
+  /** Sala do duelo que a pessoa está assistindo (o `room:state` dela também chega neste socket). */
+  watching: string | null;
   serverNow: number;
 }
