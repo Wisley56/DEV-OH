@@ -5,6 +5,7 @@ import { selectionExists } from '../services/interaction';
 import { createDuelUiStore } from '../store/duelUiStore';
 import { CardInspector } from './CardInspector';
 import { DuelLog, LogFab } from './DuelLog';
+import { DuelIntro } from './DuelIntro';
 import { DuelToasts } from './DuelToasts';
 import { FxLayer } from './fx/FxLayer';
 import { HandDnd } from './HandDnd';
@@ -63,6 +64,7 @@ function BoardLayout() {
         <DuelToasts />
         <VictoryDialog />
         <LogFab />
+        <DuelIntro />
       </div>
     </HandDnd>
   );

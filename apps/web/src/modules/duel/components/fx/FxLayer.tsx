@@ -170,7 +170,8 @@ export function FxLayer({ onEvent }: { onEvent?: (ev: BoardEvent, you: Seat) => 
   });
 
   const current = queue[0];
-  const busy = queue.length > 0;
+  const intro = useDuelUi((s) => s.intro);
+  const busy = queue.length > 0 || intro;
   useEffect(() => {
     setFxBusy(busy);
     ctrl.onFxBusyChange?.(busy);
