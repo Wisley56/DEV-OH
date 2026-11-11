@@ -26,6 +26,8 @@ export interface DuelUiState {
   dropChoice: DropChoice | null;
   /** Animações do tabuleiro tocando (o diálogo de fim e o bot esperam). */
   fxBusy: boolean;
+  /** Abertura do duelo na tela: conta como animação (o bot e o resultado esperam). */
+  intro: boolean;
   /** Selecionar um card fecha o histórico. */
   select(sel: Selection | null): void;
   /** Entrar num modo de escolha fecha o painel do card, para o campo ficar visível. */
@@ -34,6 +36,7 @@ export interface DuelUiState {
   toggleLog(): void;
   markLogSeen(id: number): void;
   setFxBusy(busy: boolean): void;
+  setIntro(on: boolean): void;
   setConfirm(intent: IgnitionIntent | null): void;
   setDropChoice(choice: DropChoice | null): void;
 }
@@ -46,6 +49,7 @@ export const createDuelUiStore = (lastLogId: number) =>
     showLog: false,
     seenLogId: lastLogId,
     fxBusy: false,
+    intro: false,
     confirm: null,
     dropChoice: null,
     select: (sel) => set(sel ? { sel, showLog: false, confirm: null } : { sel, confirm: null }),
@@ -57,6 +61,7 @@ export const createDuelUiStore = (lastLogId: number) =>
     toggleLog: () => set((s) => ({ showLog: !s.showLog })),
     markLogSeen: (seenLogId) => set({ seenLogId }),
     setFxBusy: (fxBusy) => set({ fxBusy }),
+    setIntro: (intro) => set({ intro }),
     setConfirm: (confirm) => set({ confirm }),
     setDropChoice: (dropChoice) => set({ dropChoice }),
   }));

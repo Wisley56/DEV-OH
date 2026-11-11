@@ -18,7 +18,9 @@ export type SfxName =
   | 'win'
   | 'lose'
   | 'dice-shake'
-  | 'dice-throw';
+  | 'dice-throw'
+  /** Abertura do duelo ("É hora do duelo!"), gravada pelo time. */
+  | 'intro';
 
 /** Volume de cada som (os jingles vêm gravados mais baixos; a espada, mais alta). */
 const VOLUME: Record<SfxName, number> = {
@@ -38,7 +40,14 @@ const VOLUME: Record<SfxName, number> = {
   lose: 1.6,
   'dice-shake': 0.8,
   'dice-throw': 0.9,
+  intro: 0.9,
 };
+
+/** Fade no fim do som, em segundos (a abertura termina saindo devagar, sem corte seco). */
+const FADE_OUT: Partial<Record<SfxName, number>> = { intro: 1 };
+
+/** Arquivo de cada som em /public/sfx (padrão: `<nome>.ogg`). */
+const FILE: Partial<Record<SfxName, string>> = { intro: 'intro.mp3' };
 
 /** Som sintetizado de reserva (navegador que não decodifica .ogg): frequência inicial e final. */
 const FALLBACK: Record<SfxName, [number, number]> = {
@@ -58,6 +67,7 @@ const FALLBACK: Record<SfxName, [number, number]> = {
   lose: [392, 196],
   'dice-shake': [700, 500],
   'dice-throw': [300, 150],
+  intro: [523, 1046],
 };
 
 class SfxPlayer {
@@ -92,7 +102,9 @@ class SfxPlayer {
     this.loading = Promise.all(
       (Object.keys(VOLUME) as SfxName[]).map(async (name) => {
         try {
-          const data = await fetch(`/sfx/${name}.ogg`).then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(r.statusText))));
+          const data = await fetch(`/sfx/${FILE[name] ?? `${name}.ogg`}`).then((r) =>
+            r.ok ? r.arrayBuffer() : Promise.reject(new Error(r.statusText)),
+          );
           this.buffers.set(name, await ctx.decodeAudioData(data));
         } catch {
           this.buffers.set(name, null);
@@ -102,10 +114,16 @@ class SfxPlayer {
     return this.loading;
   }
 
-  play(name: SfxName) {
-    if (!this.enabled) return;
+  /** Espera os sons carregarem, no máximo `ms`. */
+  async whenLoaded(ms: number) {
+    await Promise.race([this.preload() ?? Promise.resolve(), new Promise((r) => setTimeout(r, ms))]);
+  }
+
+  /** Toca o som; devolve como pará-lo antes do fim (com um fade curto), ou null se não tocou. */
+  play(name: SfxName): ((fadeSec?: number) => void) | null {
+    if (!this.enabled) return null;
     const ctx = this.context();
-    if (!ctx || ctx.state !== 'running') return;
+    if (!ctx || ctx.state !== 'running') return null;
     const gain = ctx.createGain();
     gain.gain.value = VOLUME[name];
     gain.connect(ctx.destination);
@@ -114,10 +132,24 @@ class SfxPlayer {
       const src = ctx.createBufferSource();
       src.buffer = buffer;
       src.connect(gain);
-      src.start();
-      return;
+      const t0 = ctx.currentTime;
+      const fade = FADE_OUT[name];
+      if (fade) {
+        const end = t0 + buffer.duration;
+        gain.gain.setValueAtTime(VOLUME[name], Math.max(t0, end - fade));
+        gain.gain.linearRampToValueAtTime(0, end);
+      }
+      src.start(t0);
+      return (fadeSec = 0.4) => {
+        const t = ctx.currentTime;
+        gain.gain.cancelScheduledValues(t);
+        gain.gain.setValueAtTime(gain.gain.value, t);
+        gain.gain.linearRampToValueAtTime(0, t + fadeSec);
+        src.stop(t + fadeSec);
+      };
     }
     if (buffer === null) this.beep(ctx, gain, name);
+    return null;
   }
 
   private beep(ctx: AudioContext, gain: GainNode, name: SfxName) {

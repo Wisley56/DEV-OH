@@ -1,6 +1,6 @@
 # Sons do DEV-OH!
 
-Todos os arquivos desta pasta são de **domínio público (CC0 1.0)**: dá para usar, modificar e redistribuir sem pedir permissão nem dar crédito. Mesmo assim, registramos a origem de cada um.
+Todos os arquivos desta pasta, menos o `intro.mp3`, são de **domínio público (CC0 1.0)**: dá para usar, modificar e redistribuir sem pedir permissão nem dar crédito. Mesmo assim, registramos a origem de cada um.
 
 | Arquivo | Uso no jogo | Original | Pacote (autor) |
 | --- | --- | --- | --- |
@@ -28,3 +28,5 @@ Fontes:
 - rubberduck: [75 CC0 breaking / falling / hit sfx](https://opengameart.org/content/75-cc0-breaking-falling-hit-sfx)
 
 Para trocar um som, substitua o arquivo mantendo o nome (ou ajuste `apps/web/src/modules/sound/services/sfx.ts`).
+
+O `intro.mp3` (abertura do duelo, "É hora do duelo!") foi enviado pelo time do DEV-OH! para o jogo; não é CC0.
