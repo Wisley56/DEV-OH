@@ -1,4 +1,4 @@
-import { applyAction, createGame, STARTER_DECKS, type Seat } from '@devoh/engine';
+import { applyAction, createGame, MOCORONGO_PIECES, STARTER_DECKS, type Seat } from '@devoh/engine';
 import { describe, expect, it } from 'vitest';
 import { botAction } from './index';
 
@@ -58,4 +58,20 @@ describe('bot vs bot', () => {
     }
     expect(finished).toBe(80);
   }, 60_000);
+});
+
+describe('bots e a fusão Devs Mocorongos', () => {
+  it('com as 5 peças, os dois níveis reúnem o time na hora', () => {
+    const s = createGame({
+      players: [
+        { name: 'A', deck: STARTER_DECKS[0].cards },
+        { name: 'B', deck: STARTER_DECKS[1].cards },
+      ],
+      seed: 5,
+      first: 0,
+    });
+    MOCORONGO_PIECES.forEach((cardId, i) => s.players[0].hand.push({ iid: `moc${i}`, cardId, owner: 0 }));
+    for (const level of ['normal', 'hard'] as const)
+      expect(botAction(s, 0, level)).toEqual({ type: 'fusion', fusionId: 'mocorongo_fusao' });
+  });
 });
