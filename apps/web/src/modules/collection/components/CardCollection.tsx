@@ -1,4 +1,4 @@
-import { cardList } from '@devoh/engine';
+import { cardList, FUSIONS } from '@devoh/engine';
 import { useMemo, useState } from 'react';
 import { PageHead } from '../../../shared/ui';
 import { CardFull, useCatalogRevision } from '../../cards';
@@ -9,7 +9,8 @@ import { CollectionFilterFields, KIND_TABS } from './CollectionFilterFields';
 export function CardCollection() {
   const [f, setF] = useState<CollectionFilter>(EMPTY_FILTER);
   const revision = useCatalogRevision();
-  const all = useMemo(() => (void revision, cardList()), [revision]);
+  // As fusões (Devs Mocorongos) não vão no deck, mas aparecem na coleção.
+  const all = useMemo(() => (void revision, [...cardList(), ...FUSIONS]), [revision]);
   const list = useMemo(() => applyFilter(all, f), [all, f]);
   return (
     <>

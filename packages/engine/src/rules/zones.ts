@@ -99,6 +99,12 @@ export function destroyPro(s: GameState, iid: string, cause: DestroyCause): bool
   return true;
 }
 
+/** Sai do campo direto para o cemitério, sem log nem efeitos (peça usada numa fusão). */
+export function leaveField(s: GameState, iid: string) {
+  const slot = removePro(s, iid);
+  if (slot) toGrave(s, slot.card);
+}
+
 export function tribute(s: GameState, iid: string) {
   const f = findPro(s, iid);
   if (!f) return;

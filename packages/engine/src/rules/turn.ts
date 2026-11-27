@@ -1,10 +1,11 @@
 import { findPro, newInstance, other, prosOf } from '../core/board';
-import { card, effectsOf, nameOf } from '../core/catalog';
+import { card, effectsOf, fusionIds, nameOf } from '../core/catalog';
 import { HAND_LIMIT, START_HAND, START_LP, ZONES } from '../core/constants';
 import { log, pname } from '../core/log';
 import { shuffle } from '../core/rng';
 import type { GameState, PlayerState, Seat } from '../core/types';
 import { ctxFor, proEffects } from '../effects/context';
+import { isFusionPiece } from './fusion';
 import { draw, toGrave } from './zones';
 
 export interface NewGameOptions {
@@ -84,8 +85,11 @@ function startTurn(s: GameState) {
 
 export function endTurn(s: GameState) {
   const p = s.players[s.active];
+  const fusions = fusionIds();
   while (p.hand.length > HAND_LIMIT) {
-    const c = p.hand.shift()!;
+    // Descarta o mais antigo, mas poupa as peças de fusão enquanto houver outro card.
+    const i = p.hand.findIndex((h) => !isFusionPiece(h.cardId, fusions));
+    const c = p.hand.splice(Math.max(i, 0), 1)[0];
     toGrave(s, c);
     log(s, 'info', `${p.name} descartou "${nameOf(c)}" (limite de ${HAND_LIMIT} cards na mão).`, { seat: s.active, cardId: c.cardId });
   }

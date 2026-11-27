@@ -1,4 +1,4 @@
-import { card, cardList, DECK_MAX, maxCopies, STARTER_DECKS, type DeckList } from '@devoh/engine';
+import { card, cardList, DECK_MAX, fusionIds, maxCopies, STARTER_DECKS, type DeckList } from '@devoh/engine';
 
 /** Regras de edição de deck no deck builder (funções puras). */
 
@@ -64,7 +64,11 @@ export function randomDeck(rng: () => number = Math.random): string[] {
   return cards;
 }
 
-/** Card da capa do deck: o primeiro na ordem do deck (Profissional de maior nível). */
+/**
+ * Card da capa do deck: a fusão, se o deck tem todas as peças dela (ex.: Devs Mocorongos);
+ * senão o primeiro na ordem do deck (Profissional de maior nível).
+ */
 export function coverCard(cards: string[]): string | null {
-  return sortedEntries(cards)[0]?.[0] ?? null;
+  const fusion = fusionIds().find((f) => card(f).fusionOf?.every((piece) => cards.includes(piece)));
+  return fusion ?? sortedEntries(cards)[0]?.[0] ?? null;
 }

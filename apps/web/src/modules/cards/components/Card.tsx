@@ -134,8 +134,8 @@ export function CardFace({
           {d.flavor && <div className="cf-flavor">{d.flavor}</div>}
           {d.kind === 'pro' && (
             <div className="cf-stats">
-              <span>ATK/{fmt(atk ?? d.atk, d.atk)}</span>
-              <span>DEF/{fmt(defVal ?? d.def, d.def)}</span>
+              <span>ATK/{d.atkLabel ?? fmt(atk ?? d.atk, d.atk)}</span>
+              <span>DEF/{d.defLabel ?? fmt(defVal ?? d.def, d.def)}</span>
             </div>
           )}
         </div>
@@ -209,8 +209,8 @@ export function CardMiniFace({
         <div className="cm-name">{d.name}</div>
         {d.kind === 'pro' ? (
           <div className="cm-stats">
-            <span className={position === 'atk' ? 'hi' : ''}>{atk ?? d.atk}</span>
-            <span className={position === 'def' ? 'hi' : ''}>{defVal ?? d.def}</span>
+            <span className={position === 'atk' ? 'hi' : ''}>{d.atkLabel ?? atk ?? d.atk}</span>
+            <span className={position === 'def' ? 'hi' : ''}>{d.defLabel ?? defVal ?? d.def}</span>
           </div>
         ) : (
           <div className="cm-kind">

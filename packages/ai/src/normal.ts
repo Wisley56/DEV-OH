@@ -1,4 +1,17 @@
-import { applyAction, card, getAtk, getDef, isFlip, prosOf, tributesNeeded, type Action, type GameState, type Seat } from '@devoh/engine';
+import {
+  applyAction,
+  card,
+  fusionBlock,
+  fusionIds,
+  getAtk,
+  getDef,
+  isFlip,
+  prosOf,
+  tributesNeeded,
+  type Action,
+  type GameState,
+  type Seat,
+} from '@devoh/engine';
 import { chance, strongest, value } from './heuristics/board';
 import { FLIP_ATK_GAIN, FLIP_PLAYS, IGNITION_PLAYS, playCtx, QUICK_BATTLE_PLAYS, SUMMON_OK, TASK_PLAYS } from './heuristics/cardPlays';
 import { dslIgnitionPlay, dslSummonOk, dslTaskPlay } from './heuristics/dslPlays';
@@ -8,6 +21,8 @@ import { dslIgnitionPlay, dslSummonOk, dslTaskPlay } from './heuristics/dslPlays
  * a primeira que o engine aceita. Sempre termina com endTurn.
  */
 export function normalBotAction(s: GameState, seat: Seat): Action {
+  const fusion = fusionAction(s, seat);
+  if (fusion) return fusion;
   if (s.phase === 'main') {
     for (const a of mainCandidates(s, seat)) if (applyAction(s, seat, a).ok) return a;
   } else if (s.phase === 'battle') {
@@ -15,6 +30,15 @@ export function normalBotAction(s: GameState, seat: Seat): Action {
   }
   return { type: 'endTurn' };
 }
+
+/** Fusão disponível agora (todas as peças na mão/campo): vence o duelo, então vem antes de tudo. */
+export function fusionAction(s: GameState, seat: Seat): Action | null {
+  const id = fusionIds().find((f) => !fusionBlock(s, seat, f));
+  return id ? { type: 'fusion', fusionId: id } : null;
+}
+
+/** Ids de todas as peças de fusão que o jogo conhece. */
+const fusionPieces = () => new Set(fusionIds().flatMap((f) => card(f).fusionOf ?? []));
 
 function mainCandidates(s: GameState, seat: Seat): Action[] {
   const out: Action[] = [];
@@ -40,6 +64,9 @@ function mainCandidates(s: GameState, seat: Seat): Action[] {
 
   // 3) Invocação.
   if (!me.summonedThisTurn) {
+    const pieces = fusionPieces();
+    // Peça de fusão primeiro (para cima, em Defesa): ao ser invocada, ela chama outra peça do deck.
+    for (const c of me.hand) if (pieces.has(c.cardId)) out.push({ type: 'summon', iid: c.iid, position: 'def', tributes: [] });
     const pros = me.hand
       .filter((c) => card(c.cardId).kind === 'pro')
       .sort(
@@ -50,7 +77,11 @@ function mainCandidates(s: GameState, seat: Seat): Action[] {
       if (summonOk && !summonOk(ctx)) continue;
       const d = card(c.cardId);
       const need = tributesNeeded(d.level ?? 1);
-      const fodder = [...mine].sort((a, b) => value(s, seat, a, true) - value(s, seat, b, true)).slice(0, need);
+      // Peças de fusão no campo não viram sacrifício.
+      const fodder = mine
+        .filter((p) => !pieces.has(p.card.cardId))
+        .sort((a, b) => value(s, seat, a, true) - value(s, seat, b, true))
+        .slice(0, need);
       if (fodder.length < need) continue;
       const fodderVal = fodder.reduce((n, p) => n + value(s, seat, p, true), 0);
       if (need && fodderVal >= Math.max(d.atk ?? 0, d.def ?? 0)) continue;

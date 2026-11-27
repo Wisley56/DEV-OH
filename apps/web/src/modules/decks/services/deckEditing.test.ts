@@ -1,6 +1,6 @@
 import { DECK_MAX, maxCopies, STARTER_DECKS, validateDeck } from '@devoh/engine';
 import { describe, expect, it } from 'vitest';
-import { addCard, canAdd, countCards, isStarterDeck, newDeckFrom, randomDeck, removeCard, sortedEntries } from './deckEditing';
+import { addCard, canAdd, countCards, coverCard, isStarterDeck, newDeckFrom, randomDeck, removeCard, sortedEntries } from './deckEditing';
 
 const base = STARTER_DECKS[0];
 
@@ -46,5 +46,14 @@ describe('edição de deck', () => {
       expect(validateDeck(cards)).toEqual([]);
       for (const [id, n] of countCards(cards)) expect(n).toBeLessThanOrEqual(maxCopies(id));
     }
+  });
+});
+
+describe('capa do deck', () => {
+  it('é a fusão quando o deck tem todas as peças dela; senão o Profissional de maior nível', () => {
+    const moc = STARTER_DECKS.find((d) => d.id === 'mocorongos')!;
+    expect(coverCard(moc.cards)).toBe('mocorongo_fusao');
+    expect(coverCard(moc.cards.filter((id) => id !== 'mocorongo_vitor'))).toBe('douglas_defensivo');
+    expect(coverCard([])).toBeNull();
   });
 });

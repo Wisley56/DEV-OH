@@ -1588,3 +1588,32 @@
   font-size: 0.8rem;
   color: var(--muted);
 }
+
+/* Fusão (Devs Mocorongos): fundo escuro, peças se encaixando, clarão e a carta gigante. */
+.fx-fusion-backdrop {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 50% 45%, rgba(120, 60, 190, 0.55), rgba(6, 4, 16, 0.92) 70%);
+}
+.fx-fusion-flash {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle, #fff 0%, rgba(255, 230, 160, 0.9) 35%, rgba(160, 90, 255, 0.4) 70%, transparent 100%);
+}
+.fx-fusion-piece {
+  filter: drop-shadow(0 0 18px rgba(255, 200, 90, 0.75));
+}
+.fx-fusion-card {
+  filter: drop-shadow(0 0 40px rgba(190, 120, 255, 0.95)) drop-shadow(0 0 12px rgba(255, 220, 140, 0.9));
+}
+.fx-banner-fusion {
+  top: auto;
+  bottom: 6vh;
+  translate: -50% 0;
+  color: #fff3c4;
+  background: linear-gradient(135deg, rgba(76, 22, 120, 0.97), rgba(140, 60, 20, 0.97));
+  border: 2px solid #f5c542;
+  box-shadow: 0 0 44px rgba(190, 120, 255, 0.7);
+  text-shadow: 0 2px 0 #3a1d00;
+  font-size: clamp(1rem, 4.2vw, 2rem);
+}

@@ -31,7 +31,7 @@ test('painel de balanceamento: admin roda a simulação no worker e vê o relat�
   await page.getByRole('button', { name: /Rodar simulação/ }).click();
 
   await expect(page.getByRole('heading', { name: 'Confrontos entre decks iniciais' })).toBeVisible({ timeout: 30_000 });
-  await expect(page.locator('.balance-tile').first()).toContainText('12');
+  await expect(page.locator('.balance-tile').first()).toContainText('20'); // 5 decks iniciais: 5 × 4 confrontos, 1 partida cada
   await expect(
     page
       .getByRole('list', { name: /Win rate/ })

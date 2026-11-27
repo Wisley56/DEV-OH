@@ -130,6 +130,30 @@ export const STARTER_DECKS: DeckList[] = [
       'erro_404',
     ],
   },
+  {
+    id: 'mocorongos',
+    name: 'Devs Mocorongos',
+    description:
+      'Junte Thy, Wisley, Douglas, Danilo e Vitor EAD Mocorongo na mão e reúna o time: vitória na hora. Compra muito e segura a pancada até lá.',
+    cards: [
+      'mocorongo_thy',
+      'mocorongo_wisley',
+      'mocorongo_douglas',
+      'mocorongo_danilo',
+      'mocorongo_vitor',
+      ...x('code_review', 3),
+      ...x('claude_alucinando', 2),
+      'stackoverflow',
+      'daily',
+      'wisley',
+      'douglas_defensivo',
+      ...x('docker', 2),
+      'impedimento',
+      'minha_maquina',
+      'ia_fez_cagada',
+      'ferias',
+    ],
+  },
 ];
 
 export function deckById(id: string) {

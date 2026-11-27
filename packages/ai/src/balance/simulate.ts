@@ -243,7 +243,9 @@ export function createBalanceRun(config: BalanceConfig): BalanceRun {
       for (const seat of [0, 1] as Seat[]) {
         const won = r.winner === seat ? 1 : 0;
         for (const id of r.played[seat]) {
-          const st = stats.get(id)!;
+          // Cards internos (a fusão invocada pela ação `fusion`) ficam fora da tabela.
+          const st = stats.get(id);
+          if (!st) continue;
           st.played.games++;
           st.played.wins += won;
         }
@@ -254,9 +256,9 @@ export function createBalanceRun(config: BalanceConfig): BalanceRun {
             st.included.wins += won;
           }
       }
-      for (const [id, v] of r.plays) stats.get(id)!.plays += v;
-      for (const [id, v] of r.damage) stats.get(id)!.damage += v;
-      for (const [id, v] of r.destroyed) stats.get(id)!.destroyed += v;
+      for (const [id, v] of r.plays) if (stats.has(id)) stats.get(id)!.plays += v;
+      for (const [id, v] of r.damage) if (stats.has(id)) stats.get(id)!.damage += v;
+      for (const [id, v] of r.destroyed) if (stats.has(id)) stats.get(id)!.destroyed += v;
       return next < plan.length;
     },
     report(cancelled = false) {

@@ -16,6 +16,8 @@ import {
   type TargetKind,
 } from '@devoh/engine';
 
+import { fusionAction } from './normal';
+
 type Policy = (s: GameState, seat: Seat) => Action;
 
 /**
@@ -25,6 +27,8 @@ type Policy = (s: GameState, seat: Seat) => Action;
  * resultado de sorteios (cada jogada é avaliada com seeds diferentes da real).
  */
 export function hardBotAction(s: GameState, seat: Seat, rollout: Policy): Action {
+  const fusion = fusionAction(s, seat);
+  if (fusion) return fusion;
   const fog = fogged(s, seat);
   const candidates: Action[] = [rollout(s, seat), { type: 'endTurn' }];
   if (s.phase === 'main') {

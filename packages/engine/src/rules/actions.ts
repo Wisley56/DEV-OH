@@ -6,6 +6,7 @@ import type { Action, ActionResult, CardInstance, GameState, ProSlot, Seat } fro
 import { fireBugs } from '../effects/bugs';
 import { ctxFor } from '../effects/context';
 import { attack } from './battle';
+import { fuse } from './fusion';
 import { resolveTask } from './tasks';
 import { validTarget } from './targets';
 import { endTurn } from './turn';
@@ -159,6 +160,9 @@ function run(s: GameState, seat: Seat, a: Action): string | null {
       effectsOf(d.id)?.onIgnite?.(ctx);
       return null;
     }
+
+    case 'fusion':
+      return fuse(s, seat, a.fusionId);
 
     case 'goBattle': {
       if (s.phase !== 'main') return 'Você já está na Batalha.';

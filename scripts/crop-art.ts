@@ -63,6 +63,13 @@ const CROPS: Record<string, { src: string; box?: Box }> = {
   ceo: { src: 'ceo', box: { left: 108, top: 204, width: 548, height: 502 } },
   // Quinta leva (765×1024).
   wisley_ia: { src: 'wisley_ia', box: { left: 94, top: 200, width: 576, height: 540 } },
+  // Sexta leva (1493×2000): os Devs Mocorongos (5 peças + a fusão).
+  mocorongo_thy: { src: 'mocorongo_thy', box: { left: 182, top: 384, width: 1132, height: 1054 } },
+  mocorongo_wisley: { src: 'mocorongo_wisley', box: { left: 182, top: 384, width: 1132, height: 1054 } },
+  mocorongo_douglas: { src: 'mocorongo_douglas', box: { left: 182, top: 384, width: 1132, height: 1054 } },
+  mocorongo_danilo: { src: 'mocorongo_danilo', box: { left: 182, top: 388, width: 1130, height: 1080 } },
+  mocorongo_vitor: { src: 'mocorongo_vitor', box: { left: 182, top: 388, width: 1130, height: 1080 } },
+  mocorongo_fusao: { src: 'mocorongo_fusao', box: { left: 182, top: 384, width: 1132, height: 1054 } },
 };
 
 const only = process.argv.slice(2);

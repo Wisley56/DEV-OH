@@ -6,11 +6,12 @@ installCatalog(DEVOH_CATALOG);
 
 export * from './core/types';
 export * from './core/constants';
-export { card, cardExists, cardList, catalogRevision, nameOf, subscribeCatalog } from './core/catalog';
+export { card, cardExists, cardList, catalogRevision, fusionIds, nameOf, subscribeCatalog } from './core/catalog';
 export { cardFrame, cardInfo, fullTypeLine, isFlip, RARITIES, RARITY_INFO, setCode, subtypeLabel, type CardFrame } from './core/cardInfo';
 /** Só os cards em código, fixos. A coleção viva (com os do painel) é `cardList()`. */
 export const BASE_CARD_LIST = DEVOH_CATALOG.list;
-export { STARTER_DECKS, deckById, HIDDEN_CARD } from './content';
+export { STARTER_DECKS, deckById, HIDDEN_CARD, FUSIONS, MOCORONGO_PIECES } from './content';
+export { fusionBlock } from './rules/fusion';
 export * from './custom';
 export * from './dsl';
 export * from './balance';
