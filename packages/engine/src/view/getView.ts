@@ -1,10 +1,11 @@
 import { isNegated, prosOf } from '../core/board';
-import { card, effectsOf } from '../core/catalog';
+import { card, effectsOf, fusionIds } from '../core/catalog';
 import { tributesNeeded } from '../core/constants';
 import type { CardInstance, GameState, LogEntry, Outcome, Phase, ProSlot, Seat, SpellSlot } from '../core/types';
 import { ctxFor } from '../effects/context';
 import { positionBlock } from '../rules/actions';
 import { attackBlock } from '../rules/battle';
+import { fusionBlock } from '../rules/fusion';
 import { getAtk, getDef, statParts, type StatPart } from '../rules/stats';
 import { hasValidTarget } from '../rules/targets';
 
@@ -64,6 +65,8 @@ export interface PlayerView {
   field: SpellView | null;
   shocked: boolean;
   summonedThisTurn: boolean;
+  /** Fusões que este jogador pode invocar agora (todas as peças na mão). Ausente quando não há nenhuma. */
+  canFuse?: string[];
 }
 
 export interface GameView {
@@ -117,6 +120,7 @@ function build(s: GameState, viewer: Seat, spectator: boolean): GameView {
     const freeSpell = p.spells.some((x) => !x);
     const proCount = prosOf(s, seat).length;
     const shocked = p.shockedUntilTurn >= s.turn;
+    const canFuse = canAct && s.phase === 'main' ? fusionIds().filter((f) => !fusionBlock(s, seat, f)) : [];
     return {
       name: p.name,
       lp: p.lp,
@@ -184,6 +188,7 @@ function build(s: GameState, viewer: Seat, spectator: boolean): GameView {
       field: p.field ? { iid: p.field.card.iid, cardId: p.field.card.cardId, faceDown: false, revealed: true } : null,
       shocked,
       summonedThisTurn: p.summonedThisTurn,
+      ...(canFuse.length > 0 && { canFuse }),
     };
   };
   return {

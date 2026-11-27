@@ -1,9 +1,9 @@
 import type { CardEffects } from '../effects/types';
-import { card, cardList, codeOf, effectsOf } from './catalog';
+import { card, cardExists, cardList, codeOf, effectsOf, fusionIds } from './catalog';
 import type { CardDef, Rarity } from './types';
 
-/** Moldura do card: Profissional Normal (sem efeito), de Efeito, Task ou Bug. */
-export type CardFrame = 'normal' | 'effect' | 'task' | 'bug';
+/** Moldura do card: Profissional Normal (sem efeito), de Efeito, de Fusão, Task ou Bug. */
+export type CardFrame = 'normal' | 'effect' | 'fusion' | 'task' | 'bug';
 
 /**
  * As funções abaixo leem os efeitos do catálogo; `fx` permite passar os efeitos de um card que
@@ -11,6 +11,7 @@ export type CardFrame = 'normal' | 'effect' | 'task' | 'bug';
  */
 export function cardFrame(d: CardDef, fx: CardEffects | undefined = effectsOf(d.id)): CardFrame {
   if (d.kind !== 'pro') return d.kind;
+  if (d.fusionOf) return 'fusion';
   return fx || d.ignition ? 'effect' : 'normal';
 }
 
@@ -49,10 +50,12 @@ export const RARITY_INFO: Record<Rarity, { label: string; short: string }> = {
   secreta: { label: 'Secreta', short: 'SE' },
 };
 
-/** Código de coleção: o fixo do card (DVOH-X01, criados no painel) ou pela ordem do catálogo (DVOH-001). */
+/** Código de coleção: o fixo do card (DVOH-X01, criados no painel), o da fusão (DVOH-F01) ou pela ordem do catálogo (DVOH-001). */
 export function setCode(id: string): string {
   const fixed = codeOf(id);
   if (fixed) return fixed;
+  // Fusões ficam fora da coleção numerada: DVOH-F01, DVOH-F02…
+  if (cardExists(id) && card(id).fusionOf) return `DVOH-F${String(fusionIds().indexOf(id) + 1).padStart(2, '0')}`;
   const i = cardList().findIndex((c) => c.id === id);
   return `DVOH-${String(i + 1).padStart(3, '0')}`;
 }

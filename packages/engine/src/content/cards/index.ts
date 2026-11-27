@@ -65,6 +65,11 @@ import prodCaiu from './bugs/prod_caiu';
 import dividaTecnica from './bugs/divida_tecnica';
 import revertPr from './bugs/revert_pr';
 import wisleyIa from './squad/wisley_ia';
+import mocorongoThy from './squad/mocorongo_thy';
+import mocorongoWisley from './squad/mocorongo_wisley';
+import mocorongoDouglas from './squad/mocorongo_douglas';
+import mocorongoDanilo from './squad/mocorongo_danilo';
+import mocorongoVitor from './squad/mocorongo_vitor';
 
 /** Todos os cards do DEV-OH!, na ordem da coleção. */
 export const CARD_MODULES: CardModule[] = [
@@ -135,4 +140,12 @@ export const CARD_MODULES: CardModule[] = [
   revertPr,
   // Cards novos entram no fim: o código DVOH-NNN vem da posição nesta lista.
   wisleyIa,
+  mocorongoThy,
+  mocorongoWisley,
+  mocorongoDouglas,
+  mocorongoDanilo,
+  mocorongoVitor,
 ];
+
+export { MOCORONGO_FUSION } from './squad/mocorongo_fusao';
+export { MOCORONGO_PIECES } from './squad/mocorongo_piece';

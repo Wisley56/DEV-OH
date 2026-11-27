@@ -34,6 +34,7 @@ export const ActionSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('flipSummon'), iid }),
   z.object({ type: z.literal('changePosition'), iid }),
   z.object({ type: z.literal('ignition'), iid, target: iid.optional() }),
+  z.object({ type: z.literal('fusion'), fusionId: z.string().min(1).max(64) }),
   z.object({ type: z.literal('goBattle') }),
   z.object({ type: z.literal('attack'), iid, target: iid.optional() }),
   z.object({ type: z.literal('endTurn') }),

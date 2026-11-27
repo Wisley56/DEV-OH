@@ -66,6 +66,9 @@ export interface CardDef {
   targetRequired?: boolean;
   /** Ignition: efeito de Profissional ativado manualmente, 1x por turno (o alvo, se houver, é obrigatório). */
   ignition?: { label: string; target?: TargetKind };
+
+  /** Fusão: ids das peças que precisam estar juntas na mão para invocá-la (ação `fusion`). */
+  fusionOf?: string[];
 }
 
 export interface CardInstance {
@@ -148,8 +151,8 @@ export interface LogSource {
   iid: string;
 }
 
-/** bounce = voltou para a mão; meltdown = Estresse no limite; reflect = Estresse devolvido ao oponente. */
-export type LogFx = 'bounce' | 'meltdown' | 'reflect';
+/** bounce = voltou para a mão; meltdown = Estresse no limite; reflect = Estresse devolvido ao oponente; fusion = peças reunidas numa fusão. */
+export type LogFx = 'bounce' | 'meltdown' | 'reflect' | 'fusion';
 
 export interface LogEntry {
   id: number;
@@ -173,7 +176,7 @@ export interface LogEntry {
 }
 
 /** Como o duelo terminou. */
-export type OutcomeReason = 'lp' | 'deckout' | 'surrender' | 'timeout' | 'abandon' | 'draw';
+export type OutcomeReason = 'lp' | 'deckout' | 'surrender' | 'timeout' | 'abandon' | 'draw' | 'fusion';
 
 export interface Outcome {
   reason: OutcomeReason;
@@ -204,6 +207,7 @@ export type Action =
   | { type: 'flipSummon'; iid: string }
   | { type: 'changePosition'; iid: string }
   | { type: 'ignition'; iid: string; target?: string }
+  | { type: 'fusion'; fusionId: string }
   | { type: 'goBattle' }
   | { type: 'attack'; iid: string; target?: string }
   | { type: 'endTurn' }

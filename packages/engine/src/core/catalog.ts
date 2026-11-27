@@ -82,6 +82,12 @@ function attributed(fx: CardEffects): CardEffects {
   wrapped.set(fx, out);
   return out;
 }
+/** Fusões que o jogo conhece (cards com `fusionOf`), fora da coleção. */
+export const fusionIds = (): string[] =>
+  Object.values(catalog().defs)
+    .filter((d) => d.fusionOf?.length)
+    .map((d) => d.id);
+
 export const nameOf = (c: CardInstance | string) => card(typeof c === 'string' ? c : c.cardId).name;
 
 /** Nome de um Profissional em campo para o log: "Nome", ou "um Profissional virado" (sem vazar a identidade). */
