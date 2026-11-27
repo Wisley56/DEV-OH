@@ -41,6 +41,10 @@ function headline(view: GameView): string {
       return mine ? 'Você desistiu do duelo.' : `${oppName} desistiu do duelo.`;
     case 'timeout':
       return mine ? 'Você estourou o tempo 3 vezes seguidas.' : `${oppName} estourou o tempo 3 vezes seguidas.`;
+    case 'fusion':
+      return mine
+        ? `${oppName} reuniu os Devs Mocorongos — o time mais caótico da TI derrubou a produção.`
+        : 'Você reuniu os Devs Mocorongos — o time mais caótico da TI derrubou a produção.';
     case 'abandon':
       return mine ? 'Você saiu da sala e não voltou a tempo.' : `${oppName} abandonou a sala — vitória por W.O.`;
   }

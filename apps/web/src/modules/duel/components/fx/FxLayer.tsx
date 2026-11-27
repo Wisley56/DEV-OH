@@ -6,6 +6,7 @@ import { CardMini } from '../../../cards';
 import { useDuel, useDuelUi } from '../../hooks/useDuel';
 import { boardEvents, type BoardEvent } from '../../services/boardEvents';
 import { Dice } from './Dice';
+import { Fusion } from './Fusion';
 import { FlipCard } from './FlipCard';
 import { FloatNumber, Link, Pulse, Stamp, type Box } from './Marks';
 import { Shield } from './Shield';
@@ -45,6 +46,7 @@ const DURATION: Record<BoardEvent['kind'], [number, number]> = {
   flip: [1500, 400],
   activate: [1500, 400],
   summon: [0, 0],
+  fusion: [4600, 1800],
   dice: [2500, 1200],
   set: [0, 0],
   turn: [0, 0],
@@ -374,6 +376,8 @@ function FxItem({ fx, sec, reduced }: { fx: Fx; sec: number; reduced: boolean })
       return <>{ev.items.map((x, i) => boxes?.[i] && <Stamp key={x.iid} at={boxes[i]} sec={sec} reduced={reduced} text="ANULADO" />)}</>;
     case 'position':
       return <>{ev.items.map((x, i) => boxes?.[i] && <Pulse key={x.iid} at={boxes[i]} sec={sec} reduced={reduced} tone="violet" />)}</>;
+    case 'fusion':
+      return <Fusion pieces={ev.pieces} cardId={ev.cardId} side={side} sec={sec} reduced={reduced} />;
     case 'dice':
       return <Dice face={ev.face} bonus={ev.bonus} ok={ev.ok} side={side} sec={sec} reduced={reduced} />;
     case 'end':

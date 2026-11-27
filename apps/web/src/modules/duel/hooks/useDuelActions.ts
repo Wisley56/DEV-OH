@@ -65,6 +65,8 @@ export function useDuelActions() {
         return ui.getState().setConfirm(intent);
       case 'changePosition':
         return dispatch({ type: 'changePosition', iid: intent.iid });
+      case 'fusion':
+        return dispatch({ type: 'fusion', fusionId: intent.fusionId });
     }
   }
 

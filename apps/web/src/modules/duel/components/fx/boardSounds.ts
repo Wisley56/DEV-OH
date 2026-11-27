@@ -2,6 +2,7 @@ import type { Seat } from '@devoh/engine';
 import { sfx } from '../../../sound';
 import type { BoardEvent } from '../../services/boardEvents';
 import { DICE_ROLL_MS } from './Dice';
+import { FUSION_FLASH_MS } from './Fusion';
 
 let lastKind: BoardEvent['kind'] | null = null;
 
@@ -32,6 +33,11 @@ export function playBoardSound(ev: BoardEvent, you: Seat) {
       return sfx.play('task');
     case 'summon':
       return sfx.play('summon');
+    case 'fusion':
+      sfx.play('glitch');
+      // As peças se encaixam e, no clarão, a fusão é invocada.
+      setTimeout(() => sfx.play('summon'), FUSION_FLASH_MS);
+      return;
     case 'set':
       return sfx.play('set');
     case 'dice':

@@ -13,6 +13,7 @@ const REASON: Record<string, string> = {
   abandon: 'W.O.',
   surrender: 'desistência',
   deckout: 'deck vazio',
+  fusion: 'Devs Mocorongos',
 };
 
 const signed = (n: number) => (n > 0 ? `+${n}` : String(n));

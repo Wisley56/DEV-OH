@@ -1,4 +1,4 @@
-import { card, cardInfo, maxCopies, RARITY_INFO, type BugTrigger, type CardDef, type TargetKind } from '@devoh/engine';
+import { card, cardInfo, fusionIds, maxCopies, RARITY_INFO, type BugTrigger, type CardDef, type TargetKind } from '@devoh/engine';
 
 /** Texto legível das regras de um card, para o painel de detalhes do deck builder (funções puras). */
 
@@ -68,6 +68,15 @@ export function cardDetails(id: string): CardDetails {
   if (d.target) rules.push({ label: d.targetRequired ? 'Alvo (obrigatório)' : 'Alvo', value: TARGET[d.target] });
   if (info.flip) rules.push({ label: 'FLIP', value: 'Efeito ativa quando o card é virado para cima.' });
   if (d.unique) rules.push({ label: 'Pessoa da squad', value: 'Só 1 cópia por deck.' });
+  if (d.fusionOf)
+    rules.push({
+      label: 'Fusão',
+      value: `Não vai no deck: reúna as ${d.fusionOf.length} peças (${d.fusionOf.map((p) => card(p).name).join(', ')}) na mão ou no campo.`,
+    });
+  for (const f of fusionIds()) {
+    const i = card(f).fusionOf?.indexOf(id) ?? -1;
+    if (i >= 0) rules.push({ label: 'Peça de fusão', value: `${i + 1} de ${card(f).fusionOf!.length} de "${card(f).name}".` });
+  }
 
   return {
     def: d,

@@ -32,6 +32,9 @@
 .frame-normal .cf-inner {
   --frame: var(--pro-normal);
 }
+.frame-fusion .cf-inner {
+  --frame: var(--pro-fusion);
+}
 .cf-name {
   display: flex;
   align-items: center;
@@ -292,6 +295,9 @@
 }
 .card-mini.frame-normal .cm-inner {
   background: var(--pro-normal);
+}
+.card-mini.frame-fusion .cm-inner {
+  background: var(--pro-fusion);
 }
 .cm-art {
   aspect-ratio: 1;

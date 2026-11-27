@@ -1,4 +1,4 @@
-import type { GameView, LogEntry, LogSource, ProView, Seat } from '@devoh/engine';
+import { card, type GameView, type LogEntry, type LogSource, type ProView, type Seat } from '@devoh/engine';
 
 /** Legenda da faixa de narração e o card que causou o evento (quando foi um efeito). */
 interface Narration {
@@ -40,6 +40,8 @@ export type BoardEvent = Narration &
     /** Task ativada; `target` é o card escolhido (ex.: quem recebe o Equipamento). */
     | { kind: 'activate'; seat: Seat; iid: string; cardId: string; target?: string }
     | { kind: 'summon'; seat: Seat; iid: string; cardId: string }
+    /** Peças reunidas numa fusão (Devs Mocorongos): elas se juntam e a fusão aparece em destaque. */
+    | { kind: 'fusion'; seat: Seat; cardId: string; pieces: string[] }
     /** Dado rolado por um efeito: face tirada, bônus somado e se deu certo. */
     | { kind: 'dice'; seat: Seat; face: number; bonus: number; ok: boolean }
     | { kind: 'set'; seat: Seat }
@@ -158,7 +160,9 @@ export function boardEvents(prev: GameView | null, next: GameView, lastLogId: nu
           out.push({ kind: 'activate', seat, iid: l.iid, cardId: l.cardId, ...(l.target && { target: l.target }), ...told(l) });
         return;
       case 'summon':
-        if (seat !== undefined && l.iid && l.cardId) out.push({ kind: 'summon', seat, iid: l.iid, cardId: l.cardId, ...told(l) });
+        if (seat !== undefined && l.fx === 'fusion' && l.cardId)
+          out.push({ kind: 'fusion', seat, cardId: l.cardId, pieces: card(l.cardId).fusionOf ?? [], ...told(l) });
+        else if (seat !== undefined && l.iid && l.cardId) out.push({ kind: 'summon', seat, iid: l.iid, cardId: l.cardId, ...told(l) });
         return;
       case 'coin':
         if (seat !== undefined && l.roll) out.push({ kind: 'dice', seat, ...l.roll });

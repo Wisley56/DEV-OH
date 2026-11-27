@@ -43,7 +43,8 @@ export type CardIntent =
   | { kind: 'flipSummon'; iid: string }
   | { kind: 'attack'; iid: string; direct: boolean }
   | { kind: 'ignition'; iid: string; cardId: string }
-  | { kind: 'changePosition'; iid: string };
+  | { kind: 'changePosition'; iid: string }
+  | { kind: 'fusion'; fusionId: string };
 
 export interface CardAction {
   label: string;
@@ -114,6 +115,11 @@ export function cardActions(view: GameView, sel: Selection | null): { actions: C
   const myTurn = !view.spectator && view.active === view.you && view.winner === null;
   if (!sel || !myTurn) return { actions, hint };
 
+  // Peça de fusão selecionada (na mão ou no campo) com todas as peças reunidas: o botão da vitória vem primeiro.
+  const fusion = me.canFuse?.find((f) => sel.cardId && card(f).fusionOf?.includes(sel.cardId));
+  if (fusion && (sel.where === 'hand' || sel.where === 'myPro'))
+    actions.push({ label: fusionLabel(fusion), primary: true, intent: { kind: 'fusion', fusionId: fusion } });
+
   if (sel.where === 'hand') {
     const h = me.hand?.find((c) => c.iid === sel.iid);
     if (!h) return { actions, hint };
@@ -157,6 +163,11 @@ export function cardActions(view: GameView, sel: Selection | null): { actions: C
       actions.push({ label: 'Ativar Task', primary: true, intent: { kind: 'activate', iid: x.iid, cardId: x.cardId } });
   }
   return { actions, hint };
+}
+
+/** Texto do botão de fusão: "Reunir os Devs Mocorongos!". */
+export function fusionLabel(fusionId: string): string {
+  return `Reunir os ${card(fusionId).name}!`;
 }
 
 function summonBlockReason(view: GameView, me: PlayerView, level: number): string {
